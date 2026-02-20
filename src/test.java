@@ -1,13 +1,10 @@
 import entities.Stock;
+import persistence.fileImplementation.FileStockDao;
 import persistence.fileImplementation.FileUnitOfWork;
-import shared.logging.LogLevel;
-import shared.logging.LogOutput;
-import shared.logging.Logger;
 
 void main() {
-    FileUnitOfWork uow = new FileUnitOfWork("data");
+    FileStockDao fileStockDao = new FileStockDao(new FileUnitOfWork("data/"));
 
-    for (Stock s : uow.getStocks()){
-        System.out.println(s.getName());
-    }
+    fileStockDao.create(new Stock("AAPL", "Apple", BigDecimal.valueOf(20000000)));
+
 }
