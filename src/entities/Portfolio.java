@@ -1,19 +1,20 @@
 package entities;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 public class Portfolio
 {
     private final UUID id;
-    private double currentBalance;
+    private BigDecimal currentBalance;
 
     public Portfolio()
     {
         this.id = UUID.randomUUID();
-        this.currentBalance = 0;
+        this.currentBalance = BigDecimal.valueOf(0);
     }
 
-    public Portfolio(UUID id, double currentBalance)
+    public Portfolio(UUID id, BigDecimal currentBalance)
     {
         this.id = id;
         this.currentBalance = currentBalance;
@@ -24,12 +25,12 @@ public class Portfolio
         return id;
     }
 
-    public double getCurrentBalance()
+    public BigDecimal getCurrentBalance()
     {
         return currentBalance;
     }
 
-    public void setCurrentBalance(double currentBalance)
+    public void setCurrentBalance(BigDecimal currentBalance)
     {
         this.currentBalance = currentBalance;
     }

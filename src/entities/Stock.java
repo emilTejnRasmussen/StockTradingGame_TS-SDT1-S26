@@ -1,18 +1,16 @@
 package entities;
 
-import java.util.UUID;
+import java.math.BigDecimal;
 
 public class Stock
 {
-    private final UUID id;
     private final String symbol;
     private String name;
-    private double currentPrice;
+    private BigDecimal currentPrice;
     private State currentState;
 
-    public Stock(String symbol, String name, double currentPrice)
+    public Stock(String symbol, String name, BigDecimal currentPrice)
     {
-        this.id = UUID.randomUUID();
         this.symbol = symbol;
         this.name = name;
         this.currentPrice = currentPrice;
@@ -25,11 +23,6 @@ public class Stock
         DECLINING,
         BANKRUPT,
         RESET
-    }
-
-    public UUID getId()
-    {
-        return id;
     }
 
     public void setName(String name)
@@ -57,12 +50,12 @@ public class Stock
         return name;
     }
 
-    public double getCurrentPrice()
+    public BigDecimal getCurrentPrice()
     {
         return currentPrice;
     }
 
-    public void setCurrentPrice(double currentPrice)
+    public void setCurrentPrice(BigDecimal currentPrice)
     {
         this.currentPrice = currentPrice;
     }
