@@ -1,4 +1,5 @@
 ### IntelliJ IDEA ###
+data/
 .idea/
 *.iml
 out/
