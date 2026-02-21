@@ -6,21 +6,21 @@ public class OwnedStock
 {
     private final UUID id;
     private final UUID portfolioId;
-    private final UUID stockId;
+    private final String stockSymbol;
     private int numberOfShares;
 
-    public OwnedStock(UUID portfolioId, UUID stockId, int numberOfShares)
+    public OwnedStock(UUID portfolioId, String stockSymbol, int numberOfShares)
     {
-        this(UUID.randomUUID(), portfolioId, stockId, numberOfShares);
+        this(UUID.randomUUID(), portfolioId, stockSymbol, numberOfShares);
     }
 
-    public OwnedStock(UUID id, UUID portfolioId, UUID stockId, int numberOfShares)
+    public OwnedStock(UUID id, UUID portfolioId, String stockSymbol, int numberOfShares)
     {
         if (numberOfShares < 0) throw new IllegalArgumentException("number of shares cannot be negative");
 
         this.id = id;
         this.portfolioId = portfolioId;
-        this.stockId = stockId;
+        this.stockSymbol = stockSymbol;
         this.numberOfShares = numberOfShares;
     }
 
@@ -45,9 +45,8 @@ public class OwnedStock
         return portfolioId;
     }
 
-    public UUID getStockId()
-    {
-        return stockId;
+    public String getStockSymbol() {
+        return stockSymbol;
     }
 
     public int getNumberOfShares()
