@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.lang.reflect.Type;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -40,6 +41,32 @@ public class JsonFileStore {
         } catch (IOException e) {
             Logger.getInstance().error("Failed to save list to '" + fileName + "': " + e.getMessage());
             throw new RuntimeException("Failed to save list to '" + fileName + "'", e);
+        }
+    }
+
+    public <T> void appendAll(String fileName, List<T> entities){
+        if (entities == null || entities.isEmpty()) return;
+
+        Path file = dir.resolve(fileName);
+
+        try
+        {
+            List<String> lines = new ArrayList<>();
+
+            for (T entity : entities){
+                lines.add(gson.toJson(entity));
+            }
+
+            Files.write(
+                    file,
+                    lines,
+                    StandardOpenOption.CREATE,
+                    StandardOpenOption.APPEND
+            );
+        } catch (IOException e)
+        {
+            Logger.getInstance().error("Failed to append all entities to '" + fileName + "': " + e.getMessage());
+            throw new RuntimeException("Failed to append all entities to '" + fileName + "': ", e);
         }
     }
 

@@ -55,10 +55,10 @@ public class FileUnitOfWork implements UnitOfWork {
                 store.saveList(OWNED_STOCKS_FILENAME, ownedStocks);
             }
             if (transactions != null) {
-                store.saveList(TRANSACTIONS_FILENAME, transactions);
+                store.appendAll(TRANSACTIONS_FILENAME, transactions);
             }
             if (stockPriceHistories != null){
-                store.saveList(STOCK_PRICE_HISTORY_FILENAME, stockPriceHistories);
+                store.appendAll(STOCK_PRICE_HISTORY_FILENAME, stockPriceHistories);
             }
             if (portfolios != null) {
                 store.saveList(PORTFOLIOS_FILENAME, portfolios);
