@@ -1,8 +1,6 @@
-import entities.OwnedStock;
-import entities.Portfolio;
-import entities.Stock;
-import entities.Transaction;
+import entities.*;
 import persistence.fileImplementation.*;
+import persistence.interfaces.StockPriceHistoryDao;
 import shared.configuration.AppConfig;
 
 void main()
@@ -12,6 +10,7 @@ void main()
     FilePortfolioDao filePortfolioDao = new FilePortfolioDao(uow);
     FileOwnedStockDao fileOwnedStockDao = new FileOwnedStockDao(uow);
     FileTransactionDao fileTransactionDao = new FileTransactionDao(uow);
+    FileStockPriceHistoryDao fileStockPriceHistoryDao = new FileStockPriceHistoryDao(uow);
 
     // fileStockDao.create(new Stock("AAPL", "Apple", BigDecimal.valueOf(20000000)));
     // fileStockDao.create(new Stock("ABC", "Another big company", BigDecimal.valueOf(20355000)));
@@ -28,15 +27,17 @@ void main()
 //    os.addShares(20);
 //    fileOwnedStockDao.update(os);
 
+//    s.setCurrentPrice(BigDecimal.valueOf(50250));
+//    fileStockDao.update(s);
+//    Transaction t = new Transaction(UUID.randomUUID(), uow.getPortfolios().getFirst().getId(), s.getSymbol(),
+//            Transaction.Type.SELL, 5, s.getCurrentPrice(), BigDecimal.valueOf(AppConfig.getInstance().getTransactionFee()),
+//            LocalDateTime.now());
+//
+//    fileTransactionDao.create(t);
     Stock s = uow.getStocks().getFirst();
-    s.setCurrentPrice(BigDecimal.valueOf(50250));
-    fileStockDao.update(s);
-    Transaction t = new Transaction(UUID.randomUUID(), uow.getPortfolios().getFirst().getId(), s.getSymbol(),
-            Transaction.Type.SELL, 5, s.getCurrentPrice(), BigDecimal.valueOf(AppConfig.getInstance().getTransactionFee()),
-            LocalDateTime.now());
+    StockPriceHistory stockPriceHistory = new StockPriceHistory(UUID.randomUUID(), s.getSymbol(), s.getCurrentPrice(), LocalDateTime.now());
 
-    fileTransactionDao.create(t);
-
+    fileStockPriceHistoryDao.create(stockPriceHistory);
 
     System.out.println("--- Stock ---");
     for (Stock stock : fileStockDao.getAll())
@@ -68,6 +69,17 @@ void main()
                         "Type: %s%n",
                 transaction.timeStamp(), transaction.fee(), transaction.quantity(), transaction.pricePerShare(),
                 transaction.getTotalPriceWithFee(), transaction.type());
+    }
+    System.out.println("--- StockPriceHistory ---");
+    for (StockPriceHistory priceHistory : uow.getStockPriceHistories())
+    {
+        {
+            System.out.printf(
+                    "hist - [%s]%n" +
+                            "Stock: %s%n" +
+                            "Price: %s%n"
+                    , priceHistory.timeStamp(), priceHistory.stockSymbol(), priceHistory.price());
+        }
     }
 
 
