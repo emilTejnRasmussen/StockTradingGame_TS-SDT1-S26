@@ -4,7 +4,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-public record Transaction(UUID id, UUID portfolioId, UUID stockID, Type type, int quantity, BigDecimal pricePerShare,
+public record Transaction(UUID id, UUID portfolioId, String stockSymbol, Type type, int quantity, BigDecimal pricePerShare,
                           BigDecimal fee, LocalDateTime timeStamp){
     public enum Type {
         BUY,
