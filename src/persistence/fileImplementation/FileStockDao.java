@@ -9,22 +9,26 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.IntStream;
 
-public class FileStockDao implements StockDao {
+public class FileStockDao implements StockDao
+{
 
     private final FileUnitOfWork uow;
 
-    public FileStockDao(FileUnitOfWork uow) {
+    public FileStockDao(FileUnitOfWork uow)
+    {
         this.uow = uow;
     }
 
     @Override
-    public void create(Stock stock) {
+    public void create(Stock stock)
+    {
         uow.begin();
         List<Stock> stocks = uow.getStocks();
         boolean exists = stocks.stream()
                 .anyMatch(s -> s.getSymbol().equals(stock.getSymbol()));
 
-        if (exists) {
+        if (exists)
+        {
             uow.rollback();
             Logger.getInstance().warning("Stock with symbol '" + stock.getSymbol() + "' already exist - no new instance created");
             throw new IllegalArgumentException("Stock with symbol '" + stock.getSymbol() + "' already exists");
@@ -35,7 +39,8 @@ public class FileStockDao implements StockDao {
     }
 
     @Override
-    public void update(Stock stock) {
+    public void update(Stock stock)
+    {
         uow.begin();
         List<Stock> stocks = uow.getStocks();
 
@@ -44,7 +49,8 @@ public class FileStockDao implements StockDao {
                 .findFirst()
                 .orElse(-1);
 
-        if (index == -1) {
+        if (index == -1)
+        {
             uow.rollback();
             Logger.getInstance().warning("Stock with symbol '" + stock.getSymbol() + "' does not exist - no stock updated");
             throw new IllegalArgumentException("Stock with symbol '" + stock.getSymbol() + "' does not exist");
@@ -55,13 +61,15 @@ public class FileStockDao implements StockDao {
     }
 
     @Override
-    public void delete(String symbol) {
+    public void delete(String symbol)
+    {
         uow.begin();
         List<Stock> stocks = uow.getStocks();
 
         boolean wasRemoved = stocks.removeIf(s -> s.getSymbol().equals(symbol));
 
-        if(!wasRemoved) {
+        if (!wasRemoved)
+        {
             uow.rollback();
             Logger.getInstance().warning("Stock with symbol '" + symbol + "' does not exist - no stock removed");
             throw new IllegalArgumentException("Stock with symbol '" + symbol + "' does not exist");
@@ -71,19 +79,22 @@ public class FileStockDao implements StockDao {
     }
 
     @Override
-    public List<Stock> getAll() {
+    public List<Stock> getAll()
+    {
         return new ArrayList<>(uow.getStocks());
     }
 
     @Override
-    public Optional<Stock> getBySymbol(String symbol) {
+    public Optional<Stock> getBySymbol(String symbol)
+    {
         return uow.getStocks().stream()
                 .filter(s -> s.getSymbol().equals(symbol))
                 .findFirst();
     }
 
     @Override
-    public List<Stock> getByState(Stock.State state) {
+    public List<Stock> getByState(Stock.State state)
+    {
         return uow.getStocks().stream()
                 .filter(s -> s.getCurrentState() == state)
                 .toList();

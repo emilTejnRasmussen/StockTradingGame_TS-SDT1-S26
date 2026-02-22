@@ -14,41 +14,50 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-public class JsonFileStore {
+public class JsonFileStore
+{
     private final Path dir;
     private final Gson gson = new GsonBuilder()
             .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeAdapter())
             .setPrettyPrinting()
             .create();
 
-    public JsonFileStore(String directoryPath) {
+    public JsonFileStore(String directoryPath)
+    {
         this.dir = Path.of(directoryPath);
     }
 
-    public <T> List<T> loadList(String fileName, Type listType) {
-        try {
+    public <T> List<T> loadList(String fileName, Type listType)
+    {
+        try
+        {
             Path file = dir.resolve(fileName);
             String json = Files.readString(file);
 
             List<T> data = gson.fromJson(json, listType);
             return data != null ? new ArrayList<>(data) : new ArrayList<>();
-        } catch (IOException e) {
+        } catch (IOException e)
+        {
             Logger.getInstance().error("Failed to load list from '" + fileName + "': " + e.getMessage());
             throw new RuntimeException("Failed to load list from '" + fileName + "'", e);
         }
     }
 
-    public <T> void saveList(String fileName, List<T> data) {
-        try {
+    public <T> void saveList(String fileName, List<T> data)
+    {
+        try
+        {
             Path file = dir.resolve(fileName);
             Files.writeString(file, gson.toJson(data));
-        } catch (IOException e) {
+        } catch (IOException e)
+        {
             Logger.getInstance().error("Failed to save list to '" + fileName + "': " + e.getMessage());
             throw new RuntimeException("Failed to save list to '" + fileName + "'", e);
         }
     }
 
-    public <T> Type listTypeOf(Class<T> c) {
+    public <T> Type listTypeOf(Class<T> c)
+    {
         return TypeToken.getParameterized(List.class, c).getType();
     }
 }

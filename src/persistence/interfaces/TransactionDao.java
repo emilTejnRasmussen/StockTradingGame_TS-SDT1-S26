@@ -9,6 +9,8 @@ import java.util.UUID;
 public interface TransactionDao
 {
     void create(Transaction transaction);
+
     List<Transaction> getAll();
+
     Optional<Transaction> getById(UUID id);
 }

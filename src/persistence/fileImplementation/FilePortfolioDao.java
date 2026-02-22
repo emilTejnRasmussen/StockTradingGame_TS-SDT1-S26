@@ -7,21 +7,25 @@ import shared.logging.Logger;
 import java.util.*;
 import java.util.stream.IntStream;
 
-public class FilePortfolioDao implements PortfolioDao {
+public class FilePortfolioDao implements PortfolioDao
+{
     private final FileUnitOfWork uow;
 
-    public FilePortfolioDao(FileUnitOfWork uow) {
+    public FilePortfolioDao(FileUnitOfWork uow)
+    {
         this.uow = uow;
     }
 
     @Override
-    public void create(Portfolio portfolio) {
+    public void create(Portfolio portfolio)
+    {
         uow.begin();
         List<Portfolio> portfolios = uow.getPortfolios();
         boolean exists = portfolios.stream()
                 .anyMatch(p -> Objects.equals(p.getId(), portfolio.getId()));
 
-        if (exists){
+        if (exists)
+        {
             uow.rollback();
             Logger.getInstance().warning("Portfolio with id '" + portfolio.getId() + "' already exists");
             throw new IllegalArgumentException("Portfolio with id '" + portfolio.getId() + "' already exists");
@@ -32,7 +36,8 @@ public class FilePortfolioDao implements PortfolioDao {
     }
 
     @Override
-    public void update(Portfolio portfolio) {
+    public void update(Portfolio portfolio)
+    {
         uow.begin();
         List<Portfolio> portfolios = uow.getPortfolios();
 
@@ -41,7 +46,8 @@ public class FilePortfolioDao implements PortfolioDao {
                 .findFirst()
                 .orElse(-1);
 
-        if (index == -1) {
+        if (index == -1)
+        {
             uow.rollback();
             Logger.getInstance().warning("Portfolio with id '" + portfolio.getId() + "' does not exist - nothing updated");
             throw new IllegalArgumentException("Portfolio with id '" + portfolio.getId() + "' does not exist - nothing updated");
@@ -52,13 +58,15 @@ public class FilePortfolioDao implements PortfolioDao {
     }
 
     @Override
-    public void delete(UUID id) {
+    public void delete(UUID id)
+    {
         uow.begin();
         List<Portfolio> portfolios = uow.getPortfolios();
 
         boolean wasRemoved = portfolios.removeIf(p -> Objects.equals(p.getId(), id));
 
-        if (!wasRemoved) {
+        if (!wasRemoved)
+        {
             uow.rollback();
             Logger.getInstance().warning("Portfolio with id '" + id + "' does not exist - nothing deleted");
             throw new IllegalArgumentException("Portfolio with id '" + id + "' does not exist - nothing deleted");
@@ -68,12 +76,14 @@ public class FilePortfolioDao implements PortfolioDao {
     }
 
     @Override
-    public List<Portfolio> getAll() {
+    public List<Portfolio> getAll()
+    {
         return new ArrayList<>(uow.getPortfolios());
     }
 
     @Override
-    public Optional<Portfolio> getById(UUID id) {
+    public Optional<Portfolio> getById(UUID id)
+    {
         return uow.getPortfolios().stream()
                 .filter(p -> p.getId() == id)
                 .findFirst();

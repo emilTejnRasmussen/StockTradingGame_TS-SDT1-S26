@@ -25,7 +25,8 @@ public class FileTransactionDao implements TransactionDao
         boolean exists = transactions.stream()
                 .anyMatch(t -> Objects.equals(t.id(), transaction.id()));
 
-        if (exists){
+        if (exists)
+        {
             uow.rollback();
             Logger.getInstance().warning("Transaction with id '" + transaction.id() + "' already exists - nothing created");
             throw new IllegalArgumentException("Transaction with id '" + transaction.id() + "' already exists - nothing created");
