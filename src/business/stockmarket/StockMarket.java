@@ -5,16 +5,19 @@ import entities.Stock;
 import shared.logging.Logger;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.ArrayList;
 import java.util.List;
 
 public class StockMarket
 {
     private List<LiveStock> liveStocks;
-    private Logger logger;
+    private final Logger logger;
     private static StockMarket instance;
 
     private StockMarket() {
-
+        this.liveStocks = new ArrayList<>();
+        this.logger = Logger.getInstance();
     }
 
     public void addLiveStock(String stockSymbol) {
@@ -29,9 +32,9 @@ public class StockMarket
 
     public void updateAllStocks() {
         for (LiveStock liveStock : liveStocks){
-            BigDecimal priceBeforeUpdate = liveStock.getCurrentPrice();
+            BigDecimal priceBeforeUpdate = liveStock.getCurrentPrice().setScale(4, RoundingMode.HALF_UP);
             liveStock.updatePrice();
-            BigDecimal priceAfterUpdate = liveStock.getCurrentPrice();
+            BigDecimal priceAfterUpdate = liveStock.getCurrentPrice().setScale(4, RoundingMode.HALF_UP);
             logger.info(liveStock.getSymbol() + " | " + priceAfterUpdate + " | " + liveStock.getStateName() +
                     " | Price change: " + priceAfterUpdate.subtract(priceBeforeUpdate));
         }

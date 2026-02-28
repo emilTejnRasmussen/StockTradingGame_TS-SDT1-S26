@@ -18,6 +18,7 @@ public class BankruptStockState implements StockState
     public double calculatePriceChange()
     {
         tickCounter++;
+
         if (tickCounter >= AppConfig.getInstance().getBankruptTimeInTicks()){
             ctx.setState(new ResetStockState(ctx));
         }

@@ -12,13 +12,12 @@ public class ResetStockState implements StockState
     public ResetStockState(LiveStock ctx)
     {
         this.ctx = ctx;
+        ctx.resetCurrentPrice();
     }
 
     @Override
     public double calculatePriceChange()
     {
-        ctx.resetCurrentPrice();
-
         double rand = random.nextDouble();
 
         if (rand < 0.5) ctx.setState(new GrowingStockState(ctx));
