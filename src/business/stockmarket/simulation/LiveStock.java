@@ -34,6 +34,14 @@ public class LiveStock
         this.currentState = state;
     }
 
+    void setCurrentPriceToZero() {
+        currentPrice = BigDecimal.ZERO;
+    }
+
+    void resetCurrentPrice() {
+        currentPrice = AppConfig.getInstance().getStockResetValue();
+    }
+
     public Stock.State getStateName() {
         return currentState.getName();
     }

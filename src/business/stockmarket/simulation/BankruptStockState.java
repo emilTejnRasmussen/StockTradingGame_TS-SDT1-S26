@@ -1,23 +1,26 @@
 package business.stockmarket.simulation;
 
 import entities.Stock;
+import shared.configuration.AppConfig;
 
 public class BankruptStockState implements StockState
 {
     private final LiveStock ctx;
-    private int counter;
+    private int tickCounter = 0;
 
     public BankruptStockState(LiveStock ctx)
     {
         this.ctx = ctx;
-        this.counter = 0;
+        ctx.setCurrentPriceToZero();
     }
 
     @Override
     public double calculatePriceChange()
     {
-        counter++;
-        if ()
+        tickCounter++;
+        if (tickCounter >= AppConfig.getInstance().getBankruptTimeInTicks()){
+            ctx.setState(new ResetStockState(ctx));
+        }
         return 0;
     }
 
