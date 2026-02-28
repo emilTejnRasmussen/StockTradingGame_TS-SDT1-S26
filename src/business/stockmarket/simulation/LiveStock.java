@@ -11,10 +11,16 @@ public class LiveStock
     private StockState currentState;
     private BigDecimal currentPrice;
 
-    public LiveStock(String symbol, StockState currentState, BigDecimal currentPrice)
+    public LiveStock(String symbol, Stock.State state, BigDecimal currentPrice)
     {
         this.symbol = symbol;
-        this.currentState = currentState;
+        switch (state){
+            case GROWING -> this.currentState = new GrowingStockState(this);
+            case DECLINING -> this.currentState = new DecliningStockState(this);
+            case BANKRUPT -> this.currentState = new BankruptStockState(this);
+            case RESET -> this.currentState = new ResetStockState(this);
+            default -> this.currentState = new SteadyStockState(this);
+        }
         this.currentPrice = currentPrice;
     }
 
@@ -44,5 +50,15 @@ public class LiveStock
 
     public Stock.State getStateName() {
         return currentState.getName();
+    }
+
+    public String getSymbol()
+    {
+        return symbol;
+    }
+
+    public BigDecimal getCurrentPrice()
+    {
+        return currentPrice;
     }
 }
