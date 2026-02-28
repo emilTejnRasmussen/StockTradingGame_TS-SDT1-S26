@@ -10,7 +10,7 @@ public class StockMarket
 {
     private List<LiveStock> liveStocks;
     private Logger logger;
-    private StockMarket instance;
+    private static StockMarket instance;
 
     private StockMarket() {
 
@@ -33,7 +33,7 @@ public class StockMarket
         }
     }
 
-    public StockMarket getInstance() {
+    public static StockMarket getInstance() {
         if (instance == null){
             instance = new StockMarket();
         }
