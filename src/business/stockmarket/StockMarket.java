@@ -4,6 +4,7 @@ import business.stockmarket.simulation.LiveStock;
 import entities.Stock;
 import shared.logging.Logger;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 public class StockMarket
@@ -28,8 +29,11 @@ public class StockMarket
 
     public void updateAllStocks() {
         for (LiveStock liveStock : liveStocks){
+            BigDecimal priceBeforeUpdate = liveStock.getCurrentPrice();
             liveStock.updatePrice();
-            logger.info(liveStock.getSymbol() + " | " + liveStock.getCurrentPrice() + " | " + liveStock.getStateName());
+            BigDecimal priceAfterUpdate = liveStock.getCurrentPrice();
+            logger.info(liveStock.getSymbol() + " | " + priceAfterUpdate + " | " + liveStock.getStateName() +
+                    " | Price change: " + priceAfterUpdate.subtract(priceBeforeUpdate));
         }
     }
 

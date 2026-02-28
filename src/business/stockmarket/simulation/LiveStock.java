@@ -34,6 +34,7 @@ public class LiveStock
     public void updatePrice() {
         double priceChangeInPercentage = currentState.calculatePriceChange();
         currentPrice = currentPrice.multiply(BigDecimal.valueOf(priceChangeInPercentage));
+        if (currentPrice.signum() <= 0) setState(new BankruptStockState(this));
     }
 
     void setState(StockState state){
