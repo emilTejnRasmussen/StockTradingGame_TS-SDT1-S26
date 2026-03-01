@@ -10,7 +10,7 @@ import java.util.List;
 public class MarketTickerThread implements Runnable
 {
     private final StockMarket stockMarket;
-    private Logger logger;
+    private final Logger logger;
     private List<Thread> liveStockThreads = new ArrayList<>();
 
 
