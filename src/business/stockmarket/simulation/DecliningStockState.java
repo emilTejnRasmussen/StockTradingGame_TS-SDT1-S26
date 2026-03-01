@@ -17,11 +17,12 @@ public class DecliningStockState implements StockState
     @Override
     public double calculatePriceChange()
     {
-        double changePercent = (random.nextDouble() - 1) / 10;
+        double changePercent = (random.nextDouble() - 1) * 0.1;
 
-        double rand = random.nextDouble();
-        if (rand < 0.25) ctx.setState(new SteadyStockState(ctx));
-        else if (rand < 0.3) ctx.setState(new GrowingStockState(ctx));
+        Stock.State nextState = TransitionManager.nextState(Stock.State.DECLINING);
+        ctx.setState(
+                StockStateFactory.create(nextState, ctx)
+        );
 
         return changePercent;
     }

@@ -20,8 +20,12 @@ public class BankruptStockState implements StockState
         tickCounter++;
 
         if (tickCounter >= AppConfig.getInstance().getBankruptTimeInTicks()){
-            ctx.setState(new ResetStockState(ctx));
+            Stock.State nextState = TransitionManager.nextState(Stock.State.BANKRUPT);
+            ctx.setState(
+                    StockStateFactory.create(nextState, ctx)
+            );
         }
+
         return 0;
     }
 

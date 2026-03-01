@@ -18,10 +18,10 @@ public class ResetStockState implements StockState
     @Override
     public double calculatePriceChange()
     {
-        double rand = random.nextDouble();
-
-        if (rand < 0.5) ctx.setState(new GrowingStockState(ctx));
-        else ctx.setState(new SteadyStockState(ctx));
+        Stock.State nextState = TransitionManager.nextState(Stock.State.RESET);
+        ctx.setState(
+                StockStateFactory.create(nextState, ctx)
+        );
 
         return 0;
     }

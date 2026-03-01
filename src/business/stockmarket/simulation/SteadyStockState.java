@@ -17,11 +17,12 @@ public class SteadyStockState implements StockState
     @Override
     public double calculatePriceChange()
     {
-        double changePercent = (random.nextDouble() * 2 - 1) / 10;
+        double changePercent = (random.nextDouble() * 2 - 1) * 0.1;
 
-        double rand = random.nextDouble();
-        if (rand < 0.05) ctx.setState(new GrowingStockState(ctx));
-        if (rand < 0.1) ctx.setState(new DecliningStockState(ctx));
+        Stock.State nextState = TransitionManager.nextState(Stock.State.STEADY);
+        ctx.setState(
+                StockStateFactory.create(nextState, ctx)
+        );
 
         return changePercent;
     }
