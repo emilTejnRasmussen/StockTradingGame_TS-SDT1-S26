@@ -2,7 +2,6 @@ package business.stockmarket.simulation;
 
 import entities.Stock;
 
-import java.math.BigDecimal;
 import java.util.Random;
 
 public class SteadyStockState implements StockState

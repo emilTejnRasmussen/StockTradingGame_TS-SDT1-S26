@@ -21,6 +21,10 @@ public class Stock
         STEADY,
         GROWING,
         DECLINING,
+        HIGH_FLUCTUATING,
+        RAPID_GROWTH,
+        RAPID_DECLINE,
+        RAPID_CRASH,
         BANKRUPT,
         RESET
     }
