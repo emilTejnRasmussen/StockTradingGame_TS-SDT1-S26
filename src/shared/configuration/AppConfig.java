@@ -8,6 +8,7 @@ public class AppConfig
 
     private final BigDecimal startingBalance;
     private final int updateFrequencyInMs;
+    private final int updateMaxVarianceInMs;
     private final BigDecimal transactionFee;
     private final BigDecimal stockResetValue;
     private final int bankruptTimeInTicks;
@@ -15,6 +16,7 @@ public class AppConfig
     private AppConfig(){
         this.startingBalance = BigDecimal.valueOf(1500);
         this.updateFrequencyInMs = 1000;
+        this.updateMaxVarianceInMs = updateFrequencyInMs / 2;
         this.transactionFee = BigDecimal.valueOf(25);
         this.stockResetValue = BigDecimal.valueOf(100);
         this.bankruptTimeInTicks = 5;
@@ -50,5 +52,10 @@ public class AppConfig
     public int getBankruptTimeInTicks()
     {
         return bankruptTimeInTicks;
+    }
+
+    public int getUpdateMaxVarianceInMs()
+    {
+        return updateMaxVarianceInMs;
     }
 }
