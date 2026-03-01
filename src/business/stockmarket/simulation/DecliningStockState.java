@@ -9,7 +9,7 @@ import static business.stockmarket.simulation.MarketPercentConstants.*;
 public class DecliningStockState implements StockState
 {
     private final LiveStock ctx;
-    private static final Random random = new Random();
+    private final Random random = new Random();
 
     public DecliningStockState(LiveStock ctx)
     {

@@ -7,7 +7,6 @@ import java.util.Random;
 public class ResetStockState implements StockState
 {
     private final LiveStock ctx;
-    private static final Random random = new Random();
 
     public ResetStockState(LiveStock ctx)
     {

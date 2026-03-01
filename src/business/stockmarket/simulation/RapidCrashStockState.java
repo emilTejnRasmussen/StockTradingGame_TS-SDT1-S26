@@ -9,7 +9,7 @@ import static business.stockmarket.simulation.MarketPercentConstants.*;
 public class RapidCrashStockState implements StockState
 {
     private final LiveStock ctx;
-    private static final Random random = new Random();
+    private final Random random = new Random();
 
     public RapidCrashStockState(LiveStock ctx)
     {
