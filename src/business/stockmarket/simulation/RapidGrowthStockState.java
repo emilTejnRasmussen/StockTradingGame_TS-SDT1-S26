@@ -33,6 +33,6 @@ public class RapidGrowthStockState implements StockState
     @Override
     public Stock.State getName()
     {
-        return null;
+        return Stock.State.RAPID_GROWTH;
     }
 }
