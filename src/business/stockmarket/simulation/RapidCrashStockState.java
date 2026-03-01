@@ -6,12 +6,12 @@ import java.util.Random;
 
 import static business.stockmarket.simulation.MarketPercentConstants.*;
 
-public class HighFluctuatingStockState implements StockState
+public class RapidCrashStockState implements StockState
 {
     private final LiveStock ctx;
     private static final Random random = new Random();
 
-    public HighFluctuatingStockState(LiveStock ctx)
+    public RapidCrashStockState(LiveStock ctx)
     {
         this.ctx = ctx;
     }
@@ -19,13 +19,16 @@ public class HighFluctuatingStockState implements StockState
     @Override
     public double calculatePriceChange()
     {
-        double changePercent = (random.nextDouble() * 2 - 1) * HF_BASE_MAX_ABS;
-        if (random.nextDouble() < HF_SPIKE_CHANCE){
-            double spike = HF_SPIKE_MIN + random.nextDouble() * HF_SPIKE_RANGE;
-            changePercent = random.nextBoolean() ? spike : -spike;
+        double roll = random.nextDouble();
+        double changePercent;
+
+        if (roll < RC_REBOUND_CHANCE){
+            changePercent = RC_REBOUND_MIN + random.nextDouble() * RC_REBOUND_RANGE;
+        } else {
+            changePercent = -(RC_DROP_MIN + random.nextDouble() * RC_DROP_RANGE);
         }
 
-        Stock.State nextState = TransitionManager.nextState(Stock.State.HIGH_FLUCTUATING);
+        Stock.State nextState = TransitionManager.nextState(Stock.State.RAPID_CRASH);
         ctx.setState(
                 StockStateFactory.create(nextState, ctx)
         );
@@ -36,6 +39,6 @@ public class HighFluctuatingStockState implements StockState
     @Override
     public Stock.State getName()
     {
-        return Stock.State.HIGH_FLUCTUATING;
+        return null;
     }
 }

@@ -6,12 +6,12 @@ import java.util.Random;
 
 import static business.stockmarket.simulation.MarketPercentConstants.*;
 
-public class DecliningStockState implements StockState
+public class RapidGrowthStockState implements StockState
 {
     private final LiveStock ctx;
     private static final Random random = new Random();
 
-    public DecliningStockState(LiveStock ctx)
+    public RapidGrowthStockState(LiveStock ctx)
     {
         this.ctx = ctx;
     }
@@ -19,20 +19,20 @@ public class DecliningStockState implements StockState
     @Override
     public double calculatePriceChange()
     {
-        double drift = DECL_DRIFT_MIN + random.nextDouble() * DECL_DRIFT_RANGE;
-        double noise = (random.nextDouble() * 2 - 1) * DECL_NOISE_MAX_ABS;
+        double drift = RG_DRIFT_MIN + random.nextDouble() * RG_DRIFT_RANGE;
+        double noise = (random.nextDouble() * 2 - 1) * RG_NOISE_MAX_ABS;
 
-        Stock.State nextState = TransitionManager.nextState(Stock.State.DECLINING);
+        Stock.State nextState = TransitionManager.nextState(Stock.State.RAPID_GROWTH);
         ctx.setState(
                 StockStateFactory.create(nextState, ctx)
         );
 
-        return noise - drift;
+        return noise + drift;
     }
 
     @Override
     public Stock.State getName()
     {
-        return Stock.State.DECLINING;
+        return null;
     }
 }

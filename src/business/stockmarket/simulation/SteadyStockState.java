@@ -4,6 +4,8 @@ import entities.Stock;
 
 import java.util.Random;
 
+import static business.stockmarket.simulation.MarketPercentConstants.STEADY_MAX_ABS;
+
 public class SteadyStockState implements StockState
 {
     private final LiveStock ctx;
@@ -17,7 +19,7 @@ public class SteadyStockState implements StockState
     @Override
     public double calculatePriceChange()
     {
-        double changePercent = (random.nextDouble() * 2 - 1) * 0.1;
+        double changePercent = (random.nextDouble() * 2 - 1) * STEADY_MAX_ABS;
 
         Stock.State nextState = TransitionManager.nextState(Stock.State.STEADY);
         ctx.setState(

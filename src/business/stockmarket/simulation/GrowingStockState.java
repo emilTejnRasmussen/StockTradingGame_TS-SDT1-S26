@@ -4,6 +4,8 @@ import entities.Stock;
 
 import java.util.Random;
 
+import static business.stockmarket.simulation.MarketPercentConstants.*;
+
 public class GrowingStockState implements StockState
 {
     private final LiveStock ctx;
@@ -17,14 +19,15 @@ public class GrowingStockState implements StockState
     @Override
     public double calculatePriceChange()
     {
-        double changePercent = (random.nextDouble() * 4 - 1) * 0.1;
+        double drift = GROW_DRIFT_MIN + random.nextDouble() * GROW_DRIFT_RANGE;
+        double noise = (random.nextDouble() * 2 - 1) * GROW_NOISE_MAX_ABS;
 
         Stock.State nextState = TransitionManager.nextState(Stock.State.GROWING);
         ctx.setState(
                 StockStateFactory.create(nextState, ctx)
         );
 
-        return changePercent;
+        return noise + drift;
     }
 
     @Override
