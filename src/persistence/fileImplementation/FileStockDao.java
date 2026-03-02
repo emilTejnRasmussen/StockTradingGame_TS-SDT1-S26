@@ -25,7 +25,8 @@ public class FileStockDao implements StockDao
         List<Stock> stocks = uow.getStocks();
         Optional<Stock> optional = getBySymbol(stock.getSymbol());
 
-        if (optional.isPresent()){
+        if (optional.isPresent())
+        {
             Logger.getInstance().warning("Stock with symbol '" + stock.getSymbol() + "' already exist - no new instance created");
             throw new IllegalArgumentException("Stock with symbol '" + stock.getSymbol() + "' already exists");
         }
@@ -38,10 +39,7 @@ public class FileStockDao implements StockDao
     {
         List<Stock> stocks = uow.getStocks();
 
-        int index = IntStream.range(0, stocks.size())
-                .filter(i -> stock.getSymbol().equals(stocks.get(i).getSymbol()))
-                .findFirst()
-                .orElse(-1);
+        int index = indexOfStock(stock, stocks);
 
         if (index == -1)
         {
@@ -64,7 +62,6 @@ public class FileStockDao implements StockDao
             Logger.getInstance().warning("Stock with symbol '" + symbol + "' does not exist - no stock removed");
             throw new IllegalArgumentException("Stock with symbol '" + symbol + "' does not exist");
         }
-
     }
 
     @Override
@@ -79,5 +76,13 @@ public class FileStockDao implements StockDao
         return uow.getStocks().stream()
                 .filter(s -> s.getSymbol().equals(symbol))
                 .findFirst();
+    }
+
+    private static int indexOfStock(Stock stock, List<Stock> stocks)
+    {
+        return IntStream.range(0, stocks.size())
+                .filter(i -> stock.getSymbol().equals(stocks.get(i).getSymbol()))
+                .findFirst()
+                .orElse(-1);
     }
 }

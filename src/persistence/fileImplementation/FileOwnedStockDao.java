@@ -22,7 +22,8 @@ public class FileOwnedStockDao implements OwnedStockDao
         List<OwnedStock> ownedStocks = uow.getOwnedStocks();
         Optional<OwnedStock> optional = getById(ownedStock.getId());
 
-        if (optional.isPresent()){
+        if (optional.isPresent())
+        {
             Logger.getInstance().warning("Owned stock with id '" + ownedStock.getId() + "' already exists");
             throw new IllegalArgumentException("Owned stock with id '" + ownedStock.getId() + "' already exists");
         }
@@ -35,10 +36,7 @@ public class FileOwnedStockDao implements OwnedStockDao
     {
         List<OwnedStock> ownedStocks = uow.getOwnedStocks();
 
-        int index = IntStream.range(0, ownedStocks.size())
-                .filter(i -> Objects.equals(ownedStocks.get(i).getId(), ownedStock.getId()))
-                .findFirst()
-                .orElse(-1);
+        int index = indexOfOwnedStock(ownedStock, ownedStocks);
 
         if (index == -1)
         {
@@ -75,5 +73,13 @@ public class FileOwnedStockDao implements OwnedStockDao
         return uow.getOwnedStocks().stream()
                 .filter(o -> Objects.equals(o.getId(), id))
                 .findFirst();
+    }
+
+    private static int indexOfOwnedStock(OwnedStock ownedStock, List<OwnedStock> ownedStocks)
+    {
+        return IntStream.range(0, ownedStocks.size())
+                .filter(i -> Objects.equals(ownedStocks.get(i).getId(), ownedStock.getId()))
+                .findFirst()
+                .orElse(-1);
     }
 }

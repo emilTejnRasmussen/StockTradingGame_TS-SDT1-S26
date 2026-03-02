@@ -35,10 +35,7 @@ public class FilePortfolioDao implements PortfolioDao
     {
         List<Portfolio> portfolios = uow.getPortfolios();
 
-        int index = IntStream.range(0, portfolios.size())
-                .filter(i -> Objects.equals(portfolios.get(i).getId(), portfolio.getId()))
-                .findFirst()
-                .orElse(-1);
+        int index = indexOfPortfolio(portfolio, portfolios);
 
         if (index == -1)
         {
@@ -75,5 +72,13 @@ public class FilePortfolioDao implements PortfolioDao
         return uow.getPortfolios().stream()
                 .filter(p -> p.getId() == id)
                 .findFirst();
+    }
+
+    private static int indexOfPortfolio(Portfolio portfolio, List<Portfolio> portfolios)
+    {
+        return IntStream.range(0, portfolios.size())
+                .filter(i -> Objects.equals(portfolios.get(i).getId(), portfolio.getId()))
+                .findFirst()
+                .orElse(-1);
     }
 }
