@@ -75,7 +75,7 @@ public class FileOwnedStockDao implements OwnedStockDao
                 .findFirst();
     }
 
-    private static int indexOfOwnedStock(OwnedStock ownedStock, List<OwnedStock> ownedStocks)
+    private int indexOfOwnedStock(OwnedStock ownedStock, List<OwnedStock> ownedStocks)
     {
         for (int i = 0; i < ownedStocks.size(); i++)
         {

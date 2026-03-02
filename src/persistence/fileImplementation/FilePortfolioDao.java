@@ -75,7 +75,7 @@ public class FilePortfolioDao implements PortfolioDao
                 .findFirst();
     }
 
-    private static int indexOfPortfolio(Portfolio portfolio, List<Portfolio> portfolios)
+    private int indexOfPortfolio(Portfolio portfolio, List<Portfolio> portfolios)
     {
         for (int i = 0; i < portfolios.size(); i++)
         {

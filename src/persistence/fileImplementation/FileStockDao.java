@@ -79,7 +79,7 @@ public class FileStockDao implements StockDao
                 .findFirst();
     }
 
-    private static int indexOfStock(Stock stock, List<Stock> stocks)
+    private int indexOfStock(Stock stock, List<Stock> stocks)
     {
         for (int i = 0; i < stocks.size(); i++)
         {
