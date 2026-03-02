@@ -18,17 +18,7 @@ public class FileStockPriceHistoryDao implements StockPriceHistoryDao
     @Override
     public void create(StockPriceHistory stockPriceHistory)
     {
-        uow.begin();
-        try
-        {
-            uow.appendStockPriceHistory(stockPriceHistory);
-            uow.commit();
-        } catch (Exception e)
-        {
-            uow.rollback();
-            Logger.getInstance().warning("Failed to create StockPriceHistory: " + e.getMessage());
-            throw e;
-        }
+        uow.appendStockPriceHistory(stockPriceHistory);
     }
 
     @Override
