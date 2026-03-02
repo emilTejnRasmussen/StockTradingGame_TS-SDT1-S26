@@ -6,6 +6,7 @@ import shared.logging.Logger;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.IntStream;
 
@@ -80,9 +81,13 @@ public class FileStockDao implements StockDao
 
     private static int indexOfStock(Stock stock, List<Stock> stocks)
     {
-        return IntStream.range(0, stocks.size())
-                .filter(i -> stock.getSymbol().equals(stocks.get(i).getSymbol()))
-                .findFirst()
-                .orElse(-1);
+        for (int i = 0; i < stocks.size(); i++)
+        {
+            if (Objects.equals(stocks.get(i).getSymbol(), stock.getSymbol()))
+            {
+                return i;
+            }
+        }
+        return -1;
     }
 }

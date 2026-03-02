@@ -77,9 +77,13 @@ public class FileOwnedStockDao implements OwnedStockDao
 
     private static int indexOfOwnedStock(OwnedStock ownedStock, List<OwnedStock> ownedStocks)
     {
-        return IntStream.range(0, ownedStocks.size())
-                .filter(i -> Objects.equals(ownedStocks.get(i).getId(), ownedStock.getId()))
-                .findFirst()
-                .orElse(-1);
+        for (int i = 0; i < ownedStocks.size(); i++)
+        {
+            if (Objects.equals(ownedStocks.get(i).getId(), ownedStock.getId()))
+            {
+                return i;
+            }
+        }
+        return -1;
     }
 }

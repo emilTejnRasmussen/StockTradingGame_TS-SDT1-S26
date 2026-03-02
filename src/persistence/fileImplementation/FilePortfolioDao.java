@@ -22,7 +22,8 @@ public class FilePortfolioDao implements PortfolioDao
         List<Portfolio> portfolios = uow.getPortfolios();
         Optional<Portfolio> optional = getById(portfolio.getId());
 
-        if (optional.isPresent()){
+        if (optional.isPresent())
+        {
             Logger.getInstance().warning("Portfolio with id '" + portfolio.getId() + "' already exists");
             throw new IllegalArgumentException("Portfolio with id '" + portfolio.getId() + "' already exists");
         }
@@ -76,9 +77,13 @@ public class FilePortfolioDao implements PortfolioDao
 
     private static int indexOfPortfolio(Portfolio portfolio, List<Portfolio> portfolios)
     {
-        return IntStream.range(0, portfolios.size())
-                .filter(i -> Objects.equals(portfolios.get(i).getId(), portfolio.getId()))
-                .findFirst()
-                .orElse(-1);
+        for (int i = 0; i < portfolios.size(); i++)
+        {
+            if (Objects.equals(portfolios.get(i).getId(), portfolio.getId()))
+            {
+                return i;
+            }
+        }
+        return -1;
     }
 }
