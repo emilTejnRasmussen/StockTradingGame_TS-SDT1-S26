@@ -16,7 +16,4 @@ public interface StockDao
     List<Stock> getAll();
 
     Optional<Stock> getBySymbol(String symbol);
-
-    List<Stock> getByState(Stock.State state);
-
 }
