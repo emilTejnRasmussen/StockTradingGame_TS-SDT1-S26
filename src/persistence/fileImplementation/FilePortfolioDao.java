@@ -20,11 +20,9 @@ public class FilePortfolioDao implements PortfolioDao
     public void create(Portfolio portfolio)
     {
         List<Portfolio> portfolios = uow.getPortfolios();
-        boolean exists = portfolios.stream()
-                .anyMatch(p -> Objects.equals(p.getId(), portfolio.getId()));
+        Optional<Portfolio> optional = getById(portfolio.getId());
 
-        if (exists)
-        {
+        if (optional.isPresent()){
             Logger.getInstance().warning("Portfolio with id '" + portfolio.getId() + "' already exists");
             throw new IllegalArgumentException("Portfolio with id '" + portfolio.getId() + "' already exists");
         }

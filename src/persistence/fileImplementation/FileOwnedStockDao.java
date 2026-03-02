@@ -21,11 +21,9 @@ public class FileOwnedStockDao implements OwnedStockDao
     public void create(OwnedStock ownedStock)
     {
         List<OwnedStock> ownedStocks = uow.getOwnedStocks();
-        boolean exists = ownedStocks.stream()
-                .anyMatch(p -> Objects.equals(p.getId(), ownedStock.getId()));
+        Optional<OwnedStock> optional = getById(ownedStock.getId());
 
-        if (exists)
-        {
+        if (optional.isPresent()){
             Logger.getInstance().warning("Owned stock with id '" + ownedStock.getId() + "' already exists");
             throw new IllegalArgumentException("Owned stock with id '" + ownedStock.getId() + "' already exists");
         }

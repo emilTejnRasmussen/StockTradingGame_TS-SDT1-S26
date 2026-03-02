@@ -23,11 +23,9 @@ public class FileStockDao implements StockDao
     public void create(Stock stock)
     {
         List<Stock> stocks = uow.getStocks();
-        boolean exists = stocks.stream()
-                .anyMatch(s -> s.getSymbol().equals(stock.getSymbol()));
+        Optional<Stock> optional = getBySymbol(stock.getSymbol());
 
-        if (exists)
-        {
+        if (optional.isPresent()){
             Logger.getInstance().warning("Stock with symbol '" + stock.getSymbol() + "' already exist - no new instance created");
             throw new IllegalArgumentException("Stock with symbol '" + stock.getSymbol() + "' already exists");
         }
