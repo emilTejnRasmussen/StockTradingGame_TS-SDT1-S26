@@ -1,7 +1,6 @@
 package persistence.fileImplementation;
 
 import entities.OwnedStock;
-import entities.Portfolio;
 import persistence.interfaces.OwnedStockDao;
 import shared.logging.Logger;
 

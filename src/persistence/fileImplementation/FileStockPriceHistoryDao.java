@@ -2,7 +2,6 @@ package persistence.fileImplementation;
 
 import entities.StockPriceHistory;
 import persistence.interfaces.StockPriceHistoryDao;
-import shared.logging.Logger;
 
 import java.util.*;
 

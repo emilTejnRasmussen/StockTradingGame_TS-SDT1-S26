@@ -2,8 +2,6 @@ package persistence.fileImplementation;
 
 import entities.Transaction;
 import persistence.interfaces.TransactionDao;
-import persistence.interfaces.UnitOfWork;
-import shared.logging.Logger;
 
 import java.util.*;
 
