@@ -1,7 +1,6 @@
 package business.services;
 
 import business.dto.StockDTO;
-import business.stockmarket.simulation.LiveStock;
 import entities.Stock;
 import entities.StockPriceHistory;
 import persistence.fileImplementation.FileStockDao;
@@ -11,7 +10,7 @@ import shared.logging.Logger;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.Optional;
+import java.beans.PropertyChangeSupport;
 
 public class StockListenerService implements PropertyChangeListener
 {
@@ -20,12 +19,16 @@ public class StockListenerService implements PropertyChangeListener
     private final FileStockPriceHistoryDao stockPriceHistoryDao;
     private final FileUnitOfWork uow;
 
-    public StockListenerService(FileUnitOfWork uow, FileStockDao stockDao, FileStockPriceHistoryDao stockPriceHistoryDao)
+    private final PropertyChangeSupport support;
+
+    public StockListenerService(FileUnitOfWork uow, FileStockDao stockDao,
+                                FileStockPriceHistoryDao stockPriceHistoryDao)
     {
         this.logger = Logger.getInstance();
         this.uow = uow;
         this.stockDao = stockDao;
         this.stockPriceHistoryDao = stockPriceHistoryDao;
+        this.support = new PropertyChangeSupport(this);
     }
 
     @Override
@@ -37,11 +40,22 @@ public class StockListenerService implements PropertyChangeListener
             uow.begin();
             updatePrice(stockDTO);
             uow.commit();
+            support.firePropertyChange(stockDTO.symbol(), null, stockDTO);
         } catch (Exception e)
         {
             uow.rollback();
             logger.error("Failed to persist stock update: " + e.getMessage());
         }
+    }
+
+    public void addListener(PropertyChangeListener listener)
+    {
+        support.addPropertyChangeListener(listener);
+    }
+
+    public void removeListener(PropertyChangeListener listener)
+    {
+        support.removePropertyChangeListener(listener);
     }
 
     private void updatePrice(StockDTO stockDTO)
