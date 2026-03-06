@@ -6,6 +6,9 @@ import entities.StockPriceHistory;
 import persistence.fileImplementation.FileStockDao;
 import persistence.fileImplementation.FileStockPriceHistoryDao;
 import persistence.fileImplementation.FileUnitOfWork;
+import persistence.interfaces.StockDao;
+import persistence.interfaces.StockPriceHistoryDao;
+import persistence.interfaces.UnitOfWork;
 import shared.logging.Logger;
 
 import java.beans.PropertyChangeEvent;
@@ -15,14 +18,14 @@ import java.beans.PropertyChangeSupport;
 public class StockListenerService implements PropertyChangeListener
 {
     private final Logger logger;
-    private final FileStockDao stockDao;
-    private final FileStockPriceHistoryDao stockPriceHistoryDao;
-    private final FileUnitOfWork uow;
+    private final StockDao stockDao;
+    private final StockPriceHistoryDao stockPriceHistoryDao;
+    private final UnitOfWork uow;
 
     private final PropertyChangeSupport support;
 
-    public StockListenerService(FileUnitOfWork uow, FileStockDao stockDao,
-                                FileStockPriceHistoryDao stockPriceHistoryDao)
+    public StockListenerService(UnitOfWork uow, StockDao stockDao,
+                                StockPriceHistoryDao stockPriceHistoryDao)
     {
         this.logger = Logger.getInstance();
         this.uow = uow;

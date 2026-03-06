@@ -3,9 +3,11 @@ import business.services.StockListenerService;
 import business.stockmarket.MarketTickerThread;
 import business.stockmarket.StockMarket;
 import entities.Stock;
+import entities.StockPriceHistory;
 import persistence.fileImplementation.FileStockDao;
 import persistence.fileImplementation.FileStockPriceHistoryDao;
 import persistence.fileImplementation.FileUnitOfWork;
+import persistence.interfaces.StockPriceHistoryDao;
 
 void main() throws InterruptedException
 {
@@ -13,7 +15,7 @@ void main() throws InterruptedException
 
     FileUnitOfWork uow = new FileUnitOfWork("data/");
     FileStockDao stockDao = new FileStockDao(uow);
-    FileStockPriceHistoryDao stockPriceHistoryDao = new FileStockPriceHistoryDao(uow);
+    StockPriceHistoryDao stockPriceHistoryDao = new FileStockPriceHistoryDao(uow);
 
     StockListenerService stockListenerService =
             new StockListenerService(uow, stockDao, stockPriceHistoryDao);
