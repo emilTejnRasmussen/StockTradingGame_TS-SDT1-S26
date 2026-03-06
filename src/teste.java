@@ -1,35 +1,45 @@
+import business.services.StockListenerService;
 import business.stockmarket.MarketTickerThread;
 import business.stockmarket.StockMarket;
 import business.stockmarket.simulation.LiveStock;
 import entities.Stock;
+import persistence.fileImplementation.FileStockDao;
+import persistence.fileImplementation.FileStockPriceHistoryDao;
 import persistence.fileImplementation.FileUnitOfWork;
-import shared.configuration.AppConfig;
 
 void main() throws InterruptedException
 {
     StockMarket stockMarket = StockMarket.getInstance();
+
     FileUnitOfWork uow = new FileUnitOfWork("data/");
+    FileStockDao stockDao = new FileStockDao(uow);
+    FileStockPriceHistoryDao stockPriceHistoryDao = new FileStockPriceHistoryDao(uow);
+
+    StockListenerService listenerService =
+            new StockListenerService(uow, stockDao, stockPriceHistoryDao);
+
+    stockMarket.addListener(listenerService);
+
     List<Stock> stocks = uow.getStocks();
 
-    for (Stock stock : stocks) {
+    for (Stock stock : stocks)
+    {
         stockMarket.addExistingStock(stock);
     }
+
     for (LiveStock liveStock : stockMarket.getLiveStocks())
     {
         stockMarket.updateStock(liveStock);
     }
-
-//    Stock stock = new Stock("AAPL", "Apple", AppConfig.getInstance().getStockResetValue());
-//    stockMarket.addExistingStock(stock);
 
     MarketTickerThread ticker = new MarketTickerThread();
     Thread tickerThread = new Thread(ticker, "MarketTicker");
 
     tickerThread.start();
 
-    System.out.println("Ticker running for 30 seconds...");
+    System.out.println("Ticker running for 10 seconds...");
 
-    Thread.sleep(30_000);
+    Thread.sleep(10_000);
 
     System.out.println("Interrupting ticker...");
     tickerThread.interrupt();
