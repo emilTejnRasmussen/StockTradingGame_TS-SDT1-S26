@@ -7,51 +7,45 @@ import shared.logging.Logger;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MarketTickerThread implements Runnable
+public class MarketTicker
 {
     private final StockMarket stockMarket;
     private final Logger logger;
     private List<Thread> liveStockThreads = new ArrayList<>();
 
 
-    public MarketTickerThread()
+    public MarketTicker()
     {
         this.stockMarket = StockMarket.getInstance();
         this.logger = Logger.getInstance();
     }
 
-    @Override
-    public void run()
+    public void startLiveStockUpdates()
     {
-        logger.info("Market ticker started. Stocks=" + stockMarket.getLiveStocks().size());
+        if (!liveStockThreads.isEmpty()) {
+            logger.warning("Live stock updates already started.");
+            return;
+        }
+
+        logger.info("Starting live stock updates. amount=" + stockMarket.getLiveStocks().size());
 
         for (LiveStock liveStock : stockMarket.getLiveStocks())
         {
             Thread liveStockThread = new Thread(
                     new LiveStockUpdater(stockMarket, liveStock),
                     "LiveStockUpdater-" + liveStock.getSymbol());
+
             liveStockThread.start();
             liveStockThreads.add(liveStockThread);
         }
+    }
 
+    public void stopLiveStockUpdates() {
+        logger.warning("Stopping live stock updates");
 
-        try
-        {
-            while (!Thread.currentThread().isInterrupted())
-            {
-                Thread.sleep(1000); // Keep thread alive
-            }
-        } catch (InterruptedException e)
-        {
-            logger.warning("Market ticker interrupted.");
-            Thread.currentThread().interrupt();
-        } finally
-        {
-            logger.warning("Market ticker stopping - interrupting all LiveStockUpdater Threads");
-            for (Thread thread : liveStockThreads)
-            {
-                thread.interrupt();
-            }
+        for (Thread thread : liveStockThreads) {
+            thread.interrupt();
         }
+        liveStockThreads.clear();
     }
 }
