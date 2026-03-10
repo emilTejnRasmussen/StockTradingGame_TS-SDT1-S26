@@ -19,6 +19,16 @@ public class TransitionManager
             Stock.State.RAPID_CRASH
     };
 
+    /**
+     * Transition probability matrix for stock state changes.
+     *
+     * Rows represent the current state.
+     * Columns represent the next state.
+     * Order of states follows the STATES array.
+     *
+     * Each value is a percentage chance (0–100).
+     * Each row sums to 100.
+     */
     private static final int[][] TRANSITIONS = {
             {50, 18, 18, 10, 2, 2, 0}, // STEADY
             {20, 50, 5, 12, 10, 2, 1}, // GROWING
