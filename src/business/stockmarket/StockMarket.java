@@ -84,7 +84,7 @@ public class StockMarket
         return result;
     }
 
-    public List<LiveStock> getLiveStocks()
+    List<LiveStock> getLiveStocks()
     {
         return List.copyOf(liveStocks);
     }

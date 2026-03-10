@@ -14,10 +14,6 @@ void main() throws InterruptedException
     for (Stock stock : stocks) {
         stockMarket.addExistingStock(stock);
     }
-    for (LiveStock liveStock : stockMarket.getLiveStocks())
-    {
-        stockMarket.updateStock(liveStock);
-    }
 
 //    Stock stock = new Stock("AAPL", "Apple", AppConfig.getInstance().getStockResetValue());
 //    stockMarket.addExistingStock(stock);

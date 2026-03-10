@@ -30,11 +30,6 @@ void main() throws InterruptedException
         }
     }
 
-    for (LiveStock liveStock : stockMarket.getLiveStocks())
-    {
-        stockMarket.updateStock(liveStock);
-    }
-
     MarketTickerThread ticker = new MarketTickerThread();
     Thread tickerThread = new Thread(ticker, "MarketTicker");
 
