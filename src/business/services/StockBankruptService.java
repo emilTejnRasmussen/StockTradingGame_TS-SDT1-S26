@@ -24,6 +24,8 @@ public class StockBankruptService
         List<OwnedStock> ownedStocks = ownedStockDao.getAllByStockSymbol(stockSymbol);
         logger.info("Handling bankruptcy for " + stockSymbol + ", ownedStocks found " + ownedStocks.size());
 
+        if (ownedStocks.isEmpty()) return;
+
         for (OwnedStock ownedStock : ownedStocks) {
             ownedStockDao.delete(ownedStock.getId());
         }

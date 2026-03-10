@@ -11,12 +11,14 @@ public class LiveStock
     private String symbol;
     private StockState currentState;
     private BigDecimal currentPrice;
+    private BigDecimal bankruptcyThreshold;
 
     public LiveStock(String symbol, Stock.State state, BigDecimal currentPrice)
     {
         this.symbol = symbol;
         this.currentState = StockStateFactory.create(state, this);
         this.currentPrice = currentPrice;
+        this.bankruptcyThreshold = AppConfig.getInstance().getBankruptcyThreshold();
     }
 
     public LiveStock(String symbol)
@@ -30,7 +32,8 @@ public class LiveStock
         double priceChangeInPercentage = currentState.calculatePriceChange();
         currentPrice = currentPrice.multiply(BigDecimal.valueOf(1 + priceChangeInPercentage));
 
-        if (currentPrice.signum() <= 0 && currentState.getName() != Stock.State.BANKRUPT) {
+
+        if (currentPrice.compareTo(bankruptcyThreshold) <= 0 && currentState.getName() != Stock.State.BANKRUPT) {
             setState(new BankruptStockState(this));
         }
     }
