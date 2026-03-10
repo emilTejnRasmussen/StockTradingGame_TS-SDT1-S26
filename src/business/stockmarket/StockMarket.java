@@ -52,18 +52,29 @@ public class StockMarket
 
     public void updateStock(LiveStock liveStock)
     {
-        BigDecimal priceBeforeUpdate = liveStock.getCurrentPrice().setScale(4, RoundingMode.HALF_UP);
+        StockDTO oldStockDTO = createStockDTO(liveStock);
 
         liveStock.updatePrice();
 
-        BigDecimal priceAfterUpdate = liveStock.getCurrentPrice().setScale(4, RoundingMode.HALF_UP);
-        logger.info(liveStock.getSymbol() +
-                " | " + priceAfterUpdate +
-                " | " + liveStock.getStateName() +
-                " | Price change: " + priceAfterUpdate.subtract(priceBeforeUpdate));
+        StockDTO newStockDTO = createStockDTO(liveStock);
 
-        StockDTO stockDTO = new StockDTO(liveStock.getSymbol(), priceAfterUpdate, liveStock.getStateName());
-        support.firePropertyChange(liveStock.getSymbol(), null, stockDTO);
+        logStockUpdate(oldStockDTO, newStockDTO);
+        support.firePropertyChange("stockUpdated", oldStockDTO, newStockDTO);
+    }
+
+    private StockDTO createStockDTO(LiveStock liveStock)
+    {
+        BigDecimal roundedPrice = liveStock.getCurrentPrice().setScale(4, RoundingMode.HALF_UP);
+        return new StockDTO(liveStock.getSymbol(), roundedPrice, liveStock.getStateName());
+    }
+
+    private void logStockUpdate(StockDTO oldStock, StockDTO newStock) {
+        BigDecimal priceChange = newStock.currentPrice().subtract(oldStock.currentPrice());
+
+        logger.info(newStock.symbol() +
+                " | " + newStock.currentPrice() +
+                " | " + newStock.currentState() +
+                " | Price change: " + priceChange);
     }
 
     public static StockMarket getInstance()
