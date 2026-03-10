@@ -14,16 +14,18 @@ import java.beans.PropertyChangeSupport;
 
 public class StockListenerService implements PropertyChangeListener
 {
+    private final UnitOfWork uow;
     private final Logger logger;
     private final StockDao stockDao;
     private final StockPriceHistoryDao stockPriceHistoryDao;
-    private final UnitOfWork uow;
+    private final StockBankruptService bankruptService;
 
     private final PropertyChangeSupport support;
 
     public StockListenerService(UnitOfWork uow, StockDao stockDao,
-                                StockPriceHistoryDao stockPriceHistoryDao)
+                                StockPriceHistoryDao stockPriceHistoryDao, StockBankruptService bankruptService)
     {
+        this.bankruptService = bankruptService;
         this.logger = Logger.getInstance();
         this.uow = uow;
         this.stockDao = stockDao;
@@ -38,9 +40,11 @@ public class StockListenerService implements PropertyChangeListener
         try
         {
             uow.begin();
-            updatePrice(stockDTO);
+
+            handleStockUpdate(stockDTO);
+
             uow.commit();
-            support.firePropertyChange(stockDTO.symbol(), null, stockDTO);
+            support.firePropertyChange("stockUpdated", null, stockDTO);
         } catch (Exception e)
         {
             uow.rollback();
@@ -58,10 +62,12 @@ public class StockListenerService implements PropertyChangeListener
         support.removePropertyChangeListener(listener);
     }
 
-    private void updatePrice(StockDTO stockDTO)
+    private void handleStockUpdate(StockDTO stockDTO)
     {
         Stock stock = stockDao.getBySymbol(stockDTO.symbol())
                 .orElseThrow(() -> new IllegalArgumentException("Stock not found: " + stockDTO.symbol()));
+
+        Stock.State oldState = stock.getCurrentState();
 
         stock.setCurrentPrice(stockDTO.currentPrice());
         stock.setCurrentState(stockDTO.currentState());
@@ -69,5 +75,17 @@ public class StockListenerService implements PropertyChangeListener
 
         StockPriceHistory stockPriceHistory = StockPriceHistory.create(stockDTO.symbol(), stockDTO.currentPrice());
         stockPriceHistoryDao.create(stockPriceHistory);
+
+        if (becameBankrupt(oldState, stock.getCurrentState())){
+            bankruptService.handleBankruptStock(stock.getSymbol());
+        }
+    }
+
+    private boolean becameBankrupt(Stock.State oldState, Stock.State newState)
+    {
+        boolean oldStateNotBankrupt = oldState != Stock.State.BANKRUPT;
+        boolean newStateIsBankrupt = newState == Stock.State.BANKRUPT;
+
+        return oldStateNotBankrupt && newStateIsBankrupt;
     }
 }

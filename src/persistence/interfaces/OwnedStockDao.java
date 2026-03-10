@@ -16,5 +16,7 @@ public interface OwnedStockDao
 
     List<OwnedStock> getAll();
 
+    List<OwnedStock> getAllByStockSymbol(String stockSymbol);
+
     Optional<OwnedStock> getById(UUID id);
 }

@@ -68,6 +68,21 @@ public class FileOwnedStockDao implements OwnedStockDao
     }
 
     @Override
+    public List<OwnedStock> getAllByStockSymbol(String stockSymbol)
+    {
+        List<OwnedStock> ownedStocks = uow.getOwnedStocks().stream()
+                .filter(os -> os.getStockSymbol().equals(stockSymbol))
+                .toList();
+
+        if (ownedStocks.isEmpty())
+        {
+            throw new IllegalArgumentException("No owned stocks with symbol=" + stockSymbol + " found.");
+        }
+
+        return ownedStocks;
+    }
+
+    @Override
     public Optional<OwnedStock> getById(UUID id)
     {
         return uow.getOwnedStocks().stream()

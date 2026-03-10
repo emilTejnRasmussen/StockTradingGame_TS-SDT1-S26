@@ -5,7 +5,6 @@ import persistence.interfaces.PortfolioDao;
 import shared.logging.Logger;
 
 import java.util.*;
-import java.util.stream.IntStream;
 
 public class FilePortfolioDao implements PortfolioDao
 {
