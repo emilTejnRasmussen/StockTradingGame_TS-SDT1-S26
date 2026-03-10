@@ -3,6 +3,7 @@ package business.stockmarket.simulation;
 import entities.Stock;
 import shared.configuration.AppConfig;
 
+import javax.naming.spi.StateFactory;
 import java.math.BigDecimal;
 
 public class LiveStock
@@ -14,13 +15,7 @@ public class LiveStock
     public LiveStock(String symbol, Stock.State state, BigDecimal currentPrice)
     {
         this.symbol = symbol;
-        switch (state){
-            case GROWING -> this.currentState = new GrowingStockState(this);
-            case DECLINING -> this.currentState = new DecliningStockState(this);
-            case BANKRUPT -> this.currentState = new BankruptStockState(this);
-            case RESET -> this.currentState = new ResetStockState(this);
-            default -> this.currentState = new SteadyStockState(this);
-        }
+        this.currentState = StockStateFactory.create(state, this);
         this.currentPrice = currentPrice;
     }
 
