@@ -16,7 +16,7 @@ public class StockMarket
 {
     private List<LiveStock> liveStocks;
     private final Logger logger;
-    private static StockMarket instance;
+    private static volatile StockMarket instance;
     private final PropertyChangeSupport support;
 
     private StockMarket()
@@ -68,11 +68,20 @@ public class StockMarket
 
     public static StockMarket getInstance()
     {
-        if (instance == null)
+        StockMarket result = instance;
+        if (result == null)
         {
-            instance = new StockMarket();
+            synchronized (Logger.class)
+            {
+                result = instance;
+                if (result == null)
+                {
+                    instance = result = new StockMarket();
+                }
+            }
         }
-        return instance;
+
+        return result;
     }
 
     public List<LiveStock> getLiveStocks()

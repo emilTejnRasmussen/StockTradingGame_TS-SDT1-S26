@@ -24,7 +24,10 @@ void main() throws InterruptedException
 
     for (Stock stock : stocks)
     {
-        stockMarket.addExistingStock(stock);
+        if (stock.getSymbol().equals("AAPL")){
+
+            stockMarket.addExistingStock(stock);
+        }
     }
 
     for (LiveStock liveStock : stockMarket.getLiveStocks())
@@ -42,6 +45,7 @@ void main() throws InterruptedException
     Thread.sleep(10_000);
 
     System.out.println("Interrupting ticker...");
+
     tickerThread.interrupt();
 
     tickerThread.join();
