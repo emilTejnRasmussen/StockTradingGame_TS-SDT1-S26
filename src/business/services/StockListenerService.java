@@ -18,14 +18,12 @@ public class StockListenerService implements PropertyChangeListener
     private final Logger logger;
     private final StockDao stockDao;
     private final StockPriceHistoryDao stockPriceHistoryDao;
-    private final StockBankruptService bankruptService;
 
     private final PropertyChangeSupport support;
 
     public StockListenerService(UnitOfWork uow, StockDao stockDao,
-                                StockPriceHistoryDao stockPriceHistoryDao, StockBankruptService bankruptService)
+                                StockPriceHistoryDao stockPriceHistoryDao)
     {
-        this.bankruptService = bankruptService;
         this.logger = Logger.getInstance();
         this.uow = uow;
         this.stockDao = stockDao;
@@ -67,25 +65,11 @@ public class StockListenerService implements PropertyChangeListener
         Stock stock = stockDao.getBySymbol(stockDTO.symbol())
                 .orElseThrow(() -> new IllegalArgumentException("Stock not found: " + stockDTO.symbol()));
 
-        Stock.State oldState = stock.getCurrentState();
-
         stock.setCurrentPrice(stockDTO.currentPrice());
         stock.setCurrentState(stockDTO.currentState());
         stockDao.update(stock);
 
         StockPriceHistory stockPriceHistory = StockPriceHistory.create(stockDTO.symbol(), stockDTO.currentPrice());
         stockPriceHistoryDao.create(stockPriceHistory);
-
-        if (becameBankrupt(oldState, stock.getCurrentState())){
-            bankruptService.handleBankruptStock(stock.getSymbol());
-        }
-    }
-
-    private boolean becameBankrupt(Stock.State oldState, Stock.State newState)
-    {
-        boolean oldStateNotBankrupt = oldState != Stock.State.BANKRUPT;
-        boolean newStateIsBankrupt = newState == Stock.State.BANKRUPT;
-
-        return oldStateNotBankrupt && newStateIsBankrupt;
     }
 }
