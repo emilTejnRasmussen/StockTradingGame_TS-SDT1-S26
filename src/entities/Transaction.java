@@ -6,7 +6,7 @@ import java.util.UUID;
 
 public record Transaction(UUID id, UUID portfolioId, String stockSymbol, Type type, int quantity,
                           BigDecimal pricePerShare,
-                          BigDecimal fee, LocalDateTime timeStamp)
+                          double fee, LocalDateTime timeStamp)
 {
     public enum Type
     {
@@ -16,7 +16,7 @@ public record Transaction(UUID id, UUID portfolioId, String stockSymbol, Type ty
 
     public BigDecimal getTotalPriceWithFee()
     {
-        return pricePerShare.multiply(BigDecimal.valueOf(quantity)).add(fee);
+        return pricePerShare.multiply(BigDecimal.valueOf(quantity)).add(BigDecimal.valueOf(fee));
     }
 
     public BigDecimal getGrossAmount()
@@ -25,7 +25,7 @@ public record Transaction(UUID id, UUID portfolioId, String stockSymbol, Type ty
     }
 
     public static Transaction create(UUID portfolioId, String stockSymbol, Type type, int quantity, BigDecimal pricePerShare,
-                                     BigDecimal fee)
+                                     double fee)
     {
         return new Transaction(UUID.randomUUID(), portfolioId, stockSymbol, type, quantity, pricePerShare, fee, LocalDateTime.now());
     }
