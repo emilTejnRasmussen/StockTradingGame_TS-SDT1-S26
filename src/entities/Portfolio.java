@@ -30,8 +30,11 @@ public class Portfolio
         return currentBalance;
     }
 
-    public void setCurrentBalance(BigDecimal currentBalance)
-    {
-        this.currentBalance = currentBalance;
+    public void pay(BigDecimal amount){
+        currentBalance = currentBalance.subtract(amount);
+    }
+
+    public void earn(BigDecimal amount){
+        currentBalance = currentBalance.add(amount);
     }
 }

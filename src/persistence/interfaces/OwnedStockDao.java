@@ -19,4 +19,6 @@ public interface OwnedStockDao
     List<OwnedStock> getAllByStockSymbol(String stockSymbol);
 
     Optional<OwnedStock> getById(UUID id);
+
+    Optional<OwnedStock> getByPortfolioIdAndStockSymbol(UUID portfolioId, String stockSymbol);
 }
