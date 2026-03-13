@@ -15,14 +15,12 @@ public class StockBankruptService implements PropertyChangeListener
 {
     private final UnitOfWork uow;
     private final OwnedStockDao ownedStockDao;
-    private final PortfolioService portfolioService;
     private final Logger logger;
 
-    public StockBankruptService(UnitOfWork uow, OwnedStockDao ownedStockDao, PortfolioService portfolioService)
+    public StockBankruptService(UnitOfWork uow, OwnedStockDao ownedStockDao)
     {
         this.uow = uow;
         this.ownedStockDao = ownedStockDao;
-        this.portfolioService = portfolioService;
         this.logger = Logger.getInstance();
     }
 
