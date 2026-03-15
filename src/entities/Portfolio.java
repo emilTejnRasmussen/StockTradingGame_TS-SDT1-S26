@@ -1,5 +1,7 @@
 package entities;
 
+import shared.configuration.AppConfig;
+
 import java.math.BigDecimal;
 import java.util.UUID;
 
@@ -11,7 +13,7 @@ public class Portfolio
     public Portfolio()
     {
         this.id = UUID.randomUUID();
-        this.currentBalance = BigDecimal.valueOf(0);
+        this.currentBalance = AppConfig.getInstance().getStartingBalance();
     }
 
     public Portfolio(UUID id, BigDecimal currentBalance)
