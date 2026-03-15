@@ -1,4 +1,4 @@
-package business.services;
+package business.services.listener;
 
 import business.dto.StockDTO;
 import entities.OwnedStock;

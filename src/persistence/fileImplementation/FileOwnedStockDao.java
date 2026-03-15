@@ -77,6 +77,14 @@ public class FileOwnedStockDao implements OwnedStockDao
     }
 
     @Override
+    public List<OwnedStock> getAllByPortfolioId(UUID portfolioId)
+    {
+        return uow.getOwnedStocks().stream()
+                .filter(os -> os.getPortfolioId().equals(portfolioId))
+                .toList();
+    }
+
+    @Override
     public Optional<OwnedStock> getById(UUID id)
     {
         return uow.getOwnedStocks().stream()

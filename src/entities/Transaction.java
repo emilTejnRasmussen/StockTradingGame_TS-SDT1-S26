@@ -19,6 +19,11 @@ public record Transaction(UUID id, UUID portfolioId, String stockSymbol, Type ty
         return pricePerShare.multiply(BigDecimal.valueOf(quantity)).add(BigDecimal.valueOf(fee));
     }
 
+    public BigDecimal getTotalPriceFeeSubtracted()
+    {
+        return pricePerShare.multiply(BigDecimal.valueOf(quantity)).subtract(BigDecimal.valueOf(fee));
+    }
+
     public BigDecimal getGrossAmount()
     {
         return pricePerShare.multiply(BigDecimal.valueOf(quantity));

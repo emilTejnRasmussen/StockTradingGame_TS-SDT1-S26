@@ -12,5 +12,7 @@ public interface TransactionDao
 
     List<Transaction> getAll();
 
+    List<Transaction> getAllFromPortfolioId(UUID portfolioId);
+
     Optional<Transaction> getById(UUID id);
 }

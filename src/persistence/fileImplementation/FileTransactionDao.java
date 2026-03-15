@@ -27,6 +27,14 @@ public class FileTransactionDao implements TransactionDao
     }
 
     @Override
+    public List<Transaction> getAllFromPortfolioId(UUID portfolioId)
+    {
+        return uow.getTransactions().stream()
+                .filter(t -> t.portfolioId().equals(portfolioId))
+                .toList();
+    }
+
+    @Override
     public Optional<Transaction> getById(UUID id)
     {
         return uow.getTransactions().stream()
