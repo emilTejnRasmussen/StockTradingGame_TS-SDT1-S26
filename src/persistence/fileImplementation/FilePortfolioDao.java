@@ -70,7 +70,7 @@ public class FilePortfolioDao implements PortfolioDao
     public Optional<Portfolio> getById(UUID id)
     {
         return uow.getPortfolios().stream()
-                .filter(p -> p.getId() == id)
+                .filter(p -> p.getId().equals(id))
                 .findFirst();
     }
 
