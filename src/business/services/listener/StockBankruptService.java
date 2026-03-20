@@ -43,7 +43,7 @@ public class StockBankruptService implements PropertyChangeListener
         }
     }
 
-    public void handleBankruptStock(String stockSymbol) {
+    private void handleBankruptStock(String stockSymbol) {
         List<OwnedStock> ownedStocks = ownedStockDao.getAllByStockSymbol(stockSymbol);
         logger.info("Handling bankruptcy for " + stockSymbol + ", ownedStocks found " + ownedStocks.size());
 
