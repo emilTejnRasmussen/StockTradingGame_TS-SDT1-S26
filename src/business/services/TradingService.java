@@ -27,14 +27,14 @@ public class TradingService
     private final TransactionDao transactionDao;
     private final OwnedStockDao ownedStockDao;
 
-    public TradingService(UnitOfWork uow, StockDao stockDao, PortfolioDao portfolioDao, TransactionDao transactionDao, OwnedStockDao ownedStockDao)
+    public TradingService(UnitOfWork uow, StockDao stockDao, PortfolioDao portfolioDao, TransactionDao transactionDao, OwnedStockDao ownedStockDao, Logger logger)
     {
         this.uow = uow;
         this.stockDao = stockDao;
         this.portfolioDao = portfolioDao;
         this.transactionDao = transactionDao;
         this.ownedStockDao = ownedStockDao;
-        this.logger = Logger.getInstance();
+        this.logger = logger;
     }
 
     public void buyStock(BuyStockRequestDTO request)
