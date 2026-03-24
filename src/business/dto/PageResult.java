@@ -1,0 +1,11 @@
+package business.dto;
+
+import java.util.List;
+
+public record PageResult<T>(
+        List<T> items,
+        int page,
+        int pageSize,
+        int totalItems,
+        int totalPages
+){}

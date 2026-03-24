@@ -1,5 +1,6 @@
 package business.services;
 
+import business.dto.PageResult;
 import business.dto.PortfolioHistoryDTO;
 import entities.OwnedStock;
 import entities.Transaction;
@@ -11,14 +12,11 @@ import shared.configuration.AppConfig;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 public class PortfolioService
 {
-    public static final int PAGINATION_MAX = 25;
+    private static final int PAGINATION_MAX = 50;
     private final PortfolioDao portfolioDao;
     private final OwnedStockDao ownedStockDao;
     private final StockDao stockDao;
@@ -67,12 +65,19 @@ public class PortfolioService
         return total.setScale(4, RoundingMode.HALF_UP);
     }
 
-    public List<Transaction> getTransactionHistory(UUID portfolioId) {
-        List<Transaction> transactions = getTransactionsSortedByOldestFirst(portfolioId);
-        return paginateList(transactions.reversed());
+    public PageResult<Transaction> getTransactionHistory(UUID portfolioId, int page, int pageSize) {
+        validatePagination(page, pageSize);
+
+        List<Transaction> results = transactionDao.findTransactionsByPortfolioIdPaginated(portfolioId, page, pageSize);
+
+        int totalItems = transactionDao.countTransactionsByPortfolioId(portfolioId);
+
+        return toPageResult(results, page, pageSize, totalItems);
     }
 
-    public List<PortfolioHistoryDTO> getPortfolioHistory(UUID portfolioId) {
+    public PageResult<PortfolioHistoryDTO> getPortfolioHistory(UUID portfolioId, int page, int pageSize) {
+        validatePagination(page, pageSize);
+
         List<Transaction> transactions = getTransactionsSortedByOldestFirst(portfolioId);
 
         List<PortfolioHistoryDTO> history = new ArrayList<>();
@@ -87,11 +92,12 @@ public class PortfolioService
             history.add(new PortfolioHistoryDTO(transaction.timeStamp(), runningBalance));
         }
 
-        return paginateList(history.reversed());
+        Collections.reverse(history);
+        return paginateList(history, page, pageSize);
     }
 
     public BigDecimal getTotalProfitLoss(UUID portfolioId) {
-        List<Transaction> transactions = getTransactionsSortedByOldestFirst(portfolioId);
+        List<Transaction> transactions = transactionDao.findTransactionsByPortfolioId(portfolioId);
 
         BigDecimal spent = BigDecimal.ZERO;
         BigDecimal earned = BigDecimal.ZERO;
@@ -106,16 +112,39 @@ public class PortfolioService
         return earned.subtract(spent).setScale(4, RoundingMode.HALF_UP);
     }
 
-    private <T> List<T> paginateList(List<T> listToPaginate) {
-        int paginationAmount = Math.min(PAGINATION_MAX, listToPaginate.size());
-        return new ArrayList<>(listToPaginate.subList(0, paginationAmount));
+    private <T> PageResult<T> paginateList(List<T> listToPaginate, int page, int pageSize) {
+        List<T> results = listToPaginate.stream()
+                .skip((long) page * pageSize)
+                .limit(pageSize)
+                .toList();
+
+        int totalItems = listToPaginate.size();
+
+        return toPageResult(results, page, pageSize, totalItems);
     }
 
+    private <T> PageResult<T> toPageResult(List<T> results, int page, int pageSize, int totalItems){
+        int totalPages = (totalItems + pageSize - 1) / pageSize;
+
+        return new PageResult<>(
+                results,
+                page,
+                pageSize,
+                totalItems,
+                totalPages
+        );
+    }
 
     private List<Transaction> getTransactionsSortedByOldestFirst(UUID portfolioId)
     {
-        return transactionDao.getAllFromPortfolioId(portfolioId).stream()
+        return transactionDao.findTransactionsByPortfolioId(portfolioId).stream()
                 .sorted(Comparator.comparing(Transaction::timeStamp))
                 .toList();
+    }
+
+    private void validatePagination(int page, int pageSize) {
+        if (page < 0 || pageSize <= 0 || pageSize > PAGINATION_MAX) {
+            throw new IllegalArgumentException("Invalid pagination values");
+        }
     }
 }
