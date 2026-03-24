@@ -37,7 +37,7 @@ public class TradingService
         this.logger = Logger.getInstance();
     }
 
-    public void buyStock(BuyStockRequestDTO request)
+    public void buyStock(StockTransactionRequest request)
     {
         try
         {
@@ -73,6 +73,44 @@ public class TradingService
         }
     }
 
+    public void sellStock(StockTransactionRequest request)
+    {
+        try
+        {
+            uow.begin();
+
+            int quantity = request.quantity();
+            Transaction.Type type = Transaction.Type.SELL;
+
+            Portfolio portfolio = getPortfolio(request.portfolioId());
+            Stock stock = getStock(request.stockSymbol());
+
+            ensureStockIsTradable(stock);
+            ensureTradeShareCountLargerThanZero(request);
+            ensurePortfolioHasStockAndAmount(portfolio.getId(), stock.getSymbol(), quantity);
+
+            removeSharesFromOwnedStock(portfolio.getId(), stock, quantity);
+
+            BigDecimal fee = BigDecimal.valueOf(AppConfig.getInstance().getTransactionFee());
+            BigDecimal proceeds = stock.getCurrentPrice().multiply(BigDecimal.valueOf(quantity)).subtract(fee);
+
+            ensureProceedsIsPositive(proceeds);
+
+            portfolio.earn(proceeds);
+            portfolioDao.update(portfolio);
+
+            createTransaction(portfolio.getId(), stock, quantity, type);
+
+            uow.commit();
+            logger.info("Transaction complete: Stock='" + stock.getSymbol() + "' quantity='" + request.quantity() + "' type='SELL'");
+        } catch (Exception e)
+        {
+            uow.rollback();
+            logger.warning("Transaction 'sellStock' failed: " + e.getMessage());
+            throw new TransactionFailedException("sellStock failed", e);
+        }
+    }
+
     private void ensureBalanceLargerThanTotalPrice(Portfolio portfolio, BigDecimal totalPrice)
     {
         if (portfolio.getCurrentBalance().compareTo(totalPrice) < 0)
@@ -81,7 +119,7 @@ public class TradingService
         }
     }
 
-    private void ensureTradeShareCountLargerThanZero(BuyStockRequestDTO request)
+    private void ensureTradeShareCountLargerThanZero(StockTransactionRequest request)
     {
         if (request.quantity() < 1) {
             throw new BusinessRuleException("Shares to trade must be a positive number");
@@ -96,38 +134,22 @@ public class TradingService
         }
     }
 
-    public void sellStock(SellStockRequestDTO request)
+    private void ensureProceedsIsPositive(BigDecimal proceeds)
     {
-        try
+        if (proceeds.compareTo(BigDecimal.ZERO) < 0)
         {
-            uow.begin();
+            throw new BusinessRuleException("Sell proceeds cannot be negative");
+        }
+    }
 
-            int quantity = request.quantity();
-            Transaction.Type type = Transaction.Type.SELL;
+    private void ensurePortfolioHasStockAndAmount(UUID portfolioId, String stockSymbol, int quantity)
+    {
+        OwnedStock ownedStock = ownedStockDao.getByPortfolioIdAndStockSymbol(portfolioId, stockSymbol)
+                .orElseThrow(() -> new IllegalArgumentException("No owned '" + stockSymbol + "' stocks in this portfolio"));
 
-            Portfolio portfolio = getPortfolio(request.portfolioId());
-            Stock stock = getStock(request.stockSymbol());
-
-
-
-
-
-
-
-            validateRequest(request, stock, type);
-            validateSell(portfolio, stock, quantity);
-
-            removeSharesFromOwnedStock(portfolio.getId(), stock, quantity);
-            handlePayment(portfolio, stock, quantity, type);
-            createTransaction(portfolio.getId(), stock, quantity, type);
-
-            uow.commit();
-            logger.info("Transaction complete: Stock='" + stock.getSymbol() + "' quantity='" + request.quantity() + "' type='SELL'");
-        } catch (Exception e)
+        if (ownedStock.getNumberOfShares() < quantity)
         {
-            uow.rollback();
-            logger.warning("Transaction 'sellStock' failed: " + e.getMessage());
-            throw new TransactionFailedException("sellStock failed", e);
+            throw new BusinessRuleException("Cannot sell more shares than is owned");
         }
     }
 
@@ -171,60 +193,6 @@ public class TradingService
         }
     }
 
-    private void handlePayment(Portfolio portfolio, Stock stock, int numberOfShares, Transaction.Type type)
-    {
-        BigDecimal fee = BigDecimal.valueOf(AppConfig.getInstance().getTransactionFee());
-        BigDecimal amount = stock.getCurrentPrice().multiply(BigDecimal.valueOf(numberOfShares));
-
-        if (type == Transaction.Type.BUY)
-        {
-            portfolio.pay(amount.add(fee));
-        } else
-        {
-            BigDecimal proceeds = amount.subtract(fee);
-            if (proceeds.compareTo(BigDecimal.ZERO) < 0)
-            {
-                throw new BusinessRuleException("Sell proceeds cannot be negative");
-            }
-            portfolio.earn(amount.subtract(fee));
-        }
-
-        portfolioDao.update(portfolio);
-    }
-
-    private void validateRequest(StockTransactionRequest request, Stock stock, Transaction.Type type)
-    {
-        String action = type.toString().toLowerCase();
-
-        if (stock.getCurrentState() == Stock.State.BANKRUPT || stock.getCurrentState() == Stock.State.RESET)
-        {
-            throw new BusinessRuleException("Cannot " + action + " stock in " + stock.getCurrentState() + " state");
-        }
-
-        if (request.quantity() < 1)
-            throw new IllegalArgumentException("Number of shares to " + action + " must be positive");
-    }
-
-    private void validateBuy(Portfolio portfolio, Stock stock, int quantity)
-    {
-        BigDecimal fee = BigDecimal.valueOf(AppConfig.getInstance().getTransactionFee());
-        BigDecimal total = stock.getCurrentPrice().multiply(BigDecimal.valueOf(quantity)).add(fee);
-
-        if (portfolio.getCurrentBalance().compareTo(total) < 0)
-        {
-            throw new BusinessRuleException("Insufficient player balance to complete transaction");
-        }
-    }
-
-    private void validateSell(Portfolio portfolio, Stock stock, int quantity)
-    {
-        OwnedStock ownedStock = ownedStockDao.getByPortfolioIdAndStockSymbol(portfolio.getId(), stock.getSymbol()).orElseThrow(() -> new IllegalArgumentException("No owned '" + stock.getSymbol() + "' stocks in this portfolio"));
-
-        if (ownedStock.getNumberOfShares() < quantity)
-        {
-            throw new BusinessRuleException("Cannot sell more shares than is owned");
-        }
-    }
 
     private void createNewOwnedStock(UUID portfolioId, Stock stock, int numberOfShares)
     {
