@@ -49,12 +49,18 @@ public class TradingService
             Portfolio portfolio = getPortfolio(request.portfolioId());
             Stock stock = getStock(request.stockSymbol());
 
-            validateRequest(request, stock, type);
-            validateBuy(portfolio, stock, quantity);
+            ensureStockIsTradable(stock);
+            ensureTradeShareCountLargerThanZero(request);
 
-            handlePayment(portfolio, stock, quantity, type);
+            BigDecimal fee = BigDecimal.valueOf(AppConfig.getInstance().getTransactionFee());
+            BigDecimal totalPrice = stock.getCurrentPrice().multiply(BigDecimal.valueOf(quantity)).add(fee);
 
-            addSharesToOwnedStock(portfolio, stock, quantity);
+            ensureBalanceLargerThanTotalPrice(portfolio, totalPrice);
+
+            portfolio.pay(totalPrice);
+            portfolioDao.update(portfolio);
+
+            addSharesToOwnedStock(portfolio.getId(), stock, quantity);
             createTransaction(portfolio.getId(), stock, quantity, type);
 
             uow.commit();
@@ -64,6 +70,29 @@ public class TradingService
             uow.rollback();
             logger.warning("Transaction 'buyStock' failed: " + e.getMessage());
             throw new TransactionFailedException("buyStock failed", e);
+        }
+    }
+
+    private void ensureBalanceLargerThanTotalPrice(Portfolio portfolio, BigDecimal totalPrice)
+    {
+        if (portfolio.getCurrentBalance().compareTo(totalPrice) < 0)
+        {
+            throw new BusinessRuleException("Insufficient player balance to complete transaction");
+        }
+    }
+
+    private void ensureTradeShareCountLargerThanZero(BuyStockRequestDTO request)
+    {
+        if (request.quantity() < 1) {
+            throw new BusinessRuleException("Shares to trade must be a positive number");
+        }
+    }
+
+    private void ensureStockIsTradable(Stock stock)
+    {
+        Stock.State currentState = stock.getCurrentState();
+        if (currentState == Stock.State.BANKRUPT || currentState == Stock.State.RESET){
+            throw new BusinessRuleException("Stock is in state=" + currentState + ", and is not tradeable");
         }
     }
 
@@ -79,10 +108,16 @@ public class TradingService
             Portfolio portfolio = getPortfolio(request.portfolioId());
             Stock stock = getStock(request.stockSymbol());
 
+
+
+
+
+
+
             validateRequest(request, stock, type);
             validateSell(portfolio, stock, quantity);
 
-            removeSharesFromOwnedStock(portfolio, stock, quantity);
+            removeSharesFromOwnedStock(portfolio.getId(), stock, quantity);
             handlePayment(portfolio, stock, quantity, type);
             createTransaction(portfolio.getId(), stock, quantity, type);
 
@@ -103,13 +138,13 @@ public class TradingService
         transactionDao.create(transaction);
     }
 
-    private void addSharesToOwnedStock(Portfolio portfolio, Stock stock, int numberOfShares)
+    private void addSharesToOwnedStock(UUID portfolioId, Stock stock, int numberOfShares)
     {
-        Optional<OwnedStock> ownedStockOpt = ownedStockDao.getByPortfolioIdAndStockSymbol(portfolio.getId(), stock.getSymbol());
+        Optional<OwnedStock> ownedStockOpt = ownedStockDao.getByPortfolioIdAndStockSymbol(portfolioId, stock.getSymbol());
 
         if (ownedStockOpt.isEmpty())
         {
-            createNewOwnedStock(portfolio, stock, numberOfShares);
+            createNewOwnedStock(portfolioId, stock, numberOfShares);
             return;
         }
         OwnedStock ownedStock = ownedStockOpt.get();
@@ -118,9 +153,9 @@ public class TradingService
 
     }
 
-    private void removeSharesFromOwnedStock(Portfolio portfolio, Stock stock, int sharesToSell)
+    private void removeSharesFromOwnedStock(UUID portfolioId, Stock stock, int sharesToSell)
     {
-        OwnedStock ownedStock = ownedStockDao.getByPortfolioIdAndStockSymbol(portfolio.getId(), stock.getSymbol()).orElseThrow(() -> new IllegalArgumentException("No stock='" + stock.getSymbol() + "' owned"));
+        OwnedStock ownedStock = ownedStockDao.getByPortfolioIdAndStockSymbol(portfolioId, stock.getSymbol()).orElseThrow(() -> new IllegalArgumentException("No stock='" + stock.getSymbol() + "' owned"));
 
         int sharesOwned = ownedStock.getNumberOfShares();
 
@@ -191,9 +226,9 @@ public class TradingService
         }
     }
 
-    private void createNewOwnedStock(Portfolio portfolio, Stock stock, int numberOfShares)
+    private void createNewOwnedStock(UUID portfolioId, Stock stock, int numberOfShares)
     {
-        OwnedStock ownedStock = new OwnedStock(portfolio.getId(), stock.getSymbol(), numberOfShares);
+        OwnedStock ownedStock = new OwnedStock(portfolioId, stock.getSymbol(), numberOfShares);
         ownedStockDao.create(ownedStock);
     }
 
