@@ -1,7 +1,5 @@
 package business.services;
 
-import business.dto.transaction.BuyStockRequestDTO;
-import business.dto.transaction.SellStockRequestDTO;
 import business.dto.transaction.StockTransactionRequest;
 import entities.OwnedStock;
 import entities.Portfolio;
@@ -37,7 +35,7 @@ public class TradingService
         this.logger = logger;
     }
 
-    public void buyStock(BuyStockRequestDTO request)
+    public void buyStock(StockTransactionRequest request)
     {
         try
         {
@@ -49,12 +47,18 @@ public class TradingService
             Portfolio portfolio = getPortfolio(request.portfolioId());
             Stock stock = getStock(request.stockSymbol());
 
-            validateRequest(request, stock, type);
-            validateBuy(portfolio, stock, quantity);
+            ensureStockIsNotInBankruptOrResetState(stock);
+            ensureTradeShareCountLargerThanZero(request);
 
-            handlePayment(portfolio, stock, quantity, type);
+            BigDecimal fee = BigDecimal.valueOf(AppConfig.getInstance().getTransactionFee());
+            BigDecimal totalPrice = stock.getCurrentPrice().multiply(BigDecimal.valueOf(quantity)).add(fee);
 
-            addSharesToOwnedStock(portfolio, stock, quantity);
+            ensureBalanceLargerThanTotalPrice(portfolio, totalPrice);
+
+            portfolio.pay(totalPrice);
+            portfolioDao.update(portfolio);
+
+            addSharesToOwnedStock(portfolio.getId(), stock, quantity);
             createTransaction(portfolio.getId(), stock, quantity, type);
 
             uow.commit();
@@ -67,7 +71,7 @@ public class TradingService
         }
     }
 
-    public void sellStock(SellStockRequestDTO request)
+    public void sellStock(StockTransactionRequest request)
     {
         try
         {
@@ -79,11 +83,20 @@ public class TradingService
             Portfolio portfolio = getPortfolio(request.portfolioId());
             Stock stock = getStock(request.stockSymbol());
 
-            validateRequest(request, stock, type);
-            validateSell(portfolio, stock, quantity);
+            ensureStockIsNotInBankruptOrResetState(stock);
+            ensureTradeShareCountLargerThanZero(request);
+            ensurePortfolioHasStockAndAmount(portfolio.getId(), stock.getSymbol(), quantity);
 
-            removeSharesFromOwnedStock(portfolio, stock, quantity);
-            handlePayment(portfolio, stock, quantity, type);
+            removeSharesFromOwnedStock(portfolio.getId(), stock, quantity);
+
+            BigDecimal fee = BigDecimal.valueOf(AppConfig.getInstance().getTransactionFee());
+            BigDecimal proceeds = stock.getCurrentPrice().multiply(BigDecimal.valueOf(quantity)).subtract(fee);
+
+            ensureProceedsIsPositive(proceeds);
+
+            portfolio.earn(proceeds);
+            portfolioDao.update(portfolio);
+
             createTransaction(portfolio.getId(), stock, quantity, type);
 
             uow.commit();
@@ -96,6 +109,48 @@ public class TradingService
         }
     }
 
+    private void ensureBalanceLargerThanTotalPrice(Portfolio portfolio, BigDecimal totalPrice)
+    {
+        if (portfolio.getCurrentBalance().compareTo(totalPrice) < 0)
+        {
+            throw new BusinessRuleException("Insufficient player balance to complete transaction");
+        }
+    }
+
+    private void ensureTradeShareCountLargerThanZero(StockTransactionRequest request)
+    {
+        if (request.quantity() < 1) {
+            throw new BusinessRuleException("Shares to trade must be a positive number");
+        }
+    }
+
+    private void ensureStockIsNotInBankruptOrResetState(Stock stock)
+    {
+        Stock.State currentState = stock.getCurrentState();
+        if (currentState == Stock.State.BANKRUPT || currentState == Stock.State.RESET){
+            throw new BusinessRuleException("Stock is in state=" + currentState + ", and is not tradeable");
+        }
+    }
+
+    private void ensureProceedsIsPositive(BigDecimal proceeds)
+    {
+        if (proceeds.compareTo(BigDecimal.ZERO) < 0)
+        {
+            throw new BusinessRuleException("Sell proceeds cannot be negative");
+        }
+    }
+
+    private void ensurePortfolioHasStockAndAmount(UUID portfolioId, String stockSymbol, int quantity)
+    {
+        OwnedStock ownedStock = ownedStockDao.getByPortfolioIdAndStockSymbol(portfolioId, stockSymbol)
+                .orElseThrow(() -> new IllegalArgumentException("No owned '" + stockSymbol + "' stocks in this portfolio"));
+
+        if (ownedStock.getNumberOfShares() < quantity)
+        {
+            throw new BusinessRuleException("Cannot sell more shares than is owned");
+        }
+    }
+
     private void createTransaction(UUID portfolioId, Stock stock, int quantity, Transaction.Type type)
     {
         Transaction transaction = Transaction.create(portfolioId, stock.getSymbol(), type, quantity, stock.getCurrentPrice(), AppConfig.getInstance().getTransactionFee());
@@ -103,13 +158,13 @@ public class TradingService
         transactionDao.create(transaction);
     }
 
-    private void addSharesToOwnedStock(Portfolio portfolio, Stock stock, int numberOfShares)
+    private void addSharesToOwnedStock(UUID portfolioId, Stock stock, int numberOfShares)
     {
-        Optional<OwnedStock> ownedStockOpt = ownedStockDao.getByPortfolioIdAndStockSymbol(portfolio.getId(), stock.getSymbol());
+        Optional<OwnedStock> ownedStockOpt = ownedStockDao.getByPortfolioIdAndStockSymbol(portfolioId, stock.getSymbol());
 
         if (ownedStockOpt.isEmpty())
         {
-            createNewOwnedStock(portfolio, stock, numberOfShares);
+            createNewOwnedStock(portfolioId, stock, numberOfShares);
             return;
         }
         OwnedStock ownedStock = ownedStockOpt.get();
@@ -118,9 +173,9 @@ public class TradingService
 
     }
 
-    private void removeSharesFromOwnedStock(Portfolio portfolio, Stock stock, int sharesToSell)
+    private void removeSharesFromOwnedStock(UUID portfolioId, Stock stock, int sharesToSell)
     {
-        OwnedStock ownedStock = ownedStockDao.getByPortfolioIdAndStockSymbol(portfolio.getId(), stock.getSymbol()).orElseThrow(() -> new IllegalArgumentException("No stock='" + stock.getSymbol() + "' owned"));
+        OwnedStock ownedStock = ownedStockDao.getByPortfolioIdAndStockSymbol(portfolioId, stock.getSymbol()).orElseThrow(() -> new IllegalArgumentException("No stock='" + stock.getSymbol() + "' owned"));
 
         int sharesOwned = ownedStock.getNumberOfShares();
 
@@ -136,64 +191,10 @@ public class TradingService
         }
     }
 
-    private void handlePayment(Portfolio portfolio, Stock stock, int numberOfShares, Transaction.Type type)
+
+    private void createNewOwnedStock(UUID portfolioId, Stock stock, int numberOfShares)
     {
-        BigDecimal fee = BigDecimal.valueOf(AppConfig.getInstance().getTransactionFee());
-        BigDecimal amount = stock.getCurrentPrice().multiply(BigDecimal.valueOf(numberOfShares));
-
-        if (type == Transaction.Type.BUY)
-        {
-            portfolio.pay(amount.add(fee));
-        } else
-        {
-            BigDecimal proceeds = amount.subtract(fee);
-            if (proceeds.compareTo(BigDecimal.ZERO) < 0)
-            {
-                throw new BusinessRuleException("Sell proceeds cannot be negative");
-            }
-            portfolio.earn(amount.subtract(fee));
-        }
-
-        portfolioDao.update(portfolio);
-    }
-
-    private void validateRequest(StockTransactionRequest request, Stock stock, Transaction.Type type)
-    {
-        String action = type.toString().toLowerCase();
-
-        if (stock.getCurrentState() == Stock.State.BANKRUPT || stock.getCurrentState() == Stock.State.RESET)
-        {
-            throw new BusinessRuleException("Cannot " + action + " stock in " + stock.getCurrentState() + " state");
-        }
-
-        if (request.quantity() < 1)
-            throw new IllegalArgumentException("Number of shares to " + action + " must be positive");
-    }
-
-    private void validateBuy(Portfolio portfolio, Stock stock, int quantity)
-    {
-        BigDecimal fee = BigDecimal.valueOf(AppConfig.getInstance().getTransactionFee());
-        BigDecimal total = stock.getCurrentPrice().multiply(BigDecimal.valueOf(quantity)).add(fee);
-
-        if (portfolio.getCurrentBalance().compareTo(total) < 0)
-        {
-            throw new BusinessRuleException("Insufficient player balance to complete transaction");
-        }
-    }
-
-    private void validateSell(Portfolio portfolio, Stock stock, int quantity)
-    {
-        OwnedStock ownedStock = ownedStockDao.getByPortfolioIdAndStockSymbol(portfolio.getId(), stock.getSymbol()).orElseThrow(() -> new IllegalArgumentException("No owned '" + stock.getSymbol() + "' stocks in this portfolio"));
-
-        if (ownedStock.getNumberOfShares() < quantity)
-        {
-            throw new BusinessRuleException("Cannot sell more shares than is owned");
-        }
-    }
-
-    private void createNewOwnedStock(Portfolio portfolio, Stock stock, int numberOfShares)
-    {
-        OwnedStock ownedStock = new OwnedStock(portfolio.getId(), stock.getSymbol(), numberOfShares);
+        OwnedStock ownedStock = new OwnedStock(portfolioId, stock.getSymbol(), numberOfShares);
         ownedStockDao.create(ownedStock);
     }
 

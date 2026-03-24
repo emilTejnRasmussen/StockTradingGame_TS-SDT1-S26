@@ -1,8 +1,8 @@
 package business.services;
 
+import business.dto.PageResult;
 import business.dto.PortfolioHistoryDTO;
 import entities.OwnedStock;
-import entities.Portfolio;
 import entities.Transaction;
 import persistence.interfaces.OwnedStockDao;
 import persistence.interfaces.PortfolioDao;
@@ -12,13 +12,11 @@ import shared.configuration.AppConfig;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 public class PortfolioService
 {
+    private static final int PAGINATION_MAX = 50;
     private final PortfolioDao portfolioDao;
     private final OwnedStockDao ownedStockDao;
     private final StockDao stockDao;
@@ -67,14 +65,20 @@ public class PortfolioService
         return total.setScale(4, RoundingMode.HALF_UP);
     }
 
-    public List<Transaction> getTransactionHistory(UUID portfolioId) {
-        return transactionDao.getAllFromPortfolioId(portfolioId).stream()
-                .sorted(Comparator.comparing(Transaction::timeStamp))
-                .toList();
+    public PageResult<Transaction> getTransactionHistory(UUID portfolioId, int page, int pageSize) {
+        validatePagination(page, pageSize);
+
+        List<Transaction> results = transactionDao.findTransactionsByPortfolioIdPaginated(portfolioId, page, pageSize);
+
+        int totalItems = transactionDao.countTransactionsByPortfolioId(portfolioId);
+
+        return toPageResult(results, page, pageSize, totalItems);
     }
 
-    public List<PortfolioHistoryDTO> getPortfolioHistory(UUID portfolioId) {
-        List<Transaction> transactions = getTransactionHistory(portfolioId);
+    public PageResult<PortfolioHistoryDTO> getPortfolioHistory(UUID portfolioId, int page, int pageSize) {
+        validatePagination(page, pageSize);
+
+        List<Transaction> transactions = getTransactionsSortedByOldestFirst(portfolioId);
 
         List<PortfolioHistoryDTO> history = new ArrayList<>();
 
@@ -88,11 +92,12 @@ public class PortfolioService
             history.add(new PortfolioHistoryDTO(transaction.timeStamp(), runningBalance));
         }
 
-        return history;
+        Collections.reverse(history);
+        return paginateList(history, page, pageSize);
     }
 
     public BigDecimal getTotalProfitLoss(UUID portfolioId) {
-        List<Transaction> transactions = getTransactionHistory(portfolioId);
+        List<Transaction> transactions = transactionDao.findTransactionsByPortfolioId(portfolioId);
 
         BigDecimal spent = BigDecimal.ZERO;
         BigDecimal earned = BigDecimal.ZERO;
@@ -100,12 +105,46 @@ public class PortfolioService
         for (Transaction transaction : transactions) {
             switch (transaction.type()){
                 case BUY -> spent = spent.add(transaction.getTotalPriceWithFee());
-                case SELL -> spent = earned.add(transaction.getTotalPriceFeeSubtracted());
+                case SELL -> earned = earned.add(transaction.getTotalPriceFeeSubtracted());
             }
         }
 
         return earned.subtract(spent).setScale(4, RoundingMode.HALF_UP);
     }
 
+    private <T> PageResult<T> paginateList(List<T> listToPaginate, int page, int pageSize) {
+        List<T> results = listToPaginate.stream()
+                .skip((long) page * pageSize)
+                .limit(pageSize)
+                .toList();
 
+        int totalItems = listToPaginate.size();
+
+        return toPageResult(results, page, pageSize, totalItems);
+    }
+
+    private <T> PageResult<T> toPageResult(List<T> results, int page, int pageSize, int totalItems){
+        int totalPages = (totalItems + pageSize - 1) / pageSize;
+
+        return new PageResult<>(
+                results,
+                page,
+                pageSize,
+                totalItems,
+                totalPages
+        );
+    }
+
+    private List<Transaction> getTransactionsSortedByOldestFirst(UUID portfolioId)
+    {
+        return transactionDao.findTransactionsByPortfolioId(portfolioId).stream()
+                .sorted(Comparator.comparing(Transaction::timeStamp))
+                .toList();
+    }
+
+    private void validatePagination(int page, int pageSize) {
+        if (page < 0 || pageSize <= 0 || pageSize > PAGINATION_MAX) {
+            throw new IllegalArgumentException("Invalid pagination values");
+        }
+    }
 }

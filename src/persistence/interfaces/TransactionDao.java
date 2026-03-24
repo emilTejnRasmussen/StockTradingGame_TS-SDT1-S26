@@ -12,7 +12,15 @@ public interface TransactionDao
 
     List<Transaction> getAll();
 
-    List<Transaction> getAllFromPortfolioId(UUID portfolioId);
+    List<Transaction> findTransactionsByPortfolioId(UUID portfolioId);
+
+    List<Transaction> findTransactionsByPortfolioIdPaginated(
+            UUID portfolioId,
+            int page,
+            int pageSize
+    );
+
+    int countTransactionsByPortfolioId(UUID portfolioId);
 
     Optional<Transaction> getById(UUID id);
 }

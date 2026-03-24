@@ -27,11 +27,30 @@ public class FileTransactionDao implements TransactionDao
     }
 
     @Override
-    public List<Transaction> getAllFromPortfolioId(UUID portfolioId)
+    public List<Transaction> findTransactionsByPortfolioId(UUID portfolioId)
     {
         return uow.getTransactions().stream()
                 .filter(t -> t.portfolioId().equals(portfolioId))
                 .toList();
+    }
+
+    @Override
+    public List<Transaction> findTransactionsByPortfolioIdPaginated(UUID portfolioId, int page, int pageSize)
+    {
+        return uow.getTransactions().stream()
+                .filter(t -> t.portfolioId().equals(portfolioId))
+                .sorted(Comparator.comparing(Transaction::timeStamp).reversed())
+                .skip((long) page * pageSize)
+                .limit(pageSize)
+                .toList();
+    }
+
+    @Override
+    public int countTransactionsByPortfolioId(UUID portfolioId)
+    {
+        return (int) uow.getTransactions().stream()
+                .filter(t -> t.portfolioId().equals(portfolioId))
+                .count();
     }
 
     @Override
