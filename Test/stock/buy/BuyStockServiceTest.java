@@ -42,28 +42,24 @@ public class BuyStockServiceTest {
     @Test
     void buyOneStock_WithValidAffordableStock_TransactionCreated() {
         setupBuyStock_WithValidAffordableStock();
-        // Assert
         assertEquals(1, transactionDao.getAll().size());
     }
 
     @Test
     void buyOneStock_WithValidAffordableStock_BeginCalledOnce() {
         setupBuyStock_WithValidAffordableStock();
-        // Assert
         assertEquals(1, uow.getBeginCalledAmount());
     }
 
     @Test
     void buyOneStock_WithValidAffordableStock_CommitCalledOnce() {
         setupBuyStock_WithValidAffordableStock();
-        // Assert
         assertEquals(1, uow.getCommitCalledAmount());
     }
 
     @Test
     void buyOneStock_WithValidAffordableStock_RollbackNotCalled() {
         setupBuyStock_WithValidAffordableStock();
-        // Assert
         assertEquals(0, uow.getRollbackCalledAmount());
     }
 
