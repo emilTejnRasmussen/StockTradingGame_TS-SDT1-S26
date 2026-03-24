@@ -1,7 +1,5 @@
 package business.services;
 
-import business.dto.transaction.BuyStockRequestDTO;
-import business.dto.transaction.SellStockRequestDTO;
 import business.dto.transaction.StockTransactionRequest;
 import entities.OwnedStock;
 import entities.Portfolio;
@@ -49,7 +47,7 @@ public class TradingService
             Portfolio portfolio = getPortfolio(request.portfolioId());
             Stock stock = getStock(request.stockSymbol());
 
-            ensureStockIsTradable(stock);
+            ensureStockIsNotInBankruptOrResetState(stock);
             ensureTradeShareCountLargerThanZero(request);
 
             BigDecimal fee = BigDecimal.valueOf(AppConfig.getInstance().getTransactionFee());
@@ -85,7 +83,7 @@ public class TradingService
             Portfolio portfolio = getPortfolio(request.portfolioId());
             Stock stock = getStock(request.stockSymbol());
 
-            ensureStockIsTradable(stock);
+            ensureStockIsNotInBankruptOrResetState(stock);
             ensureTradeShareCountLargerThanZero(request);
             ensurePortfolioHasStockAndAmount(portfolio.getId(), stock.getSymbol(), quantity);
 
@@ -126,7 +124,7 @@ public class TradingService
         }
     }
 
-    private void ensureStockIsTradable(Stock stock)
+    private void ensureStockIsNotInBankruptOrResetState(Stock stock)
     {
         Stock.State currentState = stock.getCurrentState();
         if (currentState == Stock.State.BANKRUPT || currentState == Stock.State.RESET){
