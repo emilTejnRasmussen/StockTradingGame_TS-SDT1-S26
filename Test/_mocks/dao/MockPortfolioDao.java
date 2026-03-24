@@ -20,7 +20,7 @@ public class MockPortfolioDao implements PortfolioDao
     {
         for (int i = 0; i < portfolios.size(); i++)
         {
-            if (portfolio.getId() == portfolios.get(i).getId()){
+            if (portfolio.getId().equals(portfolios.get(i).getId())){
                 portfolios.set(i, portfolio);
                 return;
             }

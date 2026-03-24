@@ -20,9 +20,10 @@ public class MockOwnedStockDao implements OwnedStockDao
     {
         for (int i = 0; i < ownedStocks.size(); i++)
         {
-            if (ownedStock.getId() == ownedStocks.get(i).getId())
+            if (ownedStock.getId().equals(ownedStocks.get(i).getId()))
             {
                 ownedStocks.set(i, ownedStock);
+                return;
             }
         }
 
