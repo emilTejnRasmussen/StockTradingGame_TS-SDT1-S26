@@ -2,7 +2,6 @@ package business.services;
 
 import business.dto.PortfolioHistoryDTO;
 import entities.OwnedStock;
-import entities.Portfolio;
 import entities.Transaction;
 import persistence.interfaces.OwnedStockDao;
 import persistence.interfaces.PortfolioDao;
@@ -19,6 +18,7 @@ import java.util.UUID;
 
 public class PortfolioService
 {
+    public static final int PAGINATION_MAX = 25;
     private final PortfolioDao portfolioDao;
     private final OwnedStockDao ownedStockDao;
     private final StockDao stockDao;
@@ -68,13 +68,12 @@ public class PortfolioService
     }
 
     public List<Transaction> getTransactionHistory(UUID portfolioId) {
-        return transactionDao.getAllFromPortfolioId(portfolioId).stream()
-                .sorted(Comparator.comparing(Transaction::timeStamp))
-                .toList();
+        List<Transaction> transactions = getTransactionsSortedByOldestFirst(portfolioId);
+        return paginateList(transactions.reversed());
     }
 
     public List<PortfolioHistoryDTO> getPortfolioHistory(UUID portfolioId) {
-        List<Transaction> transactions = getTransactionHistory(portfolioId);
+        List<Transaction> transactions = getTransactionsSortedByOldestFirst(portfolioId);
 
         List<PortfolioHistoryDTO> history = new ArrayList<>();
 
@@ -88,11 +87,11 @@ public class PortfolioService
             history.add(new PortfolioHistoryDTO(transaction.timeStamp(), runningBalance));
         }
 
-        return history;
+        return paginateList(history.reversed());
     }
 
     public BigDecimal getTotalProfitLoss(UUID portfolioId) {
-        List<Transaction> transactions = getTransactionHistory(portfolioId);
+        List<Transaction> transactions = getTransactionsSortedByOldestFirst(portfolioId);
 
         BigDecimal spent = BigDecimal.ZERO;
         BigDecimal earned = BigDecimal.ZERO;
@@ -100,12 +99,23 @@ public class PortfolioService
         for (Transaction transaction : transactions) {
             switch (transaction.type()){
                 case BUY -> spent = spent.add(transaction.getTotalPriceWithFee());
-                case SELL -> spent = earned.add(transaction.getTotalPriceFeeSubtracted());
+                case SELL -> earned = earned.add(transaction.getTotalPriceFeeSubtracted());
             }
         }
 
         return earned.subtract(spent).setScale(4, RoundingMode.HALF_UP);
     }
 
+    private <T> List<T> paginateList(List<T> listToPaginate) {
+        int paginationAmount = Math.min(PAGINATION_MAX, listToPaginate.size());
+        return new ArrayList<>(listToPaginate.subList(0, paginationAmount));
+    }
 
+
+    private List<Transaction> getTransactionsSortedByOldestFirst(UUID portfolioId)
+    {
+        return transactionDao.getAllFromPortfolioId(portfolioId).stream()
+                .sorted(Comparator.comparing(Transaction::timeStamp))
+                .toList();
+    }
 }
