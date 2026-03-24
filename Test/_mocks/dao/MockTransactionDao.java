@@ -22,11 +22,30 @@ public class MockTransactionDao implements TransactionDao
     }
 
     @Override
-    public List<Transaction> getAllFromPortfolioId(UUID portfolioId)
+    public List<Transaction> findTransactionsByPortfolioId(UUID portfolioId)
     {
         return transactions.stream()
                 .filter(t -> t.portfolioId().equals(portfolioId))
                 .toList();
+    }
+
+    @Override
+    public List<Transaction> findTransactionsByPortfolioIdPaginated(UUID portfolioId, int page, int pageSize)
+    {
+        return transactions.stream()
+                .filter(t -> t.portfolioId().equals(portfolioId))
+                .sorted(Comparator.comparing(Transaction::timeStamp).reversed())
+                .skip((long) page * pageSize)
+                .limit(pageSize)
+                .toList();
+    }
+
+    @Override
+    public int countTransactionsByPortfolioId(UUID portfolioId)
+    {
+        return (int) transactions.stream()
+                .filter(t -> t.portfolioId().equals(portfolioId))
+                .count();
     }
 
     @Override

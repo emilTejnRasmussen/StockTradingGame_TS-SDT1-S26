@@ -25,6 +25,9 @@ public class BuyStockServiceTest {
     private TransactionDao transactionDao;
     private OwnedStockDao ownedStockDao;
 
+    private Stock stock;
+    private Portfolio portfolio;
+
     private TradingService tradingService;
 
     @BeforeEach
@@ -63,12 +66,21 @@ public class BuyStockServiceTest {
         assertEquals(0, uow.getRollbackCalledAmount());
     }
 
+    @Test
+    void buyOneStock_WithValidAffordableStock_PortfolioBalanceReducedByStockPrice() {
+        setupBuyStock_WithValidAffordableStock();
+
+        assertEquals(BigDecimal.valueOf(1000.0).subtract(BigDecimal.valueOf(100.0)), portfolio.getCurrentBalance());
+    }
+
+
+
     private void setupBuyStock_WithValidAffordableStock()
     {
         // Arrange
         UUID portfolioId = UUID.randomUUID();
-        Stock stock = new Stock("AAPL", "Apple", BigDecimal.valueOf(100.0));
-        Portfolio portfolio = new Portfolio(portfolioId, BigDecimal.valueOf(1000.0));
+        stock = new Stock("AAPL", "Apple", BigDecimal.valueOf(100.0));
+        portfolio = new Portfolio(portfolioId, BigDecimal.valueOf(1000.0));
 
         stockDao.create(stock);
         portfolioDao.create(portfolio);
