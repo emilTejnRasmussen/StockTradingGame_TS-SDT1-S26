@@ -5,7 +5,9 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.paint.Color;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 
 import java.io.IOException;
 import java.util.Objects;
@@ -17,15 +19,18 @@ public class ViewManager {
 
     public static void setStage(Stage primaryStage) {
         stage = primaryStage;
+        stage.initStyle(StageStyle.TRANSPARENT);
     }
 
 
     public static void showScene(Views view) {
         try {
             Parent root = load(view);
-            stage.setScene(new Scene(root));
+            Scene scene = new Scene(root);
+            scene.setFill(Color.TRANSPARENT);
+            stage.setScene(scene);
+            stage.centerOnScreen();
             stage.show();
-
 
             if (root instanceof BorderPane borderPane) {
                 mainLayout = borderPane;

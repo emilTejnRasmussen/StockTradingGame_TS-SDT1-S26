@@ -1,0 +1,7 @@
+.app-root {
+    -fx-background-color: #222831;
+    -fx-background-radius: 30px;
+    -fx-border-radius: 21px;
+    -fx-border-color: #4b3425;
+    -fx-border-width: 3px;
+}

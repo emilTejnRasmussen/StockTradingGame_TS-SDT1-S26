@@ -19,6 +19,8 @@
 .menu {
     -fx-max-width: 80px;
     -fx-background-color: menu-bg;
+    -fx-background-radius: 18px;
+    -fx-border-radius: 18px;
 }
 
 .menu-title-box {
