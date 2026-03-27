@@ -1,5 +1,6 @@
 package presentation.views.leftmenu;
 
+import business.services.GameService;
 import javafx.application.Platform;
 import javafx.scene.Node;
 import javafx.scene.Parent;
@@ -15,6 +16,13 @@ import java.util.Objects;
 
 public class MainLeftMenuViewModel
 {
+    private final GameService gameService;
+
+    public MainLeftMenuViewModel(GameService gameService)
+    {
+        this.gameService = gameService;
+    }
+
     public void logoClicked()
     {
         System.out.println("Logo clicked");
@@ -34,6 +42,7 @@ public class MainLeftMenuViewModel
 
     public void exitClicked()
     {
+        gameService.stopGame();
         Platform.exit();
     }
 

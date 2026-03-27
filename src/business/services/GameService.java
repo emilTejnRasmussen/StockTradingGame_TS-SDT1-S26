@@ -19,6 +19,8 @@ public class GameService
     private final OwnedStockDao ownedStockDao;
     private final MarketTicker marketTicker;
 
+    private final StockListenerService stockListenerService;
+
     public GameService(UnitOfWork uow, PortfolioDao portfolioDao, StockDao stockDao, StockPriceHistoryDao stockPriceHistoryDao, OwnedStockDao ownedStockDao)
     {
         this.uow = uow;
@@ -27,6 +29,8 @@ public class GameService
         this.stockPriceHistoryDao = stockPriceHistoryDao;
         this.ownedStockDao = ownedStockDao;
         this.marketTicker = new MarketTicker();
+
+        this.stockListenerService = new StockListenerService(uow, stockDao, stockPriceHistoryDao);
     }
 
     public void startGame() {
@@ -37,11 +41,10 @@ public class GameService
 
         StockMarket stockMarket = StockMarket.getInstance();
 
-        StockListenerService listenerService = new StockListenerService(uow, stockDao, stockPriceHistoryDao);
         StockAlertService alertService = new StockAlertService();
         StockBankruptService stockBankruptService = new StockBankruptService(uow, ownedStockDao);
 
-        stockMarket.addListener(listenerService);
+        stockMarket.addListener(stockListenerService);
         stockMarket.addListener(alertService);
         stockMarket.addListener(stockBankruptService);
 
@@ -64,5 +67,10 @@ public class GameService
 
     public void stopGame() {
         marketTicker.stopLiveStockUpdates();
+    }
+
+    public StockListenerService getStockListenerService()
+    {
+        return stockListenerService;
     }
 }
