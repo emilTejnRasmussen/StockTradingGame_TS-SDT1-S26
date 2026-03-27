@@ -5,7 +5,7 @@ public class Logger
     private static volatile Logger instance;
     private volatile LogOutput output;
 
-    private Logger() {
+    protected Logger() {
         this.output = new ConsoleLogOutput();
     }
 
