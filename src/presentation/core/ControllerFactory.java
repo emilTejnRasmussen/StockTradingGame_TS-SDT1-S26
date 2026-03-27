@@ -2,6 +2,7 @@ package presentation.core;
 
 import javafx.util.Callback;
 import presentation.views.leftmenu.MainLeftMenuController;
+import presentation.views.leftmenu.MainLeftMenuViewModel;
 import presentation.views.mainmenu.MainMenuController;
 import presentation.views.mainmenu.MainMenuViewModel;
 
@@ -19,7 +20,8 @@ public class ControllerFactory implements Callback<Class<?>, Object>
         }
 
         if (controllerType == MainLeftMenuController.class) {
-            return new MainLeftMenuController();
+            MainLeftMenuViewModel mainLeftMenuViewModel = new MainLeftMenuViewModel();
+            return new MainLeftMenuController(mainLeftMenuViewModel);
         }
 
         throw new RuntimeException("Controller of type '" + controllerType.getSimpleName() + "' is not supported!");
