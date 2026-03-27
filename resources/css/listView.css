@@ -1,0 +1,29 @@
+.list-view {
+    -fx-background-color: rgba(255,255,255,0.02);
+    -fx-background-radius: 14px;
+    -fx-border-radius: 14px;
+    -fx-padding: 8px;
+}
+
+.list-view .viewport {
+    -fx-background-color: transparent;
+}
+
+.list-cell {
+    -fx-background-color: transparent;
+    -fx-text-fill: #d6d3d1;
+    -fx-font-size: 13px;
+    -fx-padding: 12px 16px;
+    -fx-background-radius: 12px;
+}
+
+.list-cell:filled:hover {
+    -fx-background-color: rgba(255,255,255,0.06);
+    -fx-text-fill: white;
+}
+
+.list-cell:filled:selected {
+    -fx-background-color: #f97316;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+}
