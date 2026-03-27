@@ -3,7 +3,10 @@ package presentation.core;
 public enum Views
 {
     MAIN_MENU("MainMenu"),
-    MAIN_LEFT_MENU("MainLeftMenu");
+    MAIN_LEFT_MENU("MainLeftMenu"),
+
+    PORTFOLIO("Portfolio"),
+    STOCK_MARKET("StockMarket");
 
 
     private final String view;

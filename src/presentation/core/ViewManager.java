@@ -51,6 +51,7 @@ public class ViewManager {
             mainLayout.setCenter(centerView);
         } catch (IOException e) {
             showError(view, e);
+            e.printStackTrace();
         }
     }
 

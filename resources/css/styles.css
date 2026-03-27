@@ -1,7 +1,35 @@
+* {
+    main-bg-color: linear-gradient(
+            to bottom right,
+            #14110f 0%,
+            #171615 40%,
+            #1c1d21 75%,
+            #22262d 100%
+    );
+
+    main-border-color: #4b3425;
+
+    pane-bg-color: #FFFFFF0F;
+    pane-border-color: #FFFFFF1A;
+
+}
+
 .app-root {
-    -fx-background-color: #222831;
+    -fx-background-color: main-bg-color;
     -fx-background-radius: 30px;
     -fx-border-radius: 21px;
-    -fx-border-color: #4b3425;
+    -fx-border-color: main-border-color;
     -fx-border-width: 3px;
+}
+
+.app-pane {
+    -fx-background-color: pane-bg-color;
+    -fx-background-radius: 18;
+    -fx-border-color: pane-border-color;
+    -fx-border-radius: 18;
+    -fx-max-width: infinity;
+}
+.app-center-root {
+    -fx-fill-width: true;
+    -fx-max-width: infinity;
 }

@@ -8,6 +8,8 @@ import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.VBox;
+import presentation.core.ViewManager;
+import presentation.core.Views;
 
 import java.util.Objects;
 
@@ -21,11 +23,13 @@ public class MainLeftMenuViewModel
     public void portfolioClicked()
     {
         System.out.println("Changed view to portfolio");
+        ViewManager.setCenter(Views.PORTFOLIO);
     }
 
     public void stockMarketClicked()
     {
         System.out.println("Changed view to stock market");
+        ViewManager.setCenter(Views.STOCK_MARKET);
     }
 
     public void exitClicked()
