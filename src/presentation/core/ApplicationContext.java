@@ -1,38 +1,95 @@
 package presentation.core;
 
-import business.services.*;
-import persistence.fileImplementation.*;
-import persistence.interfaces.*;
+import business.services.GameService;
+import business.services.PortfolioService;
+import business.services.StockHistoryService;
+import business.services.TradingService;
+import persistence.fileImplementation.FileOwnedStockDao;
+import persistence.fileImplementation.FilePortfolioDao;
+import persistence.fileImplementation.FileStockDao;
+import persistence.fileImplementation.FileStockPriceHistoryDao;
+import persistence.fileImplementation.FileTransactionDao;
+import persistence.fileImplementation.FileUnitOfWork;
+import persistence.interfaces.OwnedStockDao;
+import persistence.interfaces.PortfolioDao;
+import persistence.interfaces.StockDao;
+import persistence.interfaces.StockPriceHistoryDao;
+import persistence.interfaces.TransactionDao;
 import presentation.views.leftmenu.MainLeftMenuViewModel;
 import presentation.views.mainmenu.MainMenuViewModel;
 import presentation.views.portfolio.PortfolioViewModel;
 import presentation.views.stockmarket.StockMarketViewModel;
 import shared.logging.Logger;
 
+import java.util.UUID;
+
 public class ApplicationContext
 {
-    private static volatile ApplicationContext instance;
+    private static ApplicationContext instance;
+
+    private final FileUnitOfWork uow;
+
+    private final PortfolioDao portfolioDao;
+    private final StockDao stockDao;
+    private final StockPriceHistoryDao stockPriceHistoryDao;
+    private final OwnedStockDao ownedStockDao;
+    private final TransactionDao transactionDao;
 
     private final GameService gameService;
+    private final PortfolioService portfolioService;
+    private final TradingService tradingService;
+    private final StockHistoryService stockHistoryService;
+
+    private final StockMarketViewModel stockMarketViewModel;
+    private final MainMenuViewModel mainMenuViewModel;
+    private final MainLeftMenuViewModel mainLeftMenuViewModel;
 
     private ApplicationContext()
     {
-        UnitOfWork uow = createUow();
+        uow = new FileUnitOfWork("data/");
 
-        PortfolioDao portfolioDao = createPortfolioDao(uow);
-        StockDao stockDao = createStockDao(uow);
-        StockPriceHistoryDao stockPriceHistoryDao = createStockPriceHistoryDao(uow);
-        OwnedStockDao ownedStockDao = createOwnedStockDao(uow);
+        portfolioDao = new FilePortfolioDao(uow);
+        stockDao = new FileStockDao(uow);
+        stockPriceHistoryDao = new FileStockPriceHistoryDao(uow);
+        ownedStockDao = new FileOwnedStockDao(uow);
+        transactionDao = new FileTransactionDao(uow);
 
-        this.gameService = new GameService(
+        portfolioService = new PortfolioService(
+                portfolioDao,
+                ownedStockDao,
+                stockDao,
+                transactionDao
+        );
+
+        tradingService = new TradingService(
+                uow,
+                stockDao,
+                portfolioDao,
+                transactionDao,
+                ownedStockDao,
+                Logger.getInstance()
+        );
+
+        stockHistoryService = new StockHistoryService(stockPriceHistoryDao);
+
+        gameService = new GameService(
                 uow,
                 portfolioDao,
                 stockDao,
                 stockPriceHistoryDao,
                 ownedStockDao
         );
-    }
 
+        stockMarketViewModel = new StockMarketViewModel(
+                gameService.getStockListenerService(),
+                stockHistoryService,
+                portfolioService,
+                tradingService
+        );
+
+        mainMenuViewModel = new MainMenuViewModel(gameService, portfolioService);
+        mainLeftMenuViewModel = new MainLeftMenuViewModel(gameService);
+    }
 
     public static ApplicationContext getInstance()
     {
@@ -48,99 +105,26 @@ public class ApplicationContext
                 }
             }
         }
-
         return result;
     }
 
-    private OwnedStockDao createOwnedStockDao(UnitOfWork uow)
+    public MainMenuViewModel getMainMenuViewModel()
     {
-        return new FileOwnedStockDao((FileUnitOfWork) uow);
-    }
-
-    private StockPriceHistoryDao createStockPriceHistoryDao(UnitOfWork uow)
-    {
-        return new FileStockPriceHistoryDao((FileUnitOfWork) uow);
-    }
-
-    private StockDao createStockDao(UnitOfWork uow)
-    {
-        return new FileStockDao((FileUnitOfWork) uow);
-    }
-
-    private PortfolioDao createPortfolioDao(UnitOfWork uow)
-    {
-        return new FilePortfolioDao((FileUnitOfWork) uow);
-    }
-
-    private UnitOfWork createUow()
-    {
-        return new FileUnitOfWork("data/");
-    }
-
-    private StockPriceHistoryDao createStockPriceHistoryDao()
-    {
-        return new FileStockPriceHistoryDao((FileUnitOfWork) createUow());
-    }
-
-    private StockHistoryService createStockHistoryService()
-    {
-        return new StockHistoryService(createStockPriceHistoryDao());
-    }
-
-    public StockMarketViewModel getStockMarketViewModel()
-    {
-        return new StockMarketViewModel(
-                gameService.getStockListenerService(),
-                createStockHistoryService(),
-                createPortfolioService(),
-                createTradingService()
-        );
-    }
-
-    private TradingService createTradingService()
-    {
-        UnitOfWork uow = createUow();
-        return new TradingService(
-                uow,
-                createStockDao(uow),
-                createPortfolioDao(uow),
-                createTransactionsDao(uow),
-                createOwnedStockDao(uow),
-                createLogger()
-        );
-    }
-
-    private Logger createLogger()
-    {
-        return Logger.getInstance();
-    }
-
-    private PortfolioService createPortfolioService()
-    {
-        return new PortfolioService(createPortfolioDao(
-                createUow()),
-                createOwnedStockDao(createUow()),
-                createStockDao(createUow()),
-                createTransactionsDao(createUow()));
-    }
-
-    private TransactionDao createTransactionsDao(UnitOfWork uow)
-    {
-        return new FileTransactionDao((FileUnitOfWork) uow);
+        return mainMenuViewModel;
     }
 
     public MainLeftMenuViewModel getMainLeftMenuViewModel()
     {
-        return new MainLeftMenuViewModel(gameService);
+        return mainLeftMenuViewModel;
+    }
+
+    public StockMarketViewModel getStockMarketViewModel()
+    {
+        return stockMarketViewModel;
     }
 
     public PortfolioViewModel getPortfolioViewModel()
     {
         return new PortfolioViewModel();
-    }
-
-    public MainMenuViewModel getMainMenuViewModel()
-    {
-        return new MainMenuViewModel(gameService, createPortfolioService());
     }
 }

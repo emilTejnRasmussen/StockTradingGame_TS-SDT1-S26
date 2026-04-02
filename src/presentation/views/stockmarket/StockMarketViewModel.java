@@ -12,6 +12,8 @@ import entities.StockPriceHistory;
 import javafx.application.Platform;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.chart.XYChart;
@@ -28,6 +30,13 @@ public class StockMarketViewModel implements PropertyChangeListener
     private final StockHistoryService stockHistoryService;
     private final PortfolioService portfolioService;
     private final TradingService tradingService;
+
+    private final StringProperty totalPL = new SimpleStringProperty("");
+    private final StringProperty ownedStocks = new SimpleStringProperty("");
+    private final StringProperty totalShares = new SimpleStringProperty("");
+    private final StringProperty holdingsValue = new SimpleStringProperty("");
+    private final StringProperty cashBalance = new SimpleStringProperty("");
+    private final StringProperty netWorth = new SimpleStringProperty("");
 
     private final ObservableList<StockDTO> stocks = FXCollections.observableArrayList();
     private final ObservableList<XYChart.Series<Number, Number>> chartSeries = FXCollections.observableArrayList();
@@ -107,6 +116,7 @@ public class StockMarketViewModel implements PropertyChangeListener
             }
 
             refreshOwnedStocks();
+            updatePortfolioInfo();
         });
     }
 
@@ -123,7 +133,25 @@ public class StockMarketViewModel implements PropertyChangeListener
         Platform.runLater(() -> {
             updateStockInTable(updatedStock);
             appendToSeries(updatedStock);
+            updatePortfolioInfo();
         });
+    }
+
+    private void updatePortfolioInfo()
+    {
+        String newCashBalance = String.format("%.2f ¤", portfolioService.getPortfolioBalance(portfolioId));
+        String newNetWorth = String.format("%.2f ¤", portfolioService.getTotalPortfolioValue(portfolioId));
+        String newTotalPL = String.format("%.2f ¤", portfolioService.getTotalProfitLoss(portfolioId));
+        String newOwnedStocks = String.format("%d", portfolioService.getOwnedStocks(portfolioId).size());
+        String newTotalShares = String.format("%d", portfolioService.getTotalNumberOfShares(portfolioId));
+        String newHoldingsValue = String.format("%.2f ¤", portfolioService.getHoldingsValue(portfolioId));
+
+        cashBalance.set(newCashBalance);
+        netWorth.set(newNetWorth);
+        totalPL.set(newTotalPL);
+        ownedStocks.set(newOwnedStocks);
+        totalShares.set(newTotalShares);
+        holdingsValue.set(newHoldingsValue);
     }
 
     private void updateStockInTable(StockDTO updatedStock)
@@ -174,48 +202,49 @@ public class StockMarketViewModel implements PropertyChangeListener
         }
     }
 
-    public void dispose()
+    public IntegerProperty ownedQuantityProperty(String stockSymbol)
     {
-        stockListenerService.removeListener(this);
-    }
-
-    public IntegerProperty ownedQuantityProperty(String stockSymbol) {
         return ownedBySymbol.computeIfAbsent(stockSymbol, _ -> new SimpleIntegerProperty(0));
     }
 
-    public int getOwnedQuantity(String stockSymbol) {
-        return ownedQuantityProperty(stockSymbol).get();
-    }
-
-    public void refreshOwnedStocks() {
+    public void refreshOwnedStocks()
+    {
         Map<String, Integer> latest = new HashMap<>();
 
-        if (portfolioId != null) {
-            for (OwnedStock os : portfolioService.getOwnedStocks(portfolioId)) {
+        if (portfolioId != null)
+        {
+            for (OwnedStock os : portfolioService.getOwnedStocks(portfolioId))
+            {
                 latest.put(os.getStockSymbol(), os.getNumberOfShares());
             }
         }
 
         Runnable applyUpdate = () -> {
-            for (String symbol : latest.keySet()) {
+            for (String symbol : latest.keySet())
+            {
                 ownedQuantityProperty(symbol).set(latest.get(symbol));
             }
 
-            for (String symbol : ownedBySymbol.keySet()) {
-                if (!latest.containsKey(symbol)) {
+            for (String symbol : ownedBySymbol.keySet())
+            {
+                if (!latest.containsKey(symbol))
+                {
                     ownedBySymbol.get(symbol).set(0);
                 }
             }
         };
 
-        if (Platform.isFxApplicationThread()) {
+        if (Platform.isFxApplicationThread())
+        {
             applyUpdate.run();
-        } else {
+        } else
+        {
             Platform.runLater(applyUpdate);
         }
     }
 
-    public void setPortfolioId(UUID portfolioId) {
+    public void setPortfolioId(UUID portfolioId)
+    {
         this.portfolioId = portfolioId;
     }
 
@@ -223,12 +252,14 @@ public class StockMarketViewModel implements PropertyChangeListener
     {
         SellStockRequestDTO request = new SellStockRequestDTO(stock.symbol(), portfolioId, 1);
 
-        try {
+        try
+        {
             tradingService.sellStock(request);
 
             IntegerProperty property = ownedQuantityProperty(stock.symbol());
             property.set(Math.max(0, property.get() - 1));
-        } catch (Exception ignored) {
+        } catch (Exception ignored)
+        {
             // TODO - show error popup
         }
     }
@@ -238,13 +269,45 @@ public class StockMarketViewModel implements PropertyChangeListener
     {
         BuyStockRequestDTO request = new BuyStockRequestDTO(stock.symbol(), portfolioId, 1);
 
-        try {
+        try
+        {
             tradingService.buyStock(request);
 
             IntegerProperty property = ownedQuantityProperty(stock.symbol());
             property.set(property.get() + 1);
-        } catch (Exception ignored) {
+        } catch (Exception ignored)
+        {
             // TODO - show error popup
         }
+    }
+
+    public StringProperty totalPLProperty()
+    {
+        return totalPL;
+    }
+
+    public StringProperty ownedStocksProperty()
+    {
+        return ownedStocks;
+    }
+
+    public StringProperty totalSharesProperty()
+    {
+        return totalShares;
+    }
+
+    public StringProperty holdingsValueProperty()
+    {
+        return holdingsValue;
+    }
+
+    public StringProperty cashBalanceProperty()
+    {
+        return cashBalance;
+    }
+
+    public StringProperty netWorthProperty()
+    {
+        return netWorth;
     }
 }

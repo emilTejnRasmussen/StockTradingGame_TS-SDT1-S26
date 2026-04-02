@@ -1,7 +1,6 @@
 package presentation.views.stockmarket;
 
 import business.dto.StockDTO;
-import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.fxml.FXML;
@@ -59,6 +58,7 @@ public class StockMarketController
     {
         setupTable();
         setupChart();
+        setupPortfolioInfoLabels();
 
         stockTableView.setItems(viewModel.getStocks());
         stockMarketChart.setData(viewModel.getChartSeries());
@@ -89,8 +89,9 @@ public class StockMarketController
         sellCol.setCellFactory(col -> new TableCell<>() {
             private final Button sellButton = new Button("Sell");
             private String currentSymbol;
-
             {
+                sellButton.getStyleClass().add("sell-button");
+
                 sellButton.setOnAction(event -> {
                     StockDTO stock = getTableRow().getItem();
                     if (stock != null) {
@@ -137,8 +138,9 @@ public class StockMarketController
     {
         buyCol.setCellFactory(col -> new TableCell<>() {
             private final Button buyButton = new Button("Buy");
-
             {
+                buyButton.getStyleClass().add("buy-button");
+
                 buyButton.setOnAction(event -> {
                     StockDTO stock = getTableRow().getItem();
                     if (stock != null) {
@@ -170,9 +172,20 @@ public class StockMarketController
         stockMarketChart.setCreateSymbols(false);
         stockMarketChart.setLegendVisible(true);
     }
-
-    public void dispose()
+    private void setupPortfolioInfoLabels()
     {
-        viewModel.dispose();
+        totalPLLbl.textProperty().bind(viewModel.totalPLProperty());
+        ownedStocksLbl.textProperty().bind(viewModel.ownedStocksProperty());
+        totalSharesLbl.textProperty().bind(viewModel.totalSharesProperty());
+        holdingsValueLbl.textProperty().bind(viewModel.holdingsValueProperty());
+        cashBalanceLbl.textProperty().bind(viewModel.cashBalanceProperty());
+        netWorthLbl.textProperty().bind(viewModel.netWorthProperty());
+
+
+        viewModel.netWorthProperty().addListener((obs, oldVal, newVal) ->
+                System.out.println("VM netWorth changed: " + oldVal + " -> " + newVal));
+
+        netWorthLbl.textProperty().addListener((obs, oldVal, newVal) ->
+                System.out.println("LABEL netWorth changed: " + oldVal + " -> " + newVal));
     }
 }

@@ -32,10 +32,10 @@
             <TableView fx:id="stockTableView" prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS">
                 <columns>
                     <TableColumn fx:id="symbolCol" prefWidth="75.0" text="Symbol" />
-                    <TableColumn fx:id="priceCol" minWidth="-1.0" prefWidth="120.0" text="Price" />
+                    <TableColumn fx:id="priceCol" minWidth="-1.0" text="Price" />
                <TableColumn fx:id="ownedCol" prefWidth="75.0" text="Owned" />
-                    <TableColumn fx:id="buyCol" prefWidth="75.0" />
-               <TableColumn fx:id="sellCol" prefWidth="75.0" />
+                    <TableColumn fx:id="buyCol" />
+               <TableColumn fx:id="sellCol" />
                 </columns>
             </TableView>
         </VBox>
@@ -63,12 +63,12 @@
                     <Label fx:id="totalPLLbl" styleClass="portfolio-value" text="TOTAL_PL_VALUE" />
                 </HBox>
                 <HBox spacing="20.0" styleClass="portfolio-row">
-                    <Label prefWidth="150.0" styleClass="portfolio-label" text="Ownend Stocks"/>
-                    <Label fx:id="ownedStocksLbl" styleClass="portfolio-value" text="OWNED_STOCKS_VALUE"/>
+                    <Label prefWidth="150.0" styleClass="portfolio-label" text="Ownend Stocks" />
+                    <Label fx:id="ownedStocksLbl" styleClass="portfolio-value" text="OWNED_STOCKS_VALUE" />
                 </HBox>
                 <HBox spacing="20.0" styleClass="portfolio-row">
-                    <Label prefWidth="150.0" styleClass="portfolio-label" text="Total Shares"/>
-                    <Label fx:id="totalSharesLbl" styleClass="portfolio-value" text="TOTAL_SHARES_VALUE"/>
+                    <Label prefWidth="150.0" styleClass="portfolio-label" text="Total Shares" />
+                    <Label fx:id="totalSharesLbl" styleClass="portfolio-value" text="TOTAL_SHARES_VALUE" />
                 </HBox>
             </VBox>
          <padding>

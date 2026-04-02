@@ -30,50 +30,69 @@ public class PortfolioService
         this.transactionDao = transactionDao;
     }
 
-    public List<OwnedStock> getOwnedStocks(UUID portfolioId) {
+    public List<OwnedStock> getOwnedStocks(UUID portfolioId)
+    {
         return ownedStockDao.getAllByPortfolioId(portfolioId);
     }
 
-    public int getNumberOfSharesOwned(UUID portfolioId, String stockSymbol) {
+    public int getNumberOfSharesOwned(UUID portfolioId, String stockSymbol)
+    {
         return ownedStockDao.getByPortfolioIdAndStockSymbol(portfolioId, stockSymbol)
                 .orElseThrow(() -> new IllegalArgumentException("No owned stock=" + stockSymbol + " found in portfolio"))
                 .getNumberOfShares();
     }
 
-    public boolean hasCreatedPortfolio() {
+    public boolean hasCreatedPortfolio()
+    {
         return !portfolioDao.getAll().isEmpty();
     }
 
-    public UUID getFirstPortfolioID() {
+    public UUID getFirstPortfolioID()
+    {
         return portfolioDao.getAll().getFirst().getId();
     }
 
-    public BigDecimal getPortfolioBalance(UUID portfolioId) {
+    public BigDecimal getPortfolioBalance(UUID portfolioId)
+    {
         return portfolioDao.getById(portfolioId)
                 .orElseThrow(() -> new IllegalArgumentException("No portfolio with id=" + portfolioId + " found"))
                 .getCurrentBalance();
     }
 
-    public BigDecimal getTotalPortfolioValue(UUID portfolioId) {
-        BigDecimal total = getPortfolioBalance(portfolioId);
+    public int getTotalNumberOfShares(UUID portfolioId)
+    {
+        return ownedStockDao.getAllByPortfolioId(portfolioId).stream()
+                .mapToInt(OwnedStock::getNumberOfShares)
+                .sum();
+    }
 
-        List<OwnedStock> ownedStocks = getOwnedStocks(portfolioId);
+    public BigDecimal getTotalPortfolioValue(UUID portfolioId)
+    {
+        return getPortfolioBalance(portfolioId)
+                .add(getHoldingsValue(portfolioId))
+                .setScale(4, RoundingMode.HALF_UP);
+    }
 
-        for (OwnedStock ownedStock : ownedStocks){
+    public BigDecimal getHoldingsValue(UUID portfolioId)
+    {
+        BigDecimal total = BigDecimal.ZERO;
+
+        for (OwnedStock ownedStock : getOwnedStocks(portfolioId))
+        {
             BigDecimal stockPrice = stockDao.getBySymbol(ownedStock.getStockSymbol())
-                    .orElseThrow(() -> new IllegalArgumentException("No stock with symbol=" + ownedStock.getStockSymbol() + " found"))
+                    .orElseThrow(() -> new IllegalArgumentException(
+                            "No stock with symbol=" + ownedStock.getStockSymbol() + " found"))
                     .getCurrentPrice();
 
             BigDecimal shares = BigDecimal.valueOf(ownedStock.getNumberOfShares());
-
-            BigDecimal value = stockPrice.multiply(shares);
-            total = total.add(value);
+            total = total.add(stockPrice.multiply(shares));
         }
 
         return total.setScale(4, RoundingMode.HALF_UP);
     }
 
-    public PageResult<Transaction> getTransactionHistory(UUID portfolioId, int page, int pageSize) {
+    public PageResult<Transaction> getTransactionHistory(UUID portfolioId, int page, int pageSize)
+    {
         validatePagination(page, pageSize);
 
         List<Transaction> results = transactionDao.findTransactionsByPortfolioIdPaginated(portfolioId, page, pageSize);
@@ -83,7 +102,8 @@ public class PortfolioService
         return toPageResult(results, page, pageSize, totalItems);
     }
 
-    public PageResult<PortfolioHistoryDTO> getPortfolioHistory(UUID portfolioId, int page, int pageSize) {
+    public PageResult<PortfolioHistoryDTO> getPortfolioHistory(UUID portfolioId, int page, int pageSize)
+    {
         validatePagination(page, pageSize);
 
         List<Transaction> transactions = getTransactionsSortedByOldestFirst(portfolioId);
@@ -92,8 +112,10 @@ public class PortfolioService
 
         BigDecimal runningBalance = AppConfig.getInstance().getStartingBalance();
 
-        for (Transaction transaction : transactions) {
-            switch (transaction.type()){
+        for (Transaction transaction : transactions)
+        {
+            switch (transaction.type())
+            {
                 case BUY -> runningBalance = runningBalance.subtract(transaction.getTotalPriceWithFee());
                 case SELL -> runningBalance = runningBalance.add(transaction.getTotalPriceFeeSubtracted());
             }
@@ -104,23 +126,15 @@ public class PortfolioService
         return paginateList(history, page, pageSize);
     }
 
-    public BigDecimal getTotalProfitLoss(UUID portfolioId) {
-        List<Transaction> transactions = transactionDao.findTransactionsByPortfolioId(portfolioId);
-
-        BigDecimal spent = BigDecimal.ZERO;
-        BigDecimal earned = BigDecimal.ZERO;
-
-        for (Transaction transaction : transactions) {
-            switch (transaction.type()){
-                case BUY -> spent = spent.add(transaction.getTotalPriceWithFee());
-                case SELL -> earned = earned.add(transaction.getTotalPriceFeeSubtracted());
-            }
-        }
-
-        return earned.subtract(spent).setScale(4, RoundingMode.HALF_UP);
+    public BigDecimal getTotalProfitLoss(UUID portfolioId)
+    {
+        return getTotalPortfolioValue(portfolioId)
+                .subtract(AppConfig.getInstance().getStartingBalance())
+                .setScale(4, RoundingMode.HALF_UP);
     }
 
-    private <T> PageResult<T> paginateList(List<T> listToPaginate, int page, int pageSize) {
+    private <T> PageResult<T> paginateList(List<T> listToPaginate, int page, int pageSize)
+    {
         List<T> results = listToPaginate.stream()
                 .skip((long) page * pageSize)
                 .limit(pageSize)
@@ -131,7 +145,8 @@ public class PortfolioService
         return toPageResult(results, page, pageSize, totalItems);
     }
 
-    private <T> PageResult<T> toPageResult(List<T> results, int page, int pageSize, int totalItems){
+    private <T> PageResult<T> toPageResult(List<T> results, int page, int pageSize, int totalItems)
+    {
         int totalPages = (totalItems + pageSize - 1) / pageSize;
 
         return new PageResult<>(
@@ -150,8 +165,10 @@ public class PortfolioService
                 .toList();
     }
 
-    private void validatePagination(int page, int pageSize) {
-        if (page < 0 || pageSize <= 0 || pageSize > PAGINATION_MAX) {
+    private void validatePagination(int page, int pageSize)
+    {
+        if (page < 0 || pageSize <= 0 || pageSize > PAGINATION_MAX)
+        {
             throw new IllegalArgumentException("Invalid pagination values");
         }
     }
