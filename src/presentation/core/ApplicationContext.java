@@ -141,6 +141,6 @@ public class ApplicationContext
 
     public MainMenuViewModel getMainMenuViewModel()
     {
-        return new MainMenuViewModel(gameService);
+        return new MainMenuViewModel(gameService, createPortfolioService());
     }
 }

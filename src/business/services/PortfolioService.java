@@ -40,6 +40,10 @@ public class PortfolioService
                 .getNumberOfShares();
     }
 
+    public boolean hasCreatedPortfolio() {
+        return !portfolioDao.getAll().isEmpty();
+    }
+
     public UUID getFirstPortfolioID() {
         return portfolioDao.getAll().getFirst().getId();
     }

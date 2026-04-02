@@ -7,7 +7,13 @@ import business.stockmarket.MarketTicker;
 import business.stockmarket.StockMarket;
 import entities.Portfolio;
 import entities.Stock;
+import persistence.fileImplementation.FileUnitOfWork;
 import persistence.interfaces.*;
+import shared.configuration.AppConfig;
+import shared.logging.Logger;
+
+import java.io.FileWriter;
+import java.io.IOException;
 
 public class GameService
 {
@@ -33,12 +39,25 @@ public class GameService
         this.stockListenerService = new StockListenerService(uow, stockDao, stockPriceHistoryDao);
     }
 
-    public void startGame() {
+    public void startGame()
+    {
+        resetGame();
+
         uow.begin();
 
         Portfolio portfolio = new Portfolio();
         portfolioDao.create(portfolio);
 
+        uow.commit();
+
+        loadGame();
+    }
+    public void resetGame() {
+        clearGameData();
+        addDefaultStocks();
+    }
+
+    public void loadGame() {
         StockMarket stockMarket = StockMarket.getInstance();
 
         StockAlertService alertService = new StockAlertService();
@@ -54,17 +73,47 @@ public class GameService
 
         marketTicker.startLiveStockUpdates();
 
-        uow.commit();
-    }
-    public void resetGame() {
-        uow.begin();
-    }
-    public void loadGame() {
-
     }
 
     public void stopGame() {
         marketTicker.stopLiveStockUpdates();
+    }
+
+    private void addDefaultStocks()
+    {
+        uow.begin();
+        Stock stock1 = new Stock("AAPL", "Apple Inc.", AppConfig.getInstance().getStockResetValue());
+        Stock stock2 = new Stock("MSFT", "Microsoft Corporation", AppConfig.getInstance().getStockResetValue());
+        Stock stock3 = new Stock("GOOGL", "Alphabet Inc. Class A", AppConfig.getInstance().getStockResetValue());
+        Stock stock4 = new Stock("AMZN", "Amazon.com Inc.", AppConfig.getInstance().getStockResetValue());
+
+        stockDao.create(stock1);
+        stockDao.create(stock2);
+        stockDao.create(stock3);
+        stockDao.create(stock4);
+        uow.commit();
+    }
+
+    private void clearGameData()
+    {
+        FileUnitOfWork fUow = (FileUnitOfWork) uow;
+        String directoryPath = fUow.getDirectoryPath();
+        
+        clearFile(directoryPath + fUow.getOwnedStocksFilename());
+        clearFile(directoryPath + fUow.getPortfoliosFilename());
+        clearFile(directoryPath + fUow.getStockPriceHistoryFilename());
+        clearFile(directoryPath + fUow.getStocksFilename());
+        clearFile(directoryPath + fUow.getTransactionsFilename());
+    }
+
+    private void clearFile(String filepath)
+    {
+        try (FileWriter writer = new FileWriter(filepath, false)) {
+            writer.write("");
+        } catch (IOException e)
+        {
+            Logger.getInstance().error("Could not clear json files: " + e.getMessage());
+        }
     }
 
     public StockListenerService getStockListenerService()
