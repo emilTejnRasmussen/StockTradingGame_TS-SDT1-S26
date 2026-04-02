@@ -7,15 +7,24 @@ import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.fxml.FXML;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
-import javafx.scene.control.Button;
-import javafx.scene.control.TableCell;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
+import javafx.scene.control.*;
 
 import java.math.BigDecimal;
 
 public class StockMarketController
 {
+    @FXML
+    private Label totalPLLbl;
+    @FXML
+    private Label ownedStocksLbl;
+    @FXML
+    private Label totalSharesLbl;
+    @FXML
+    private Label holdingsValueLbl;
+    @FXML
+    private Label cashBalanceLbl;
+    @FXML
+    private Label netWorthLbl;
     @FXML
     private TableView<StockDTO> stockTableView;
     @FXML
