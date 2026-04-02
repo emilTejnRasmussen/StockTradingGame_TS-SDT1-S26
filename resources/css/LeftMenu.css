@@ -26,23 +26,23 @@
     -fx-border-radius: 18px;
 }
 
+.menu:hover {
+    -fx-pref-width: 280px;
+    -fx-min-width: 280px;
+    -fx-max-width: 280px;
+}
+
 .menu-title-box {
     -fx-alignment: CENTER;
 }
+
 
 .menu:hover .menu-title-box {
     -fx-alignment: CENTER_LEFT;
 }
 
-
 .menu-title {
     -fx-text-fill: text-color-inactive;
-}
-
-.menu:hover {
-    -fx-pref-width: 280px;
-    -fx-min-width: 280px;
-    -fx-max-width: 280px;
 }
 
 .menu-btn {

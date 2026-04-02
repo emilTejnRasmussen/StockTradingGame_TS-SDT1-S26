@@ -1,22 +1,17 @@
 package presentation.views.stockmarket;
 
 import business.dto.StockDTO;
-import javafx.animation.KeyFrame;
-import javafx.animation.Timeline;
-import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.property.SimpleStringProperty;
 import javafx.fxml.FXML;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
-import javafx.scene.control.*;
-import javafx.util.Duration;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
+import javafx.scene.control.cell.PropertyValueFactory;
 
 import java.math.BigDecimal;
 
 public class StockMarketController
 {
-
-
     @FXML
     private TableView<StockDTO> stockTableView;
     @FXML
@@ -36,7 +31,6 @@ public class StockMarketController
     private NumberAxis yAxis;
 
     private final StockMarketViewModel viewModel;
-    private Timeline axisTimeline;
 
     public StockMarketController(StockMarketViewModel viewModel)
     {
@@ -46,58 +40,39 @@ public class StockMarketController
     @FXML
     public void initialize()
     {
-        setupLineChart();
-        setupTableView();
+        setupTable();
+        setupChart();
+        bindViewModel();
 
+        viewModel.loadInitialData();
     }
 
-    private void setupTableView()
+    private void setupTable()
     {
-        stockTableView = new TableView<>();
-        symbolCol = new TableColumn<>("Symbol");
-        symbolCol.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().symbol()));
-
-        priceCol = new TableColumn<>("Price");
-        priceCol.setCellValueFactory(data -> new SimpleObjectProperty<>(data.getValue().currentPrice()));
-
-        actionCol = new TableColumn<>("");
-        actionCol.setCellFactory(param -> new TableCell<>() {
-            private final Button buyButton = new Button("Buy");
-            {
-                buyButton.setOnAction(event -> {
-                    StockDTO stock = getTableView().getItems().get(getIndex());
-                    System.out.println("Buying: " + stock.symbol());
-                });
-            }
-        });
+        symbolCol.setCellValueFactory(new PropertyValueFactory<>("symbol"));
+        priceCol.setCellValueFactory(new PropertyValueFactory<>("price"));
     }
 
-    private void setupLineChart()
+    private void setupChart()
     {
-        xAxis.setLabel("Time (seconds)");
-        yAxis.setLabel("Price");
-
+        xAxis.setLabel("Last 30 updates");
         xAxis.setAutoRanging(false);
-        xAxis.setLowerBound(0);
-        xAxis.setUpperBound(29);
-        xAxis.setTickUnit(5);
+        xAxis.setLowerBound(1);
+        xAxis.setUpperBound(30);
+        xAxis.setTickUnit(1);
 
-        stockMarketChart.setTitle("Stock Prices");
+        yAxis.setLabel("Price");
+        yAxis.setAutoRanging(true);
+
         stockMarketChart.setAnimated(false);
+        stockMarketChart.setCreateSymbols(false);
+    }
+
+    private void bindViewModel()
+    {
+        stockTableView.setItems(viewModel.getStocks());
         stockMarketChart.setData(viewModel.getChartSeries());
 
-        axisTimeline = new Timeline(
-                new KeyFrame(Duration.seconds(1), event -> updateXAxis())
-        );
-        axisTimeline.setCycleCount(Timeline.INDEFINITE);
-        axisTimeline.play();
-    }
-
-    private void updateXAxis()
-    {
-        int currentSecond = viewModel.getCurrentSecond();
-
-        xAxis.setLowerBound(Math.max(0, currentSecond - 29));
-        xAxis.setUpperBound(Math.max(29, currentSecond));
+        viewModel.selectedStockProperty().bind(stockTableView.getSelectionModel().selectedItemProperty());
     }
 }
