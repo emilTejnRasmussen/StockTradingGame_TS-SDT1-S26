@@ -1,13 +1,13 @@
 package presentation.core;
 
-import business.services.GameService;
-import business.services.StockHistoryService;
+import business.services.*;
 import persistence.fileImplementation.*;
 import persistence.interfaces.*;
 import presentation.views.leftmenu.MainLeftMenuViewModel;
 import presentation.views.mainmenu.MainMenuViewModel;
 import presentation.views.portfolio.PortfolioViewModel;
 import presentation.views.stockmarket.StockMarketViewModel;
+import shared.logging.Logger;
 
 public class ApplicationContext
 {
@@ -15,30 +15,35 @@ public class ApplicationContext
 
     private final GameService gameService;
 
-   private ApplicationContext() {
-       UnitOfWork uow = createUow();
+    private ApplicationContext()
+    {
+        UnitOfWork uow = createUow();
 
-       PortfolioDao portfolioDao = createPortfolioDao(uow);
-       StockDao stockDao = createStockDao(uow);
-       StockPriceHistoryDao stockPriceHistoryDao = createStockPriceHistoryDao(uow);
-       OwnedStockDao ownedStockDao = createOwnedStockDao(uow);
+        PortfolioDao portfolioDao = createPortfolioDao(uow);
+        StockDao stockDao = createStockDao(uow);
+        StockPriceHistoryDao stockPriceHistoryDao = createStockPriceHistoryDao(uow);
+        OwnedStockDao ownedStockDao = createOwnedStockDao(uow);
 
-       this.gameService = new GameService(
-               uow,
-               portfolioDao,
-               stockDao,
-               stockPriceHistoryDao,
-               ownedStockDao
-       );
-   }
+        this.gameService = new GameService(
+                uow,
+                portfolioDao,
+                stockDao,
+                stockPriceHistoryDao,
+                ownedStockDao
+        );
+    }
 
 
-    public static ApplicationContext getInstance() {
+    public static ApplicationContext getInstance()
+    {
         ApplicationContext result = instance;
-        if (result == null) {
-            synchronized (ApplicationContext.class) {
+        if (result == null)
+        {
+            synchronized (ApplicationContext.class)
+            {
                 result = instance;
-                if (result == null) {
+                if (result == null)
+                {
                     instance = result = new ApplicationContext();
                 }
             }
@@ -67,21 +72,61 @@ public class ApplicationContext
         return new FilePortfolioDao((FileUnitOfWork) uow);
     }
 
-    private UnitOfWork createUow() {
-       return new FileUnitOfWork("data/");
+    private UnitOfWork createUow()
+    {
+        return new FileUnitOfWork("data/");
     }
 
-    private StockPriceHistoryDao createStockPriceHistoryDao() {
-       return new FileStockPriceHistoryDao((FileUnitOfWork) createUow());
+    private StockPriceHistoryDao createStockPriceHistoryDao()
+    {
+        return new FileStockPriceHistoryDao((FileUnitOfWork) createUow());
     }
 
-    private StockHistoryService createStockHistoryService() {
-       return new StockHistoryService(createStockPriceHistoryDao());
+    private StockHistoryService createStockHistoryService()
+    {
+        return new StockHistoryService(createStockPriceHistoryDao());
     }
 
     public StockMarketViewModel getStockMarketViewModel()
     {
-        return new StockMarketViewModel(gameService.getStockListenerService(), createStockHistoryService());
+        return new StockMarketViewModel(
+                gameService.getStockListenerService(),
+                createStockHistoryService(),
+                createPortfolioService(),
+                createTradingService()
+        );
+    }
+
+    private TradingService createTradingService()
+    {
+        UnitOfWork uow = createUow();
+        return new TradingService(
+                uow,
+                createStockDao(uow),
+                createPortfolioDao(uow),
+                createTransactionsDao(uow),
+                createOwnedStockDao(uow),
+                createLogger()
+        );
+    }
+
+    private Logger createLogger()
+    {
+        return Logger.getInstance();
+    }
+
+    private PortfolioService createPortfolioService()
+    {
+        return new PortfolioService(createPortfolioDao(
+                createUow()),
+                createOwnedStockDao(createUow()),
+                createStockDao(createUow()),
+                createTransactionsDao(createUow()));
+    }
+
+    private TransactionDao createTransactionsDao(UnitOfWork uow)
+    {
+        return new FileTransactionDao((FileUnitOfWork) uow);
     }
 
     public MainLeftMenuViewModel getMainLeftMenuViewModel()

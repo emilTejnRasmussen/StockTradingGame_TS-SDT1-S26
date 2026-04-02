@@ -58,8 +58,6 @@ public class GameService
     }
     public void resetGame() {
         uow.begin();
-
-
     }
     public void loadGame() {
 

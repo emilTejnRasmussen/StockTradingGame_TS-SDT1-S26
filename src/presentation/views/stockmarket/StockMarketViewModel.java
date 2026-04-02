@@ -1,21 +1,24 @@
 package presentation.views.stockmarket;
 
 import business.dto.StockDTO;
+import business.dto.transaction.BuyStockRequestDTO;
+import business.dto.transaction.SellStockRequestDTO;
+import business.services.PortfolioService;
 import business.services.StockHistoryService;
+import business.services.TradingService;
 import business.services.listener.StockListenerService;
+import entities.OwnedStock;
 import entities.StockPriceHistory;
 import javafx.application.Platform;
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.chart.XYChart;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class StockMarketViewModel implements PropertyChangeListener
 {
@@ -23,19 +26,29 @@ public class StockMarketViewModel implements PropertyChangeListener
 
     private final StockListenerService stockListenerService;
     private final StockHistoryService stockHistoryService;
+    private final PortfolioService portfolioService;
+    private final TradingService tradingService;
 
     private final ObservableList<StockDTO> stocks = FXCollections.observableArrayList();
     private final ObservableList<XYChart.Series<Number, Number>> chartSeries = FXCollections.observableArrayList();
 
+    private UUID portfolioId;
     private final Map<String, XYChart.Series<Number, Number>> seriesBySymbol = new HashMap<>();
+    private final Map<String, IntegerProperty> ownedBySymbol = new HashMap<>();
+
 
     public StockMarketViewModel(StockListenerService stockListenerService,
-                                StockHistoryService stockHistoryService)
+                                StockHistoryService stockHistoryService,
+                                PortfolioService portfolioService,
+                                TradingService tradingService)
     {
         this.stockListenerService = stockListenerService;
         this.stockHistoryService = stockHistoryService;
+        this.portfolioService = portfolioService;
+        this.tradingService = tradingService;
 
         this.stockListenerService.addListener(this);
+        this.portfolioId = portfolioService.getFirstPortfolioID();
     }
 
     public ObservableList<StockDTO> getStocks()
@@ -92,6 +105,8 @@ public class StockMarketViewModel implements PropertyChangeListener
             {
                 seriesBySymbol.put(series.getName(), series);
             }
+
+            refreshOwnedStocks();
         });
     }
 
@@ -134,7 +149,6 @@ public class StockMarketViewModel implements PropertyChangeListener
 
         if (series == null)
         {
-            // New stock that was not present during initial load
             XYChart.Series<Number, Number> newSeries = new XYChart.Series<>();
             newSeries.setName(updatedStock.symbol());
             newSeries.getData().add(new XYChart.Data<>(1, updatedStock.currentPrice().doubleValue()));
@@ -152,7 +166,6 @@ public class StockMarketViewModel implements PropertyChangeListener
         {
             series.getData().removeFirst();
 
-            // Re-number x values so axis stays 1..30
             for (int i = 0; i < series.getData().size(); i++)
             {
                 XYChart.Data<Number, Number> dataPoint = series.getData().get(i);
@@ -164,5 +177,74 @@ public class StockMarketViewModel implements PropertyChangeListener
     public void dispose()
     {
         stockListenerService.removeListener(this);
+    }
+
+    public IntegerProperty ownedQuantityProperty(String stockSymbol) {
+        return ownedBySymbol.computeIfAbsent(stockSymbol, _ -> new SimpleIntegerProperty(0));
+    }
+
+    public int getOwnedQuantity(String stockSymbol) {
+        return ownedQuantityProperty(stockSymbol).get();
+    }
+
+    public void refreshOwnedStocks() {
+        Map<String, Integer> latest = new HashMap<>();
+
+        if (portfolioId != null) {
+            for (OwnedStock os : portfolioService.getOwnedStocks(portfolioId)) {
+                latest.put(os.getStockSymbol(), os.getNumberOfShares());
+            }
+        }
+
+        Runnable applyUpdate = () -> {
+            for (String symbol : latest.keySet()) {
+                ownedQuantityProperty(symbol).set(latest.get(symbol));
+            }
+
+            for (String symbol : ownedBySymbol.keySet()) {
+                if (!latest.containsKey(symbol)) {
+                    ownedBySymbol.get(symbol).set(0);
+                }
+            }
+        };
+
+        if (Platform.isFxApplicationThread()) {
+            applyUpdate.run();
+        } else {
+            Platform.runLater(applyUpdate);
+        }
+    }
+
+    public void setPortfolioId(UUID portfolioId) {
+        this.portfolioId = portfolioId;
+    }
+
+    public void sell(StockDTO stock)
+    {
+        SellStockRequestDTO request = new SellStockRequestDTO(stock.symbol(), portfolioId, 1);
+
+        try {
+            tradingService.sellStock(request);
+
+            IntegerProperty property = ownedQuantityProperty(stock.symbol());
+            property.set(Math.max(0, property.get() - 1));
+        } catch (Exception ignored) {
+            // TODO - show error popup
+        }
+    }
+
+
+    public void buy(StockDTO stock)
+    {
+        BuyStockRequestDTO request = new BuyStockRequestDTO(stock.symbol(), portfolioId, 1);
+
+        try {
+            tradingService.buyStock(request);
+
+            IntegerProperty property = ownedQuantityProperty(stock.symbol());
+            property.set(property.get() + 1);
+        } catch (Exception ignored) {
+            // TODO - show error popup
+        }
     }
 }

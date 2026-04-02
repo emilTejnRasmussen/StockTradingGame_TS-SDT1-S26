@@ -30,8 +30,10 @@
             <TableView fx:id="stockTableView" prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS">
                 <columns>
                     <TableColumn fx:id="symbolCol" prefWidth="75.0" text="Symbol" />
-                    <TableColumn fx:id="priceCol" prefWidth="75.0" text="Price" />
-                    <TableColumn fx:id="actionCol" prefWidth="75.0" />
+                    <TableColumn fx:id="priceCol" minWidth="-1.0" prefWidth="150.0" text="Price" />
+               <TableColumn fx:id="ownedCol" prefWidth="75.0" text="Owned" />
+                    <TableColumn fx:id="buyCol" prefWidth="75.0" />
+               <TableColumn fx:id="sellCol" prefWidth="75.0" />
                 </columns>
             </TableView>
         </VBox>

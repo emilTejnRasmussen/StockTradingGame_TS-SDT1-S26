@@ -40,6 +40,10 @@ public class PortfolioService
                 .getNumberOfShares();
     }
 
+    public UUID getFirstPortfolioID() {
+        return portfolioDao.getAll().getFirst().getId();
+    }
+
     public BigDecimal getPortfolioBalance(UUID portfolioId) {
         return portfolioDao.getById(portfolioId)
                 .orElseThrow(() -> new IllegalArgumentException("No portfolio with id=" + portfolioId + " found"))
