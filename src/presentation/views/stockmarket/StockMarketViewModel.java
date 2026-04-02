@@ -5,14 +5,14 @@ import business.services.StockHistoryService;
 import business.services.listener.StockListenerService;
 import entities.StockPriceHistory;
 import javafx.application.Platform;
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.chart.XYChart;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,9 +29,8 @@ public class StockMarketViewModel implements PropertyChangeListener
 
     private final Map<String, XYChart.Series<Number, Number>> seriesBySymbol = new HashMap<>();
 
-    private final ObjectProperty<StockDTO> selectedStock = new SimpleObjectProperty<>();
-
-    public StockMarketViewModel(StockListenerService stockListenerService, StockHistoryService stockHistoryService)
+    public StockMarketViewModel(StockListenerService stockListenerService,
+                                StockHistoryService stockHistoryService)
     {
         this.stockListenerService = stockListenerService;
         this.stockHistoryService = stockHistoryService;
@@ -49,68 +48,51 @@ public class StockMarketViewModel implements PropertyChangeListener
         return chartSeries;
     }
 
-    public ObjectProperty<StockDTO> selectedStockProperty()
-    {
-        return selectedStock;
-    }
-
     public void loadInitialData()
     {
         Map<String, List<StockPriceHistory>> latestHistory =
                 stockHistoryService.getLatestStockUpdatesForAll(DEFAULT_HISTORY_SIZE);
 
-        Platform.runLater(() -> {
-            chartSeries.clear();
-            seriesBySymbol.clear();
+        List<StockDTO> loadedStocks = new ArrayList<>();
+        List<XYChart.Series<Number, Number>> loadedSeries = new ArrayList<>();
 
-            for (Map.Entry<String, List<StockPriceHistory>> entry : latestHistory.entrySet())
-            {
-                String symbol = entry.getKey();
-                XYChart.Series<Number, Number> series = buildSeries(symbol, entry.getValue());
+        List<String> symbols = new ArrayList<>(latestHistory.keySet());
+        symbols.sort(String::compareTo);
 
-                chartSeries.add(series);
-                seriesBySymbol.put(symbol, series);
-            }
-        });
-    }
-
-    public void refreshStockHistory(String stockSymbol)
-    {
-        List<StockPriceHistory> history =
-                stockHistoryService.getLatestStockUpdatesForStock(stockSymbol, DEFAULT_HISTORY_SIZE);
-
-        Platform.runLater(() -> {
-            XYChart.Series<Number, Number> updatedSeries = buildSeries(stockSymbol, history);
-            XYChart.Series<Number, Number> existingSeries = seriesBySymbol.get(stockSymbol);
-
-            if (existingSeries != null)
-            {
-                int index = chartSeries.indexOf(existingSeries);
-                chartSeries.set(index, updatedSeries);
-            }
-            else
-            {
-                chartSeries.add(updatedSeries);
-            }
-
-            seriesBySymbol.put(stockSymbol, updatedSeries);
-        });
-    }
-
-    private XYChart.Series<Number, Number> buildSeries(String stockSymbol, List<StockPriceHistory> history)
-    {
-        XYChart.Series<Number, Number> series = new XYChart.Series<>();
-        series.setName(stockSymbol);
-
-        for (int i = 0; i < history.size(); i++)
+        for (String symbol : symbols)
         {
-            StockPriceHistory point = history.get(i);
+            List<StockPriceHistory> history = latestHistory.get(symbol);
 
-            // x = 0..29, y = stock price
-            series.getData().add(new XYChart.Data<>(i + 1, point.price().doubleValue()));
+            if (history == null || history.isEmpty())
+            {
+                continue;
+            }
+
+            StockPriceHistory latestPoint = history.getLast();
+            loadedStocks.add(new StockDTO(symbol, latestPoint.price(), null));
+
+            XYChart.Series<Number, Number> series = new XYChart.Series<>();
+            series.setName(symbol);
+
+            for (int i = 0; i < history.size(); i++)
+            {
+                StockPriceHistory point = history.get(i);
+                series.getData().add(new XYChart.Data<>(i + 1, point.price().doubleValue()));
+            }
+
+            loadedSeries.add(series);
         }
 
-        return series;
+        Platform.runLater(() -> {
+            stocks.setAll(loadedStocks);
+            chartSeries.setAll(loadedSeries);
+
+            seriesBySymbol.clear();
+            for (XYChart.Series<Number, Number> series : loadedSeries)
+            {
+                seriesBySymbol.put(series.getName(), series);
+            }
+        });
     }
 
     @Override
@@ -121,8 +103,66 @@ public class StockMarketViewModel implements PropertyChangeListener
             return;
         }
 
-        // assuming evt.getNewValue() contains the symbol, e.g. "AAPL"
-        StockDTO stock= (StockDTO) evt.getNewValue();
-        refreshStockHistory(stock.symbol());
+        StockDTO updatedStock = (StockDTO) evt.getNewValue();
+
+        Platform.runLater(() -> {
+            updateStockInTable(updatedStock);
+            appendToSeries(updatedStock);
+        });
+    }
+
+    private void updateStockInTable(StockDTO updatedStock)
+    {
+        for (int i = 0; i < stocks.size(); i++)
+        {
+            StockDTO existing = stocks.get(i);
+
+            if (existing.symbol().equals(updatedStock.symbol()))
+            {
+                stocks.set(i, updatedStock);
+                return;
+            }
+        }
+
+        stocks.add(updatedStock);
+        FXCollections.sort(stocks, Comparator.comparing(StockDTO::symbol));
+    }
+
+    private void appendToSeries(StockDTO updatedStock)
+    {
+        XYChart.Series<Number, Number> series = seriesBySymbol.get(updatedStock.symbol());
+
+        if (series == null)
+        {
+            // New stock that was not present during initial load
+            XYChart.Series<Number, Number> newSeries = new XYChart.Series<>();
+            newSeries.setName(updatedStock.symbol());
+            newSeries.getData().add(new XYChart.Data<>(1, updatedStock.currentPrice().doubleValue()));
+
+            seriesBySymbol.put(updatedStock.symbol(), newSeries);
+            chartSeries.add(newSeries);
+            chartSeries.sort(Comparator.comparing(XYChart.Series::getName));
+            return;
+        }
+
+        int nextX = series.getData().size() + 1;
+        series.getData().add(new XYChart.Data<>(nextX, updatedStock.currentPrice().doubleValue()));
+
+        if (series.getData().size() > DEFAULT_HISTORY_SIZE)
+        {
+            series.getData().removeFirst();
+
+            // Re-number x values so axis stays 1..30
+            for (int i = 0; i < series.getData().size(); i++)
+            {
+                XYChart.Data<Number, Number> dataPoint = series.getData().get(i);
+                dataPoint.setXValue(i + 1);
+            }
+        }
+    }
+
+    public void dispose()
+    {
+        stockListenerService.removeListener(this);
     }
 }

@@ -1,12 +1,13 @@
 package presentation.views.stockmarket;
 
 import business.dto.StockDTO;
+import javafx.beans.property.ReadOnlyObjectWrapper;
+import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.fxml.FXML;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
-import javafx.scene.control.cell.PropertyValueFactory;
 
 import java.math.BigDecimal;
 
@@ -42,15 +43,20 @@ public class StockMarketController
     {
         setupTable();
         setupChart();
-        bindViewModel();
+
+        stockTableView.setItems(viewModel.getStocks());
+        stockMarketChart.setData(viewModel.getChartSeries());
 
         viewModel.loadInitialData();
     }
 
     private void setupTable()
     {
-        symbolCol.setCellValueFactory(new PropertyValueFactory<>("symbol"));
-        priceCol.setCellValueFactory(new PropertyValueFactory<>("price"));
+        symbolCol.setCellValueFactory(cellData ->
+                new ReadOnlyStringWrapper(cellData.getValue().symbol()));
+
+        priceCol.setCellValueFactory(cellData ->
+                new ReadOnlyObjectWrapper<>(cellData.getValue().currentPrice()));
     }
 
     private void setupChart()
@@ -66,13 +72,11 @@ public class StockMarketController
 
         stockMarketChart.setAnimated(false);
         stockMarketChart.setCreateSymbols(false);
+        stockMarketChart.setLegendVisible(true);
     }
 
-    private void bindViewModel()
+    public void dispose()
     {
-        stockTableView.setItems(viewModel.getStocks());
-        stockMarketChart.setData(viewModel.getChartSeries());
-
-        viewModel.selectedStockProperty().bind(stockTableView.getSelectionModel().selectedItemProperty());
+        viewModel.dispose();
     }
 }
