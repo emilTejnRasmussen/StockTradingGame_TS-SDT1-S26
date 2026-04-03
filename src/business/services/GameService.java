@@ -14,6 +14,8 @@ import shared.logging.Logger;
 
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Optional;
+import java.util.UUID;
 
 public class GameService
 {
@@ -39,7 +41,7 @@ public class GameService
         this.stockListenerService = new StockListenerService(uow, stockDao, stockPriceHistoryDao);
     }
 
-    public void startGame()
+    public UUID startGame()
     {
         resetGame();
 
@@ -51,6 +53,8 @@ public class GameService
         uow.commit();
 
         loadGame();
+
+        return portfolio.getId();
     }
     public void resetGame() {
         clearGameData();
@@ -114,6 +118,13 @@ public class GameService
         {
             Logger.getInstance().error("Could not clear json files: " + e.getMessage());
         }
+    }
+
+    public Optional<UUID> getCurrentPortfolioId()
+    {
+        return portfolioDao.getAll().stream()
+                .findFirst()
+                .map(Portfolio::getId);
     }
 
     public StockListenerService getStockListenerService()

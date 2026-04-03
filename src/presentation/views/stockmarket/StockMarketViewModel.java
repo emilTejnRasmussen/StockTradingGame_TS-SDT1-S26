@@ -57,7 +57,6 @@ public class StockMarketViewModel implements PropertyChangeListener
         this.tradingService = tradingService;
 
         this.stockListenerService.addListener(this);
-        this.portfolioId = portfolioService.getFirstPortfolioID();
     }
 
     public ObservableList<StockDTO> getStocks()
@@ -139,12 +138,12 @@ public class StockMarketViewModel implements PropertyChangeListener
 
     private void updatePortfolioInfo()
     {
-        String newCashBalance = String.format("%.2f ¤", portfolioService.getPortfolioBalance(portfolioId));
-        String newNetWorth = String.format("%.2f ¤", portfolioService.getTotalPortfolioValue(portfolioId));
-        String newTotalPL = String.format("%.2f ¤", portfolioService.getTotalProfitLoss(portfolioId));
+        String newCashBalance = String.format("¤ %.2f", portfolioService.getPortfolioBalance(portfolioId));
+        String newNetWorth = String.format("¤ %.2f", portfolioService.getTotalPortfolioValue(portfolioId));
+        String newTotalPL = String.format("¤ %.2f", portfolioService.getTotalProfitLoss(portfolioId));
         String newOwnedStocks = String.format("%d", portfolioService.getOwnedStocks(portfolioId).size());
         String newTotalShares = String.format("%d", portfolioService.getTotalNumberOfShares(portfolioId));
-        String newHoldingsValue = String.format("%.2f ¤", portfolioService.getHoldingsValue(portfolioId));
+        String newHoldingsValue = String.format("¤ %.2f", portfolioService.getHoldingsValue(portfolioId));
 
         cashBalance.set(newCashBalance);
         netWorth.set(newNetWorth);
@@ -246,6 +245,8 @@ public class StockMarketViewModel implements PropertyChangeListener
     public void setPortfolioId(UUID portfolioId)
     {
         this.portfolioId = portfolioId;
+        refreshOwnedStocks();
+        updatePortfolioInfo();
     }
 
     public void sell(StockDTO stock)

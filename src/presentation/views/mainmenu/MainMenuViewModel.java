@@ -3,8 +3,11 @@ package presentation.views.mainmenu;
 import business.services.GameService;
 import business.services.PortfolioService;
 import javafx.application.Platform;
+import presentation.core.ApplicationContext;
 import presentation.core.ViewManager;
 import presentation.core.Views;
+
+import java.util.UUID;
 
 public class MainMenuViewModel
 {
@@ -18,17 +21,26 @@ public class MainMenuViewModel
     }
 
     public void startGame() {
-        gameService.startGame();
+        UUID portfolioId = gameService.startGame();
+
+        ApplicationContext.getInstance().getStockMarketViewModel().setPortfolioId(portfolioId);
+
+        ViewManager.showScene(Views.MAIN_LEFT_MENU);
+    }
+
+    public void continueGame() {
+        gameService.loadGame();
+
+        gameService.getCurrentPortfolioId()
+                .ifPresent(id -> ApplicationContext.getInstance()
+                        .getStockMarketViewModel()
+                        .setPortfolioId(id));
+
         ViewManager.showScene(Views.MAIN_LEFT_MENU);
     }
 
     public void exitGame() {
         Platform.exit();
-    }
-
-    public void continueGame() {
-        gameService.loadGame();
-        ViewManager.showScene(Views.MAIN_LEFT_MENU);
     }
 
     public boolean hasGameStored()

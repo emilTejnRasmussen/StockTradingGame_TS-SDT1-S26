@@ -47,11 +47,6 @@ public class PortfolioService
         return !portfolioDao.getAll().isEmpty();
     }
 
-    public UUID getFirstPortfolioID()
-    {
-        return portfolioDao.getAll().getFirst().getId();
-    }
-
     public BigDecimal getPortfolioBalance(UUID portfolioId)
     {
         return portfolioDao.getById(portfolioId)
