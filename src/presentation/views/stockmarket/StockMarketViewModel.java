@@ -27,8 +27,6 @@ public class StockMarketViewModel implements PropertyChangeListener
 {
     private static final int DEFAULT_HISTORY_SIZE = 30;
 
-    private final ApplicationContext appContext;
-    private final StockListenerService stockListenerService;
     private final StockHistoryService stockHistoryService;
     private final PortfolioService portfolioService;
     private final TradingService tradingService;
@@ -53,17 +51,15 @@ public class StockMarketViewModel implements PropertyChangeListener
                                 PortfolioService portfolioService,
                                 TradingService tradingService)
     {
-        this.appContext = appContext;
-        this.stockListenerService = stockListenerService;
         this.stockHistoryService = stockHistoryService;
         this.portfolioService = portfolioService;
         this.tradingService = tradingService;
 
-        this.stockListenerService.addListener(this);
+        stockListenerService.addListener(this);
 
         this.portfolioId = appContext.getActivePortfolioId();
 
-        this.appContext.activePortfolioIdProperty().addListener((obs, oldId, newId) -> {
+        appContext.activePortfolioIdProperty().addListener((obs, oldId, newId) -> {
             this.portfolioId = newId;
             refreshOwnedStocks();
             updatePortfolioInfo();
@@ -154,7 +150,7 @@ public class StockMarketViewModel implements PropertyChangeListener
             clearPortfolioInfo();
             return;
         }
-        
+
         String newCashBalance = String.format("¤ %.2f", portfolioService.getPortfolioBalance(portfolioId));
         String newNetWorth = String.format("¤ %.2f", portfolioService.getTotalPortfolioValue(portfolioId));
         String newTotalPL = String.format("¤ %.2f", portfolioService.getTotalProfitLoss(portfolioId));
