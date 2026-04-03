@@ -58,7 +58,7 @@ public class StockMarket
 
         StockDTO newStockDTO = createStockDTO(liveStock);
 
-        logStockUpdate(oldStockDTO, newStockDTO);
+//        logStockUpdate(oldStockDTO, newStockDTO);
         support.firePropertyChange("stockUpdated", oldStockDTO, newStockDTO);
     }
 
@@ -82,7 +82,7 @@ public class StockMarket
         StockMarket result = instance;
         if (result == null)
         {
-            synchronized (Logger.class)
+            synchronized (StockMarket.class)
             {
                 result = instance;
                 if (result == null)
