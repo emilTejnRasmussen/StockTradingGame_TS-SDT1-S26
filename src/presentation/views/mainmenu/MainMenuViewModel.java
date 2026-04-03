@@ -22,13 +22,13 @@ public class MainMenuViewModel
 
     public void startGame() {
         gameService.startGame();
-        ViewManager.showScene(Views.MAIN_LEFT_MENU);
+        ViewManager.showMainApplication();
         ViewManager.setCenter(Views.DASHBOARD);
     }
 
     public void continueGame() {
         gameService.loadGame();
-        ViewManager.showScene(Views.MAIN_LEFT_MENU);
+        ViewManager.showMainApplication();
         ViewManager.setCenter(Views.DASHBOARD);
     }
 

@@ -9,7 +9,7 @@ public class StockTradingApp extends Application
     public void start(Stage primaryStage)
     {
         ViewManager.setStage(primaryStage);
-        ViewManager.showScene(Views.MAIN_MENU);
+        ViewManager.showMainMenu();
 
         primaryStage.show();
     }
