@@ -1,9 +1,6 @@
 package presentation.core;
 
-import business.services.GameService;
-import business.services.PortfolioService;
-import business.services.StockHistoryService;
-import business.services.TradingService;
+import business.services.*;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import persistence.fileImplementation.FileOwnedStockDao;
@@ -17,6 +14,9 @@ import persistence.interfaces.PortfolioDao;
 import persistence.interfaces.StockDao;
 import persistence.interfaces.StockPriceHistoryDao;
 import persistence.interfaces.TransactionDao;
+import presentation.views.dashboard.DashboardViewModel;
+import presentation.views.dashboard.HoldingRowViewModel;
+import presentation.views.dashboard.TransactionRowViewModel;
 import presentation.views.leftmenu.MainLeftMenuViewModel;
 import presentation.views.mainmenu.MainMenuViewModel;
 import presentation.views.portfolio.PortfolioViewModel;
@@ -41,10 +41,12 @@ public class ApplicationContext
     private final PortfolioService portfolioService;
     private final TradingService tradingService;
     private final StockHistoryService stockHistoryService;
+    private final StockService stockService;
 
     private final StockMarketViewModel stockMarketViewModel;
     private final MainMenuViewModel mainMenuViewModel;
     private final MainLeftMenuViewModel mainLeftMenuViewModel;
+    private final DashboardViewModel dashboardViewModel;
 
     private final ObjectProperty<UUID> activePortfolioId = new SimpleObjectProperty<>();
 
@@ -58,14 +60,73 @@ public class ApplicationContext
         ownedStockDao = new FileOwnedStockDao(uow);
         transactionDao = new FileTransactionDao(uow);
 
-        portfolioService = new PortfolioService(
-                portfolioDao,
-                ownedStockDao,
-                stockDao,
-                transactionDao
-        );
+        portfolioService = createPortfolioService();
+        tradingService = createTradingService();
+        stockHistoryService = createStockHistoryService();
+        gameService = createGameService();
+        stockService = createStockService();
 
-        tradingService = new TradingService(
+        stockMarketViewModel = createStockMarketViewModel();
+        dashboardViewModel = createDashboardViewModel();
+
+        mainMenuViewModel = createMainMenuViewModel();
+        mainLeftMenuViewModel = createMainLeftMenuViewModel();
+    }
+
+    private StockService createStockService()
+    {
+        return new StockService(stockDao);
+    }
+
+    private MainLeftMenuViewModel createMainLeftMenuViewModel()
+    {
+        return new MainLeftMenuViewModel(gameService);
+    }
+
+    private MainMenuViewModel createMainMenuViewModel()
+    {
+        return new MainMenuViewModel(gameService, portfolioService);
+    }
+
+    private DashboardViewModel createDashboardViewModel()
+    {
+        return new DashboardViewModel(
+                this,
+                portfolioService,
+                stockService
+        );
+    }
+
+    private StockMarketViewModel createStockMarketViewModel()
+    {
+        return new StockMarketViewModel(
+                this,
+                gameService.getStockListenerService(),
+                stockHistoryService,
+                portfolioService,
+                tradingService
+        );
+    }
+
+    private GameService createGameService()
+    {
+        return new GameService(
+                uow,
+                portfolioDao,
+                stockDao,
+                stockPriceHistoryDao,
+                ownedStockDao
+        );
+    }
+
+    private StockHistoryService createStockHistoryService()
+    {
+        return new StockHistoryService(stockPriceHistoryDao);
+    }
+
+    private TradingService createTradingService()
+    {
+        return new TradingService(
                 uow,
                 stockDao,
                 portfolioDao,
@@ -73,27 +134,16 @@ public class ApplicationContext
                 ownedStockDao,
                 Logger.getInstance()
         );
+    }
 
-        stockHistoryService = new StockHistoryService(stockPriceHistoryDao);
-
-        gameService = new GameService(
-                uow,
+    private PortfolioService createPortfolioService()
+    {
+        return new PortfolioService(
                 portfolioDao,
+                ownedStockDao,
                 stockDao,
-                stockPriceHistoryDao,
-                ownedStockDao
+                transactionDao
         );
-
-        stockMarketViewModel = new StockMarketViewModel(
-                this,
-                gameService.getStockListenerService(),
-                stockHistoryService,
-                portfolioService,
-                tradingService
-        );
-
-        mainMenuViewModel = new MainMenuViewModel(gameService, portfolioService);
-        mainLeftMenuViewModel = new MainLeftMenuViewModel(gameService);
     }
 
     public static ApplicationContext getInstance()
@@ -131,6 +181,11 @@ public class ApplicationContext
     public PortfolioViewModel getPortfolioViewModel()
     {
         return new PortfolioViewModel();
+    }
+
+    public DashboardViewModel getDashboardViewModel()
+    {
+        return dashboardViewModel;
     }
 
     public UUID getActivePortfolioId()

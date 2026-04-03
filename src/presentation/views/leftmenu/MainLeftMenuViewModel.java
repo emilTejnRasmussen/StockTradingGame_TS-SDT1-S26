@@ -26,6 +26,7 @@ public class MainLeftMenuViewModel
     public void logoClicked()
     {
         System.out.println("Logo clicked");
+        ViewManager.setCenter(Views.DASHBOARD);
     }
 
     public void portfolioClicked()

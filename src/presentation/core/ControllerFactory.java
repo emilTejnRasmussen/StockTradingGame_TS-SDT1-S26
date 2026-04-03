@@ -3,6 +3,7 @@ package presentation.core;
 import javafx.util.Callback;
 import persistence.fileImplementation.*;
 import persistence.interfaces.*;
+import presentation.views.dashboard.DashboardController;
 import presentation.views.leftmenu.MainLeftMenuController;
 import presentation.views.mainmenu.MainMenuController;
 import presentation.views.portfolio.PortfolioController;
@@ -31,6 +32,10 @@ public class ControllerFactory implements Callback<Class<?>, Object>
         if (controllerType == StockMarketController.class)
         {
             return new StockMarketController(appContext.getStockMarketViewModel());
+        }
+
+        if (controllerType == DashboardController.class) {
+            return new DashboardController(appContext.getDashboardViewModel());
         }
 
         throw new RuntimeException("Controller of type '" + controllerType.getSimpleName() + "' is not supported!");

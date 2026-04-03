@@ -42,6 +42,24 @@ public class PortfolioService
                 .getNumberOfShares();
     }
 
+    public BigDecimal getAvgStockBuyPrice(String stockSymbol, UUID portfolioId) {
+        BigDecimal totalSpent = transactionDao.findTransactionsByPortfolioId(portfolioId).stream()
+                .filter(t -> t.stockSymbol().equals(stockSymbol) && t.type() == Transaction.Type.BUY)
+                .map(Transaction::getGrossAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        int totalSharesBought = transactionDao.findTransactionsByPortfolioId(portfolioId).stream()
+                .filter(t -> t.stockSymbol().equals(stockSymbol) && t.type() == Transaction.Type.BUY)
+                .mapToInt(Transaction::quantity)
+                .sum();
+
+        if (totalSharesBought == 0) {
+            return BigDecimal.ZERO;
+        }
+
+        return totalSpent.divide(BigDecimal.valueOf(totalSharesBought), 2, java.math.RoundingMode.HALF_UP);
+    }
+
     public boolean hasCreatedPortfolio()
     {
         return !portfolioDao.getAll().isEmpty();

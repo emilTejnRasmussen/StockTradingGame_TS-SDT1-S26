@@ -5,6 +5,7 @@ public enum Views
     MAIN_MENU("MainMenu"),
     MAIN_LEFT_MENU("MainLeftMenu"),
 
+    DASHBOARD("Dashboard"),
     PORTFOLIO("Portfolio"),
     STOCK_MARKET("StockMarket");
 
