@@ -59,7 +59,7 @@ public class StockMarketViewModel implements PropertyChangeListener
 
         this.portfolioId = appContext.getActivePortfolioId();
 
-        appContext.activePortfolioIdProperty().addListener((obs, oldId, newId) -> {
+        appContext.activePortfolioIdProperty().addListener((_, _, newId) -> {
             this.portfolioId = newId;
             refreshOwnedStocks();
             updatePortfolioInfo();
