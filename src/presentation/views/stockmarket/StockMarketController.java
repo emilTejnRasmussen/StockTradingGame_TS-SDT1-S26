@@ -180,12 +180,5 @@ public class StockMarketController
         holdingsValueLbl.textProperty().bind(viewModel.holdingsValueProperty());
         cashBalanceLbl.textProperty().bind(viewModel.cashBalanceProperty());
         netWorthLbl.textProperty().bind(viewModel.netWorthProperty());
-
-
-        viewModel.netWorthProperty().addListener((obs, oldVal, newVal) ->
-                System.out.println("VM netWorth changed: " + oldVal + " -> " + newVal));
-
-        netWorthLbl.textProperty().addListener((obs, oldVal, newVal) ->
-                System.out.println("LABEL netWorth changed: " + oldVal + " -> " + newVal));
     }
 }
