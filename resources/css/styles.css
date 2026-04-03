@@ -14,6 +14,12 @@
 
 }
 
+.root-stack-pane {
+    -fx-background-color: #00000000;
+    -fx-background-radius: 18px;
+    -fx-border-radius: 18px;
+}
+
 .app-root {
     -fx-background-color: main-bg-color;
     -fx-background-radius: 30px;

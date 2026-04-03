@@ -29,17 +29,26 @@ public class GameService
     private final MarketTicker marketTicker;
 
     private final StockListenerService stockListenerService;
+    private final StockBankruptService stockBankruptService;
+    private final StockAlertService stockAlertService;
 
-    public GameService(UnitOfWork uow, PortfolioDao portfolioDao, StockDao stockDao, StockPriceHistoryDao stockPriceHistoryDao, OwnedStockDao ownedStockDao)
+    public GameService(UnitOfWork uow,
+                       PortfolioDao portfolioDao,
+                       StockDao stockDao,
+                       StockPriceHistoryDao stockPriceHistoryDao,
+                       OwnedStockDao ownedStockDao,
+                       StockListenerService stockListenerService, StockBankruptService stockBankruptService, StockAlertService stockAlertService)
     {
         this.uow = uow;
         this.portfolioDao = portfolioDao;
         this.stockDao = stockDao;
         this.stockPriceHistoryDao = stockPriceHistoryDao;
         this.ownedStockDao = ownedStockDao;
+        this.stockBankruptService = stockBankruptService;
+        this.stockAlertService = stockAlertService;
         this.marketTicker = new MarketTicker();
 
-        this.stockListenerService = new StockListenerService(uow, stockDao, stockPriceHistoryDao);
+        this.stockListenerService = stockListenerService;
     }
 
     public void startGame()
@@ -66,11 +75,8 @@ public class GameService
 
         StockMarket stockMarket = StockMarket.getInstance();
 
-        StockAlertService alertService = new StockAlertService();
-        StockBankruptService stockBankruptService = new StockBankruptService(uow, ownedStockDao);
-
         stockMarket.addListener(stockListenerService);
-        stockMarket.addListener(alertService);
+        stockMarket.addListener(stockAlertService);
         stockMarket.addListener(stockBankruptService);
 
         for (Stock stock : stockDao.getAll()){
@@ -127,10 +133,5 @@ public class GameService
         return portfolioDao.getAll().stream()
                 .findFirst()
                 .map(Portfolio::getId);
-    }
-
-    public StockListenerService getStockListenerService()
-    {
-        return stockListenerService;
     }
 }

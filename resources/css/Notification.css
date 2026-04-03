@@ -1,0 +1,132 @@
+.toast-wrapper {
+    -fx-background-color: linear-gradient(to bottom right,
+    rgba(22, 26, 34, 0.86),
+    rgba(14, 18, 25, 0.76));
+    -fx-background-radius: 20;
+    -fx-border-color: rgba(255, 255, 255, 0.10);
+    -fx-border-width: 1;
+    -fx-border-radius: 20;
+    -fx-padding: 16 18 16 18;
+    -fx-min-width: 290;
+    -fx-max-width: 360;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.34), 28, 0.18, 0, 10);
+}
+
+.toast-title {
+    -fx-text-fill: rgba(255, 255, 255, 0.96);
+    -fx-font-size: 15px;
+    -fx-font-weight: 800;
+}
+
+.toast-message {
+    -fx-text-fill: rgba(228, 232, 240, 0.78);
+    -fx-font-size: 12px;
+    -fx-font-weight: 500;
+    -fx-line-spacing: 2px;
+}
+
+.toast-badge {
+    -fx-background-radius: 999;
+    -fx-padding: 4 10 4 10;
+    -fx-font-size: 10px;
+    -fx-font-weight: 800;
+    -fx-text-fill: white;
+    -fx-letter-spacing: 0.8px;
+}
+
+.toast-default {
+    -fx-border-color: rgba(255, 255, 255, 0.10);
+    -fx-border-width: 1 1 1 1;
+}
+
+.toast-bankrupt {
+    -fx-border-color: rgba(255, 82, 82, 0.42);
+    -fx-border-width: 1 1 1 4;
+}
+
+.toast-reset {
+    -fx-border-color: rgba(70, 214, 155, 0.42);
+    -fx-border-width: 1 1 1 4;
+}
+
+.toast-goal {
+    -fx-border-color: rgba(88, 166, 255, 0.42);
+    -fx-border-width: 1 1 1 4;
+}
+
+.toast-milestone {
+    -fx-border-color: rgba(180, 120, 255, 0.42);
+    -fx-border-width: 1 1 1 4;
+}
+
+.toast-surge {
+    -fx-border-color: rgba(52, 211, 153, 0.45);
+    -fx-border-width: 1 1 1 4;
+}
+
+.toast-drop {
+    -fx-border-color: rgba(248, 113, 113, 0.45);
+    -fx-border-width: 1 1 1 4;
+}
+
+.toast-warning {
+    -fx-border-color: rgba(251, 191, 36, 0.46);
+    -fx-border-width: 1 1 1 4;
+}
+
+.toast-recovery {
+    -fx-border-color: rgba(56, 189, 248, 0.45);
+    -fx-border-width: 1 1 1 4;
+}
+
+.toast-badge-default {
+    -fx-background-color: rgba(148, 163, 184, 0.28);
+}
+
+.toast-badge-bankrupt {
+    -fx-background-color: linear-gradient(to right,
+    rgba(239, 68, 68, 0.90),
+    rgba(220, 38, 38, 0.82));
+}
+
+.toast-badge-reset {
+    -fx-background-color: linear-gradient(to right,
+    rgba(16, 185, 129, 0.90),
+    rgba(5, 150, 105, 0.82));
+}
+
+.toast-badge-goal {
+    -fx-background-color: linear-gradient(to right,
+    rgba(59, 130, 246, 0.90),
+    rgba(37, 99, 235, 0.82));
+}
+
+.toast-badge-milestone {
+    -fx-background-color: linear-gradient(to right,
+    rgba(168, 85, 247, 0.90),
+    rgba(126, 34, 206, 0.82));
+}
+
+.toast-badge-surge {
+    -fx-background-color: linear-gradient(to right,
+    rgba(52, 211, 153, 0.90),
+    rgba(5, 150, 105, 0.82));
+}
+
+.toast-badge-drop {
+    -fx-background-color: linear-gradient(to right,
+    rgba(248, 113, 113, 0.92),
+    rgba(220, 38, 38, 0.82));
+}
+
+.toast-badge-warning {
+    -fx-background-color: linear-gradient(to right,
+    rgba(251, 191, 36, 0.95),
+    rgba(217, 119, 6, 0.82));
+}
+
+.toast-badge-recovery {
+    -fx-background-color: linear-gradient(to right,
+    rgba(56, 189, 248, 0.92),
+    rgba(2, 132, 199, 0.82));
+}

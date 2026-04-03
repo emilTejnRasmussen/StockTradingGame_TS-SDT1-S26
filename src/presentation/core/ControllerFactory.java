@@ -22,7 +22,7 @@ public class ControllerFactory implements Callback<Class<?>, Object>
         }
 
         if (controllerType == MainLeftMenuController.class) {
-            return new MainLeftMenuController(appContext.getMainLeftMenuViewModel());
+            return new MainLeftMenuController(appContext.getMainLeftMenuViewModel(), appContext.getStockAlertService());
         }
 
         if (controllerType == PortfolioController.class) {

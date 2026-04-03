@@ -1,6 +1,9 @@
 package presentation.core;
 
 import business.services.*;
+import business.services.listener.StockAlertService;
+import business.services.listener.StockBankruptService;
+import business.services.listener.StockListenerService;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import persistence.fileImplementation.FileOwnedStockDao;
@@ -48,6 +51,10 @@ public class ApplicationContext
     private final MainLeftMenuViewModel mainLeftMenuViewModel;
     private final DashboardViewModel dashboardViewModel;
 
+    private final StockListenerService stockListenerService;
+    private final StockAlertService stockAlertService;
+    private final StockBankruptService stockBankruptService;
+
     private final ObjectProperty<UUID> activePortfolioId = new SimpleObjectProperty<>();
 
     private ApplicationContext()
@@ -60,6 +67,10 @@ public class ApplicationContext
         ownedStockDao = new FileOwnedStockDao(uow);
         transactionDao = new FileTransactionDao(uow);
 
+        stockListenerService = createStockListenerService();
+        stockAlertService = createStockAlertService();
+        stockBankruptService = createStockBankruptService();
+
         portfolioService = createPortfolioService();
         tradingService = createTradingService();
         stockHistoryService = createStockHistoryService();
@@ -71,6 +82,21 @@ public class ApplicationContext
 
         mainMenuViewModel = createMainMenuViewModel();
         mainLeftMenuViewModel = createMainLeftMenuViewModel();
+    }
+
+    private StockBankruptService createStockBankruptService()
+    {
+        return new StockBankruptService(uow, ownedStockDao);
+    }
+
+    private StockAlertService createStockAlertService()
+    {
+        return new StockAlertService();
+    }
+
+    private StockListenerService createStockListenerService()
+    {
+        return new StockListenerService(uow, stockDao, stockPriceHistoryDao);
     }
 
     private StockService createStockService()
@@ -94,7 +120,7 @@ public class ApplicationContext
                 this,
                 portfolioService,
                 stockService,
-                gameService.getStockListenerService()
+                stockListenerService
         );
     }
 
@@ -102,7 +128,7 @@ public class ApplicationContext
     {
         return new StockMarketViewModel(
                 this,
-                gameService.getStockListenerService(),
+                stockListenerService,
                 stockHistoryService,
                 portfolioService,
                 tradingService
@@ -116,7 +142,10 @@ public class ApplicationContext
                 portfolioDao,
                 stockDao,
                 stockPriceHistoryDao,
-                ownedStockDao
+                ownedStockDao,
+                stockListenerService,
+                stockBankruptService,
+                stockAlertService
         );
     }
 
@@ -202,5 +231,10 @@ public class ApplicationContext
     public ObjectProperty<UUID> activePortfolioIdProperty()
     {
         return activePortfolioId;
+    }
+
+    public StockAlertService getStockAlertService()
+    {
+        return stockAlertService;
     }
 }
