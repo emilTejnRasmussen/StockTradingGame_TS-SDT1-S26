@@ -93,7 +93,8 @@ public class ApplicationContext
         return new DashboardViewModel(
                 this,
                 portfolioService,
-                stockService
+                stockService,
+                gameService.getStockListenerService()
         );
     }
 

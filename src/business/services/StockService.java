@@ -30,9 +30,7 @@ public class StockService
     }
 
     public BigDecimal getCurrentPrice(String stockSymbol) {
-        System.out.println("Before getBySymbol: " + stockSymbol);
         Optional<Stock> stockOptional = stockDao.getBySymbol(stockSymbol);
-        System.out.println("After getBySymbol: " + stockSymbol);
 
         if (stockOptional.isPresent()) return stockOptional.get().getCurrentPrice();
         return BigDecimal.ZERO;

@@ -1,20 +1,18 @@
 package presentation.views.dashboard;
 
-import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.chart.PieChart;
-import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
+import presentation.core.ViewManager;
+import presentation.core.Views;
 
 public class DashboardController
 {
     @FXML
     private Label netWorthLabel;
-    @FXML
-    private Label netWorthChangeLabel;
     @FXML
     private Label cashBalanceLabel;
     @FXML
@@ -74,10 +72,6 @@ public class DashboardController
     @FXML
     private Label ownedStocksLabel;
 
-    @FXML
-    private Button viewMarketBtn;
-    @FXML
-    private Button viewPortfolioBtn;
 
     private final DashboardViewModel dashboardViewModel;
 
@@ -136,7 +130,6 @@ public class DashboardController
     private void bindViewModel()
     {
         netWorthLabel.textProperty().bind(dashboardViewModel.netWorthProperty());
-        netWorthChangeLabel.textProperty().bind(dashboardViewModel.netWorthChangeProperty());
 
         cashBalanceLabel.textProperty().bind(dashboardViewModel.cashBalanceProperty());
         cashStatusLabel.textProperty().bind(dashboardViewModel.cashStatusProperty());
@@ -159,12 +152,14 @@ public class DashboardController
     }
 
     @FXML
-    private void onViewMarket()
+    public void handleOpenMarket()
     {
+        ViewManager.setCenter(Views.STOCK_MARKET);
     }
 
     @FXML
-    private void onViewPortfolio()
+    public void handleOpenPortfolio()
     {
+        ViewManager.setCenter(Views.PORTFOLIO);
     }
 }

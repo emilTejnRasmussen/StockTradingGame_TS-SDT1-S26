@@ -14,6 +14,7 @@ import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.chart.XYChart;
@@ -42,6 +43,7 @@ public class StockMarketViewModel implements PropertyChangeListener
     private final ObservableList<XYChart.Series<Number, Number>> chartSeries = FXCollections.observableArrayList();
 
     private UUID portfolioId;
+
     private final Map<String, XYChart.Series<Number, Number>> seriesBySymbol = new HashMap<>();
     private final Map<String, IntegerProperty> ownedBySymbol = new HashMap<>();
 
@@ -57,11 +59,23 @@ public class StockMarketViewModel implements PropertyChangeListener
 
         stockListenerService.addListener(this);
 
-        this.portfolioId = appContext.getActivePortfolioId();
+        ChangeListener<UUID> activePortfolioListener = (_, _, newId) -> this.portfolioId = newId;
+        appContext.activePortfolioIdProperty().addListener(activePortfolioListener);
+    }
 
-        appContext.activePortfolioIdProperty().addListener((_, _, newId) -> {
-            this.portfolioId = newId;
-            refreshOwnedStocks();
+    @Override
+    public void propertyChange(PropertyChangeEvent evt)
+    {
+        if (!"stockUpdated".equals(evt.getPropertyName()))
+        {
+            return;
+        }
+
+        StockDTO updatedStock = (StockDTO) evt.getNewValue();
+
+        Platform.runLater(() -> {
+            updateStockInTable(updatedStock);
+            appendToSeries(updatedStock);
             updatePortfolioInfo();
         });
     }
@@ -122,23 +136,6 @@ public class StockMarketViewModel implements PropertyChangeListener
             }
 
             refreshOwnedStocks();
-            updatePortfolioInfo();
-        });
-    }
-
-    @Override
-    public void propertyChange(PropertyChangeEvent evt)
-    {
-        if (!"stockUpdated".equals(evt.getPropertyName()))
-        {
-            return;
-        }
-
-        StockDTO updatedStock = (StockDTO) evt.getNewValue();
-
-        Platform.runLater(() -> {
-            updateStockInTable(updatedStock);
-            appendToSeries(updatedStock);
             updatePortfolioInfo();
         });
     }

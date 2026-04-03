@@ -43,21 +43,58 @@ public class PortfolioService
     }
 
     public BigDecimal getAvgStockBuyPrice(String stockSymbol, UUID portfolioId) {
-        BigDecimal totalSpent = transactionDao.findTransactionsByPortfolioId(portfolioId).stream()
+        List<Transaction> transactions = transactionDao.findTransactionsByPortfolioId(portfolioId).stream()
                 .filter(t -> t.stockSymbol().equals(stockSymbol) && t.type() == Transaction.Type.BUY)
+                .toList();
+
+        BigDecimal totalSpent = transactions.stream()
                 .map(Transaction::getGrossAmount)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        int totalSharesBought = transactionDao.findTransactionsByPortfolioId(portfolioId).stream()
-                .filter(t -> t.stockSymbol().equals(stockSymbol) && t.type() == Transaction.Type.BUY)
+        int totalSharesBought = transactions.stream()
                 .mapToInt(Transaction::quantity)
                 .sum();
 
-        if (totalSharesBought == 0) {
+        if (totalSharesBought == 0)
+        {
             return BigDecimal.ZERO;
         }
 
-        return totalSpent.divide(BigDecimal.valueOf(totalSharesBought), 2, java.math.RoundingMode.HALF_UP);
+        return totalSpent.divide(BigDecimal.valueOf(totalSharesBought), 2, RoundingMode.HALF_UP);
+    }
+
+    public String getBestSymbol(UUID portfolioId)
+    {
+        return getOwnedStocks(portfolioId).stream()
+                .max(Comparator.comparing(ownedStock -> getChangePercent(portfolioId, ownedStock.getStockSymbol())))
+                .map(OwnedStock::getStockSymbol)
+                .orElseThrow(() -> new IllegalArgumentException("Portfolio has no owned stocks"));
+    }
+
+    public String getWorstSymbol(UUID portfolioId)
+    {
+        return getOwnedStocks(portfolioId).stream()
+                .min(Comparator.comparing(ownedStock -> getChangePercent(portfolioId, ownedStock.getStockSymbol())))
+                .map(OwnedStock::getStockSymbol)
+                .orElseThrow(() -> new IllegalArgumentException("Portfolio has no owned stocks"));
+    }
+
+    private BigDecimal getChangePercent(UUID portfolioId, String stockSymbol)
+    {
+        BigDecimal avgBuyPrice = getAvgStockBuyPrice(stockSymbol, portfolioId);
+
+        if (avgBuyPrice.compareTo(BigDecimal.ZERO) == 0)
+        {
+            return BigDecimal.ZERO;
+        }
+
+        BigDecimal currentPrice = stockDao.getBySymbol(stockSymbol)
+                .orElseThrow(() -> new IllegalArgumentException("No stock with symbol=" + stockSymbol + " found"))
+                .getCurrentPrice();
+
+        return currentPrice.subtract(avgBuyPrice)
+                .divide(avgBuyPrice, 4, RoundingMode.HALF_UP)
+                .multiply(BigDecimal.valueOf(100));
     }
 
     public boolean hasCreatedPortfolio()

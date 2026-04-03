@@ -48,7 +48,7 @@
 }
 
 .table-column {
-    -fx-alignment: CENTER-LEFT;
+    -fx-alignment: CENTER;
 }
 
 .table-view .column-header-background {
@@ -69,7 +69,7 @@
     -fx-font-size: 13px;
     -fx-font-weight: bold;
     -fx-padding: 10px 12px;
-    -fx-alignment: CENTER-LEFT;
+    -fx-alignment: CENTER;
 }
 
 .table-view .scroll-bar:vertical,

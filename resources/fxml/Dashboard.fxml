@@ -41,7 +41,6 @@
             </padding>
             <Label styleClass="dashboard-card-label" text="Net Worth" />
             <Label fx:id="netWorthLabel" styleClass="dashboard-card-value" text="¤ 0.00" />
-            <Label fx:id="netWorthChangeLabel" styleClass="dashboard-positive-text" text="+0.00%" />
         </VBox>
 
         <VBox spacing="6.0" styleClass="app-pane dashboard-card dashboard-top-card" GridPane.columnIndex="1">
@@ -81,8 +80,8 @@
             <ColumnConstraints hgrow="ALWAYS" percentWidth="36.0" />
         </columnConstraints>
         <rowConstraints>
-            <RowConstraints percentHeight="48.0" vgrow="ALWAYS" />
-            <RowConstraints percentHeight="52.0" vgrow="ALWAYS" />
+            <RowConstraints percentHeight="50.0" vgrow="ALWAYS" />
+            <RowConstraints percentHeight="50.0" vgrow="ALWAYS" />
         </rowConstraints>
 
         <VBox spacing="8.0" styleClass="app-pane dashboard-section-pane" GridPane.columnIndex="0" GridPane.rowIndex="0">
@@ -105,6 +104,9 @@
                     <TableColumn fx:id="valueColumn" prefWidth="100.0" text="Value" />
                     <TableColumn fx:id="plColumn" prefWidth="90.0" text="P/L" />
                 </columns>
+            <columnResizePolicy>
+               <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+            </columnResizePolicy>
             </TableView>
         </VBox>
 
@@ -130,13 +132,16 @@
 
             <TableView fx:id="transactionsTableView" VBox.vgrow="ALWAYS">
                 <columns>
-                    <TableColumn fx:id="transactionTimeColumn" prefWidth="120.0" text="Time" />
+                    <TableColumn fx:id="transactionTimeColumn" minWidth="140.0" prefWidth="140.0" text="Time" />
                     <TableColumn fx:id="transactionTypeColumn" prefWidth="80.0" text="Type" />
                     <TableColumn fx:id="transactionSymbolColumn" prefWidth="90.0" text="Symbol" />
                     <TableColumn fx:id="transactionSharesColumn" prefWidth="80.0" text="Shares" />
                     <TableColumn fx:id="transactionPriceColumn" prefWidth="100.0" text="Price" />
                     <TableColumn fx:id="transactionTotalColumn" prefWidth="110.0" text="Total" />
                 </columns>
+            <columnResizePolicy>
+               <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+            </columnResizePolicy>
             </TableView>
         </VBox>
 
@@ -174,8 +179,8 @@
             <Region VBox.vgrow="ALWAYS" />
 
             <HBox spacing="8.0">
-                <Button fx:id="viewMarketBtn" styleClass="dashboard-action-button" text="Open Market" HBox.hgrow="ALWAYS" />
-                <Button fx:id="viewPortfolioBtn" styleClass="dashboard-secondary-button" text="Portfolio" HBox.hgrow="ALWAYS" />
+                <Button onAction="#handleOpenMarket" styleClass="dashboard-action-button" text="Open Market" HBox.hgrow="ALWAYS" />
+                <Button onAction="#handleOpenPortfolio" styleClass="dashboard-secondary-button" text="Portfolio" HBox.hgrow="ALWAYS" />
             </HBox>
         </VBox>
     </GridPane>
