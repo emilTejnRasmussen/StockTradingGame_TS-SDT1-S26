@@ -29,7 +29,7 @@ public class StockMarketController
     @FXML
     private TableColumn<StockDTO, String> symbolCol;
     @FXML
-    private TableColumn<StockDTO, BigDecimal> priceCol;
+    private TableColumn<StockDTO, String> priceCol;
     @FXML
     private TableColumn<StockDTO, Integer> ownedCol;
     @FXML
@@ -72,7 +72,7 @@ public class StockMarketController
                 new ReadOnlyStringWrapper(cellData.getValue().symbol()));
 
         priceCol.setCellValueFactory(cellData ->
-                new ReadOnlyObjectWrapper<>(cellData.getValue().currentPrice()));
+                new ReadOnlyObjectWrapper<>(String.format("¤ %.2f", cellData.getValue().currentPrice())));
 
         ownedCol.setCellValueFactory(cellData ->
                 viewModel.ownedQuantityProperty(cellData.getValue().symbol()).asObject());
