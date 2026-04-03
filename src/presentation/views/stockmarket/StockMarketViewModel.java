@@ -17,6 +17,7 @@ import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.chart.XYChart;
+import presentation.core.ApplicationContext;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -26,6 +27,7 @@ public class StockMarketViewModel implements PropertyChangeListener
 {
     private static final int DEFAULT_HISTORY_SIZE = 30;
 
+    private final ApplicationContext appContext;
     private final StockListenerService stockListenerService;
     private final StockHistoryService stockHistoryService;
     private final PortfolioService portfolioService;
@@ -46,17 +48,26 @@ public class StockMarketViewModel implements PropertyChangeListener
     private final Map<String, IntegerProperty> ownedBySymbol = new HashMap<>();
 
 
-    public StockMarketViewModel(StockListenerService stockListenerService,
+    public StockMarketViewModel(ApplicationContext appContext, StockListenerService stockListenerService,
                                 StockHistoryService stockHistoryService,
                                 PortfolioService portfolioService,
                                 TradingService tradingService)
     {
+        this.appContext = appContext;
         this.stockListenerService = stockListenerService;
         this.stockHistoryService = stockHistoryService;
         this.portfolioService = portfolioService;
         this.tradingService = tradingService;
 
         this.stockListenerService.addListener(this);
+
+        this.portfolioId = appContext.getActivePortfolioId();
+
+        this.appContext.activePortfolioIdProperty().addListener((obs, oldId, newId) -> {
+            this.portfolioId = newId;
+            refreshOwnedStocks();
+            updatePortfolioInfo();
+        });
     }
 
     public ObservableList<StockDTO> getStocks()
@@ -138,6 +149,12 @@ public class StockMarketViewModel implements PropertyChangeListener
 
     private void updatePortfolioInfo()
     {
+        if (portfolioId == null)
+        {
+            clearPortfolioInfo();
+            return;
+        }
+        
         String newCashBalance = String.format("¤ %.2f", portfolioService.getPortfolioBalance(portfolioId));
         String newNetWorth = String.format("¤ %.2f", portfolioService.getTotalPortfolioValue(portfolioId));
         String newTotalPL = String.format("¤ %.2f", portfolioService.getTotalProfitLoss(portfolioId));
@@ -151,6 +168,16 @@ public class StockMarketViewModel implements PropertyChangeListener
         ownedStocks.set(newOwnedStocks);
         totalShares.set(newTotalShares);
         holdingsValue.set(newHoldingsValue);
+    }
+
+    private void clearPortfolioInfo()
+    {
+        cashBalance.set("¤ 0.00");
+        netWorth.set("¤ 0.00");
+        totalPL.set("¤ 0.00");
+        ownedStocks.set("0");
+        totalShares.set("0");
+        holdingsValue.set("¤ 0.00");
     }
 
     private void updateStockInTable(StockDTO updatedStock)
@@ -242,15 +269,10 @@ public class StockMarketViewModel implements PropertyChangeListener
         }
     }
 
-    public void setPortfolioId(UUID portfolioId)
-    {
-        this.portfolioId = portfolioId;
-        refreshOwnedStocks();
-        updatePortfolioInfo();
-    }
-
     public void sell(StockDTO stock)
     {
+        if (portfolioId == null) return;
+
         SellStockRequestDTO request = new SellStockRequestDTO(stock.symbol(), portfolioId, 1);
 
         try
@@ -268,6 +290,8 @@ public class StockMarketViewModel implements PropertyChangeListener
 
     public void buy(StockDTO stock)
     {
+        if (portfolioId == null) return;
+
         BuyStockRequestDTO request = new BuyStockRequestDTO(stock.symbol(), portfolioId, 1);
 
         try

@@ -4,6 +4,8 @@ import business.services.GameService;
 import business.services.PortfolioService;
 import business.services.StockHistoryService;
 import business.services.TradingService;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import persistence.fileImplementation.FileOwnedStockDao;
 import persistence.fileImplementation.FilePortfolioDao;
 import persistence.fileImplementation.FileStockDao;
@@ -44,6 +46,8 @@ public class ApplicationContext
     private final MainMenuViewModel mainMenuViewModel;
     private final MainLeftMenuViewModel mainLeftMenuViewModel;
 
+    private final ObjectProperty<UUID> activePortfolioId = new SimpleObjectProperty<>();
+
     private ApplicationContext()
     {
         uow = new FileUnitOfWork("data/");
@@ -81,6 +85,7 @@ public class ApplicationContext
         );
 
         stockMarketViewModel = new StockMarketViewModel(
+                this,
                 gameService.getStockListenerService(),
                 stockHistoryService,
                 portfolioService,
@@ -126,5 +131,20 @@ public class ApplicationContext
     public PortfolioViewModel getPortfolioViewModel()
     {
         return new PortfolioViewModel();
+    }
+
+    public UUID getActivePortfolioId()
+    {
+        return activePortfolioId.get();
+    }
+
+    public void setActivePortfolioId(UUID portfolioId)
+    {
+        activePortfolioId.set(portfolioId);
+    }
+
+    public ObjectProperty<UUID> activePortfolioIdProperty()
+    {
+        return activePortfolioId;
     }
 }

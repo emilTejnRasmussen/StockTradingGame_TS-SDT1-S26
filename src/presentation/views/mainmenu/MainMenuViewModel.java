@@ -21,21 +21,12 @@ public class MainMenuViewModel
     }
 
     public void startGame() {
-        UUID portfolioId = gameService.startGame();
-
-        ApplicationContext.getInstance().getStockMarketViewModel().setPortfolioId(portfolioId);
-
+        gameService.startGame();
         ViewManager.showScene(Views.MAIN_LEFT_MENU);
     }
 
     public void continueGame() {
         gameService.loadGame();
-
-        gameService.getCurrentPortfolioId()
-                .ifPresent(id -> ApplicationContext.getInstance()
-                        .getStockMarketViewModel()
-                        .setPortfolioId(id));
-
         ViewManager.showScene(Views.MAIN_LEFT_MENU);
     }
 

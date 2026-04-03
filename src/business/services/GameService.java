@@ -9,6 +9,7 @@ import entities.Portfolio;
 import entities.Stock;
 import persistence.fileImplementation.FileUnitOfWork;
 import persistence.interfaces.*;
+import presentation.core.ApplicationContext;
 import shared.configuration.AppConfig;
 import shared.logging.Logger;
 
@@ -41,7 +42,7 @@ public class GameService
         this.stockListenerService = new StockListenerService(uow, stockDao, stockPriceHistoryDao);
     }
 
-    public UUID startGame()
+    public void startGame()
     {
         resetGame();
 
@@ -53,8 +54,6 @@ public class GameService
         uow.commit();
 
         loadGame();
-
-        return portfolio.getId();
     }
     public void resetGame() {
         clearGameData();
@@ -62,6 +61,9 @@ public class GameService
     }
 
     public void loadGame() {
+        UUID portfolioId = portfolioDao.getAll().getFirst().getId();
+        ApplicationContext.getInstance().setActivePortfolioId(portfolioId);
+
         StockMarket stockMarket = StockMarket.getInstance();
 
         StockAlertService alertService = new StockAlertService();
