@@ -274,9 +274,8 @@ public class StockMarketViewModel implements PropertyChangeListener
         try
         {
             tradingService.sellStock(request);
-
-            IntegerProperty property = ownedQuantityProperty(stock.symbol());
-            property.set(Math.max(0, property.get() - 1));
+            refreshOwnedStocks();
+            updatePortfolioInfo();
         } catch (Exception ignored)
         {
             // TODO - show error popup
@@ -293,9 +292,8 @@ public class StockMarketViewModel implements PropertyChangeListener
         try
         {
             tradingService.buyStock(request);
-
-            IntegerProperty property = ownedQuantityProperty(stock.symbol());
-            property.set(property.get() + 1);
+            refreshOwnedStocks();
+            updatePortfolioInfo();
         } catch (Exception ignored)
         {
             // TODO - show error popup
