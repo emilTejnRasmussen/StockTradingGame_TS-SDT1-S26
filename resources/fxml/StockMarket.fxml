@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.chart.LineChart?>
+<?import javafx.scene.chart.NumberAxis?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="900.0" spacing="20.0" styleClass="app-center-root" stylesheets="@../css/styles.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="presentation.views.stockmarket.StockMarketController">
+    <padding>
+        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+    </padding>
+    <HBox alignment="CENTER" prefHeight="450.0" prefWidth="200.0" styleClass="app-pane" stylesheets="@../css/lineChart.css">
+        <padding>
+            <Insets left="30.0" right="30.0" />
+        </padding>
+        <LineChart fx:id="stockMarketChart" HBox.hgrow="ALWAYS">
+            <xAxis>
+                <NumberAxis side="BOTTOM" fx:id="xAxis" />
+            </xAxis>
+            <yAxis>
+                <NumberAxis fx:id="yAxis" side="LEFT" />
+            </yAxis>
+        </LineChart>
+    </HBox>
+    <HBox prefHeight="100.0" prefWidth="200.0" spacing="20.0" VBox.vgrow="ALWAYS">
+        <VBox alignment="CENTER" prefHeight="400.0" prefWidth="100.0" styleClass="app-pane" stylesheets="@../css/tableView.css" HBox.hgrow="ALWAYS">
+            <TableView fx:id="stockTableView" prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS">
+                <columns>
+                    <TableColumn fx:id="symbolCol" text="Symbol" />
+                    <TableColumn fx:id="priceCol" minWidth="-1.0" text="Price" />
+               <TableColumn fx:id="ownedCol" text="Owned" />
+                    <TableColumn fx:id="buyCol" />
+               <TableColumn fx:id="sellCol" />
+                </columns>
+            </TableView>
+        </VBox>
+        <VBox prefHeight="400.0" prefWidth="100.0" spacing="10.0" styleClass="app-pane" stylesheets="@../css/portfolioOverview.css" HBox.hgrow="ALWAYS">
+            <Label alignment="CENTER" contentDisplay="CENTER" styleClass="portfolio-overview-title" text="Portfolio Overview" VBox.vgrow="ALWAYS">
+                <font>
+                    <Font size="18.0" />
+                </font>
+            </Label>
+            <VBox prefHeight="200.0" prefWidth="100.0" spacing="10.0">
+                <HBox spacing="20.0" styleClass="portfolio-row">
+                    <Label prefWidth="150.0" styleClass="portfolio-label" text="Cash Balance" />
+                    <Label fx:id="cashBalanceLbl" styleClass="portfolio-value" text="CASH_BALANCE_VALUE" />
+                </HBox>
+                <HBox spacing="20.0" styleClass="portfolio-row">
+                    <Label prefWidth="150.0" styleClass="portfolio-label" text="Holdings Value" />
+                    <Label fx:id="holdingsValueLbl" styleClass="portfolio-value" text="HOLDINGS_VALUE" />
+                </HBox>
+                <HBox spacing="20.0" styleClass="portfolio-row">
+                    <Label prefWidth="150.0" styleClass="portfolio-label" text="Net Worth" />
+                    <Label fx:id="netWorthLbl" styleClass="portfolio-value" text="NET_WORTH_VALUE" />
+                </HBox>
+                <HBox spacing="20.0" styleClass="portfolio-row">
+                    <Label prefWidth="150.0" styleClass="portfolio-label" text="Total P/L" />
+                    <Label fx:id="totalPLLbl" styleClass="portfolio-value" text="TOTAL_PL_VALUE" />
+                </HBox>
+                <HBox spacing="20.0" styleClass="portfolio-row">
+                    <Label prefWidth="150.0" styleClass="portfolio-label" text="Ownend Stocks" />
+                    <Label fx:id="ownedStocksLbl" styleClass="portfolio-value" text="OWNED_STOCKS_VALUE" />
+                </HBox>
+                <HBox spacing="20.0" styleClass="portfolio-row">
+                    <Label prefWidth="150.0" styleClass="portfolio-label" text="Total Shares" />
+                    <Label fx:id="totalSharesLbl" styleClass="portfolio-value" text="TOTAL_SHARES_VALUE" />
+                </HBox>
+            </VBox>
+         <padding>
+            <Insets bottom="10.0" left="20.0" right="20.0" top="10.0" />
+         </padding>
+        </VBox>
+    </HBox>
+</VBox>

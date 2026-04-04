@@ -1,0 +1,131 @@
+* {
+    menu-bg: #1a1410;
+    btn-border: #4b3425;
+    btn-background: #2a1f18;
+    btn-active: #f97316;
+    btn-hover: #382821;
+    text-color-active: #2c1c08;
+    text-color-inactive: #f97316;
+    separator-fill: #6a3822;
+
+    close-bg: #2a1f18;
+    close-border: #b45353;
+    close-text: #b45353;
+    close-hover-bg: #552222;
+    close-hover-border: #b45353;
+    close-hover-text: #b45353;
+}
+
+.menu {
+    -fx-pref-width: 80px;
+    -fx-min-width: 80px;
+    -fx-max-width: 80px;
+
+    -fx-background-color: menu-bg;
+    -fx-background-radius: 18px;
+    -fx-border-radius: 18px;
+}
+
+.menu:hover {
+    -fx-pref-width: 280px;
+    -fx-min-width: 280px;
+    -fx-max-width: 280px;
+}
+
+.menu-title-box {
+    -fx-alignment: CENTER;
+}
+
+
+.menu:hover .menu-title-box {
+    -fx-alignment: CENTER_LEFT;
+}
+
+.menu-title {
+    -fx-text-fill: text-color-inactive;
+}
+
+.menu-btn {
+    -fx-pref-height: 60px;
+    -fx-max-width: infinity;
+
+    -fx-alignment: CENTER_LEFT;
+
+    -fx-background-color: btn-background;
+    -fx-background-radius: 20px;
+    -fx-background-insets: 0;
+
+    -fx-border-color: btn-border;
+    -fx-border-radius: 15px;
+    -fx-border-width: 2;
+    -fx-border-style: dotted;
+    -fx-border-insets: 0;
+}
+
+.menu:hover .menu-btn {
+    -fx-pref-width: 265px;
+    -fx-max-width: 265px;
+}
+
+.menu-btn:hover {
+    -fx-background-color: btn-hover;
+}
+
+.menu-btn-hBox {
+    -fx-alignment: CENTER;
+}
+
+.menu:hover .menu-btn-hBox {
+    -fx-alignment: CENTER_LEFT;
+}
+
+.btn-label {
+    -fx-text-fill: text-color-inactive;
+}
+
+.menu-btn.active {
+    -fx-background-color: btn-active;
+    -fx-border-style: solid;
+}
+
+.menu-btn.active .btn-label {
+    -fx-text-fill: text-color-active;
+}
+
+.separator-line {
+    -fx-padding: 0 16 0 16;
+}
+
+.separator-line .line {
+    -fx-border-color: separator-fill;
+    -fx-border-width: 1px;
+}
+
+.close-btn {
+    -fx-pref-height: 60px;
+    -fx-max-width: infinity;
+    -fx-alignment: CENTER_LEFT;
+
+    -fx-background-color: close-bg;
+    -fx-background-radius: 15px;
+    -fx-background-insets: 0;
+
+    -fx-border-color: close-border;
+    -fx-border-radius: 15px;
+    -fx-border-width: 2;
+    -fx-border-insets: 0;
+    -fx-border-style: solid;
+}
+
+.close-btn .label {
+    -fx-text-fill: close-text;
+}
+
+.close-btn:hover {
+    -fx-background-color: close-hover-bg;
+    -fx-border-color: close-hover-border;
+}
+
+.close-btn:hover .label {
+    -fx-text-fill: close-hover-text;
+}

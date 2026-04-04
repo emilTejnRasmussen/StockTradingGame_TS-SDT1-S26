@@ -5,8 +5,10 @@ import business.dto.StockResponseDTO;
 import entities.Stock;
 import persistence.interfaces.StockDao;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class StockService
 {
@@ -25,6 +27,13 @@ public class StockService
                 .toList();
 
         return mapStockListToDTO(stocks);
+    }
+
+    public BigDecimal getCurrentPrice(String stockSymbol) {
+        Optional<Stock> stockOptional = stockDao.getBySymbol(stockSymbol);
+
+        if (stockOptional.isPresent()) return stockOptional.get().getCurrentPrice();
+        return BigDecimal.ZERO;
     }
 
     public StockResponseDTO getBySymbol (String stockSymbol){

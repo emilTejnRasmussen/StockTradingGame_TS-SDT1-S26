@@ -193,4 +193,29 @@ public class FileUnitOfWork implements UnitOfWork
             throw new RuntimeException("Failed to initialize storage files", e);
         }
     }
+
+    public String getDirectoryPath() {
+        return directoryPath;
+    }
+
+    public String getPortfoliosFilename() {
+        return PORTFOLIOS_FILENAME;
+    }
+
+    public String getStocksFilename() {
+        return STOCKS_FILENAME;
+    }
+
+    public String getOwnedStocksFilename() {
+        return OWNED_STOCKS_FILENAME;
+    }
+
+    public String getTransactionsFilename() {
+        return TRANSACTIONS_FILENAME;
+    }
+
+    public String getStockPriceHistoryFilename() {
+        return STOCK_PRICE_HISTORY_FILENAME;
+    }
+
 }

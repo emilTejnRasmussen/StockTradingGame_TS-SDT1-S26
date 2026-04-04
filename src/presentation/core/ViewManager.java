@@ -1,0 +1,147 @@
+package presentation.core;
+
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.paint.Color;
+import javafx.stage.Stage;
+import javafx.stage.StageStyle;
+
+import java.io.IOException;
+import java.util.Objects;
+
+public class ViewManager
+{
+    private static Stage stage;
+    private static BorderPane mainLayout;
+    private static final ControllerFactory controllerFactory = new ControllerFactory();
+
+    public static void setStage(Stage primaryStage)
+    {
+        stage = primaryStage;
+        stage.initStyle(StageStyle.TRANSPARENT);
+    }
+
+    public static void showMainMenu()
+    {
+        showFullScene(Views.MAIN_MENU);
+        mainLayout = null;
+    }
+
+    public static void showMainApplication()
+    {
+        stage.hide();
+        try
+        {
+            Parent root = load(Views.MAIN_APPLICATION);
+            Scene scene = new Scene(root);
+            scene.setFill(Color.TRANSPARENT);
+
+            stage.setScene(scene);
+            stage.centerOnScreen();
+            stage.show();
+
+            if (root instanceof BorderPane borderPane)
+            {
+                mainLayout = borderPane;
+            }
+            else
+            {
+                mainLayout = findBorderPane(root);
+            }
+
+            if (mainLayout == null)
+            {
+                throw new IllegalStateException("Main application view must contain a BorderPane.");
+            }
+        }
+        catch (IOException e)
+        {
+            showError(Views.MAIN_APPLICATION, e);
+            e.printStackTrace();
+        }
+    }
+
+    public static void setCenter(Views view)
+    {
+        verifyMainLayoutIsNotNull();
+
+        try
+        {
+            Parent centerView = load(view);
+            mainLayout.setCenter(centerView);
+        }
+        catch (IOException e)
+        {
+            showError(view, e);
+            e.printStackTrace();
+        }
+    }
+
+    private static void showFullScene(Views view)
+    {
+        try
+        {
+            Parent root = load(view);
+            Scene scene = new Scene(root);
+            scene.setFill(Color.TRANSPARENT);
+
+            stage.setScene(scene);
+            stage.centerOnScreen();
+            stage.show();
+        }
+        catch (IOException e)
+        {
+            showError(view, e);
+            e.printStackTrace();
+        }
+    }
+
+    private static Parent load(Views view) throws IOException
+    {
+        FXMLLoader loader = new FXMLLoader(
+                Objects.requireNonNull(ViewManager.class.getResource(view.getView()))
+        );
+        loader.setControllerFactory(controllerFactory);
+        return loader.load();
+    }
+
+    private static BorderPane findBorderPane(Parent root)
+    {
+        if (root instanceof BorderPane borderPane)
+        {
+            return borderPane;
+        }
+
+        for (javafx.scene.Node child : root.getChildrenUnmodifiable())
+        {
+            if (child instanceof Parent parent)
+            {
+                BorderPane found = findBorderPane(parent);
+                if (found != null)
+                {
+                    return found;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private static void showError(Views view, Exception e)
+    {
+        Alert error = new Alert(Alert.AlertType.ERROR, "Cannot find view: " + view);
+        error.show();
+        System.out.println(e.getMessage());
+    }
+
+    private static void verifyMainLayoutIsNotNull()
+    {
+        if (mainLayout == null)
+        {
+            throw new IllegalStateException("Main application layout has not been loaded yet.");
+        }
+    }
+}
