@@ -80,6 +80,19 @@ public class StockMarketController
         buyCol.setCellValueFactory(cellData -> new ReadOnlyObjectWrapper<>(null));
         sellCol.setCellValueFactory(cellData -> new ReadOnlyObjectWrapper<>(null));
 
+        stockTableView.getSelectionModel().setCellSelectionEnabled(false);
+
+        stockTableView.setRowFactory(tv -> {
+            TableRow<StockDTO> row = new TableRow<>();
+            row.setOnMousePressed(event -> {
+                if (!row.isEmpty()) {
+                    stockTableView.getSelectionModel().clearSelection();
+                    stockTableView.getFocusModel().focus(-1);
+                }
+            });
+            return row;
+        });
+
         setupBuyColumn();
         setupSellColumn();
     }

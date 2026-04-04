@@ -4,6 +4,10 @@
     -fx-background-radius: 12px;
     -fx-padding: 6px;
     -fx-table-cell-border-color: transparent;
+    -fx-selection-bar: rgba(249,115,22,0.22);
+    -fx-selection-bar-non-focused: rgba(249,115,22,0.22);
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
 }
 
 .table-view .virtual-flow {
@@ -16,7 +20,7 @@
 
 .table-row-cell {
     -fx-background-color: rgba(255,255,255,0.02);
-    -fx-background-insets: 0, 0 0 1 0;
+    -fx-background-insets: 0;
     -fx-padding: 6px 0;
     -fx-border-color: transparent transparent rgba(255,255,255,0.04) transparent;
 }
@@ -29,13 +33,13 @@
     -fx-background-color: rgba(249,115,22,0.12);
 }
 
-.table-row-cell:selected {
+.table-row-cell:filled:selected,
+.table-row-cell:filled:selected:focused,
+.table-row-cell:filled:selected:hover,
+.table-view:focused .table-row-cell:filled:selected,
+.table-view .table-row-cell:filled:selected {
     -fx-background-color: rgba(249,115,22,0.22);
     -fx-background-insets: 0;
-}
-
-.table-row-cell:selected .text {
-    -fx-fill: white;
 }
 
 .table-cell {
@@ -45,6 +49,36 @@
     -fx-padding: 10px 12px;
     -fx-border-color: transparent;
     -fx-background-color: transparent;
+}
+
+.table-row-cell:filled:selected .table-cell,
+.table-row-cell:filled:selected:focused .table-cell,
+.table-row-cell:filled:selected:hover .table-cell,
+.table-view:focused .table-row-cell:filled:selected .table-cell,
+.table-view .table-row-cell:filled:selected .table-cell {
+    -fx-background-color: transparent;
+    -fx-text-fill: white;
+}
+
+.table-row-cell:filled:selected .text,
+.table-row-cell:filled:selected:focused .text,
+.table-row-cell:filled:selected:hover .text,
+.table-view:focused .table-row-cell:filled:selected .text,
+.table-view .table-row-cell:filled:selected .text {
+    -fx-fill: white;
+}
+
+.table-cell:selected,
+.table-cell:selected:focused,
+.table-cell:focused {
+    -fx-background-color: transparent;
+    -fx-text-fill: white;
+}
+
+.table-cell:selected .text,
+.table-cell:selected:focused .text,
+.table-cell:focused .text {
+    -fx-fill: white;
 }
 
 .table-column {

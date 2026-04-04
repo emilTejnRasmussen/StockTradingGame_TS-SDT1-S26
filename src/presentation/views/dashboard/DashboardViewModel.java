@@ -4,10 +4,8 @@ import business.services.PortfolioService;
 import business.services.StockService;
 import business.services.listener.StockListenerService;
 import entities.OwnedStock;
-import entities.Portfolio;
 import entities.Transaction;
 import javafx.application.Platform;
-import javafx.beans.property.ReadOnlyIntegerWrapper;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
@@ -71,7 +69,7 @@ public class DashboardViewModel implements PropertyChangeListener
     @Override
     public void propertyChange(PropertyChangeEvent evt)
     {
-        Platform.runLater(this::load);
+        Platform.runLater(this::refreshValues);
     }
 
     public void load()
@@ -86,13 +84,57 @@ public class DashboardViewModel implements PropertyChangeListener
         holdingsUpdatedText.set("Updated " + TIME_FORMATTER.format(LocalDateTime.now()));
     }
 
+    private void refreshValues()
+    {
+        if (portfolioId == null) return;
+
+        List<OwnedStock> ownedStocksList = portfolioService.getOwnedStocks(portfolioId);
+
+        for (OwnedStock ownedStock : ownedStocksList)
+        {
+            String stockSymbol = ownedStock.getStockSymbol();
+            HoldingRowViewModel row = findHoldingRow(stockSymbol);
+
+            if (row == null) {
+                continue;
+            }
+
+            int numberOfShares = ownedStock.getNumberOfShares();
+            BigDecimal currentPrice = stockService.getCurrentPrice(stockSymbol);
+            BigDecimal value = currentPrice.multiply(BigDecimal.valueOf(numberOfShares));
+            BigDecimal avgPrice = portfolioService.getAvgStockBuyPrice(stockSymbol, portfolioId);
+            BigDecimal pl = currentPrice
+                    .subtract(avgPrice)
+                    .multiply(BigDecimal.valueOf(numberOfShares));
+
+            row.setShares(numberOfShares);
+            row.setAvgPrice(formatCurrency(avgPrice));
+            row.setCurrentPrice(formatCurrency(currentPrice));
+            row.setValue(formatCurrency(value));
+            row.setPl(formatCurrency(pl));
+        }
+
+        shareDistribution.setAll(buildShareDistribution());
+        recalculateSummary();
+        holdingsUpdatedText.set("Updated " + TIME_FORMATTER.format(LocalDateTime.now()));
+    }
+
+    private HoldingRowViewModel findHoldingRow(String symbol)
+    {
+        for (HoldingRowViewModel row : holdings)
+        {
+            if (row.getSymbol().equals(symbol)) {
+                return row;
+            }
+        }
+        return null;
+    }
+
     private void loadHoldings()
     {
         if (portfolioId == null) return;
 
         List<OwnedStock> ownedStocks = portfolioService.getOwnedStocks(portfolioId);
-
-
 
         for (OwnedStock ownedStock : ownedStocks) {
             String stockSymbol = ownedStock.getStockSymbol();

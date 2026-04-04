@@ -149,7 +149,7 @@ public class StockMarketViewModel implements PropertyChangeListener
         }
 
         String newCashBalance = String.format("¤ %.2f", portfolioService.getPortfolioBalance(portfolioId));
-        String newNetWorth = String.format("¤ %.2f", portfolioService.getTotalPortfolioValue(portfolioId));
+        String newNetWorth = String.format("¤ %.2f", portfolioService.getPortfolioNetWorth(portfolioId));
         String newTotalPL = String.format("¤ %.2f", portfolioService.getTotalProfitLoss(portfolioId));
         String newOwnedStocks = String.format("%d", portfolioService.getOwnedStocks(portfolioId).size());
         String newTotalShares = String.format("%d", portfolioService.getTotalNumberOfShares(portfolioId));

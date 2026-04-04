@@ -4,6 +4,7 @@ import javafx.fxml.FXML;
 import javafx.scene.chart.PieChart;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import presentation.core.ViewManager;
@@ -112,7 +113,20 @@ public class DashboardController
         valueColumn.setCellValueFactory(new PropertyValueFactory<>("value"));
         plColumn.setCellValueFactory(new PropertyValueFactory<>("pl"));
 
+        holdingsTableView.getSelectionModel().setCellSelectionEnabled(false);
+
         holdingsTableView.setItems(dashboardViewModel.getHoldings());
+
+        holdingsTableView.setRowFactory(tv -> {
+            TableRow<HoldingRowViewModel> row = new TableRow<>();
+            row.setOnMousePressed(event -> {
+                if (!row.isEmpty()) {
+                    holdingsTableView.getSelectionModel().clearSelection();
+                    holdingsTableView.getFocusModel().focus(-1);
+                }
+            });
+            return row;
+        });
     }
 
     private void setupTransactionsTable()
@@ -124,7 +138,20 @@ public class DashboardController
         transactionPriceColumn.setCellValueFactory(new PropertyValueFactory<>("price"));
         transactionTotalColumn.setCellValueFactory(new PropertyValueFactory<>("total"));
 
+        transactionsTableView.getSelectionModel().setCellSelectionEnabled(false);
+
         transactionsTableView.setItems(dashboardViewModel.getTransactions());
+
+        transactionsTableView.setRowFactory(tv -> {
+            TableRow<TransactionRowViewModel> row = new TableRow<>();
+            row.setOnMousePressed(event -> {
+                if (!row.isEmpty()) {
+                    transactionsTableView.getSelectionModel().clearSelection();
+                    transactionsTableView.getFocusModel().focus(-1);
+                }
+            });
+            return row;
+        });
     }
 
     private void bindViewModel()

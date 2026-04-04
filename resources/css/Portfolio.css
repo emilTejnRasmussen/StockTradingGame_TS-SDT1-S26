@@ -1,0 +1,140 @@
+.portfolio-root {
+    -fx-max-height: 820;
+}
+
+.portfolio-title {
+    -fx-text-fill: #ff8a1f;
+    -fx-font-size: 22px;
+    -fx-font-weight: bold;
+}
+
+.portfolio-subtitle {
+    -fx-text-fill: #a8a29e;
+    -fx-font-size: 12px;
+}
+
+.portfolio-section-title {
+    -fx-text-fill: #ff8a1f;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+}
+
+.portfolio-card {
+    -fx-min-height: 180px;
+}
+
+.portfolio-table-pane {
+    -fx-min-height: 300px;
+}
+
+.portfolio-info-row {
+    -fx-background-color: rgba(255, 255, 255, 0.03);
+    -fx-background-radius: 10;
+    -fx-padding: 8 12 8 12;
+    -fx-alignment: center-left;
+    -fx-spacing: 10;
+}
+
+.portfolio-row-label {
+    -fx-text-fill: #d6d3d1;
+    -fx-font-size: 13px;
+}
+
+.portfolio-row-value {
+    -fx-text-fill: white;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+}
+
+.portfolio-row-value-highlight {
+    -fx-text-fill: #ff8a1f;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+}
+
+.portfolio-input-label {
+    -fx-text-fill: #c7c7c7;
+    -fx-font-size: 12px;
+    -fx-font-weight: 600;
+}
+
+.portfolio-muted-text {
+    -fx-text-fill: #a8a29e;
+    -fx-font-size: 11px;
+}
+
+.portfolio-text-field {
+    -fx-background-color: rgba(255,255,255,0.06);
+    -fx-background-radius: 10;
+    -fx-border-radius: 10;
+    -fx-border-color: rgba(255,255,255,0.14);
+    -fx-border-width: 1;
+    -fx-text-fill: white;
+    -fx-prompt-text-fill: #8f8b85;
+    -fx-padding: 10 12 10 12;
+    -fx-font-size: 13px;
+}
+
+.portfolio-text-field:focused {
+    -fx-border-color: #f97316;
+    -fx-background-color: rgba(255,255,255,0.08);
+}
+
+.portfolio-primary-button,
+.portfolio-secondary-button {
+    -fx-background-radius: 10px;
+    -fx-border-radius: 10px;
+    -fx-padding: 8px 14px;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+    -fx-border-width: 1px;
+}
+
+.portfolio-primary-button {
+    -fx-background-color: linear-gradient(to bottom, #fb923c, #f97316);
+    -fx-text-fill: white;
+    -fx-border-color: #fdba74;
+}
+
+.portfolio-primary-button:hover {
+    -fx-background-color: linear-gradient(to bottom, #fdba74, #fb923c);
+}
+
+.portfolio-primary-button:pressed {
+    -fx-background-color: #ea580c;
+}
+
+.portfolio-secondary-button {
+    -fx-background-color: rgba(255,255,255,0.08);
+    -fx-text-fill: #f5f5f4;
+    -fx-border-color: rgba(255,255,255,0.18);
+}
+
+.portfolio-secondary-button:hover {
+    -fx-background-color: rgba(255,255,255,0.14);
+    -fx-border-color: rgba(255,255,255,0.28);
+}
+
+.portfolio-secondary-button:pressed {
+    -fx-background-color: rgba(255,255,255,0.20);
+}
+
+.dashboard-table .table-row-cell:selected,
+.dashboard-table .table-row-cell:filled:selected,
+.dashboard-table .table-row-cell:filled:selected:focused {
+    -fx-background-color: rgba(255,255,255,0.02);
+}
+
+.dashboard-table .table-row-cell:selected .table-cell,
+.dashboard-table .table-row-cell:filled:selected .table-cell,
+.dashboard-table .table-row-cell:filled:selected:focused .table-cell {
+    -fx-background-color: transparent;
+    -fx-text-fill: #e7e5e4;
+}
+
+.dashboard-table .table-row-cell:selected .text,
+.dashboard-table .table-row-cell:filled:selected .text,
+.dashboard-table .table-row-cell:filled:selected:focused .text {
+    -fx-fill: #e7e5e4;
+}

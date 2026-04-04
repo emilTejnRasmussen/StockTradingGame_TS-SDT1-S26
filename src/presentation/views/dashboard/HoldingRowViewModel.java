@@ -81,4 +81,34 @@ public class HoldingRowViewModel
     {
         return pl;
     }
+
+    public void setSymbol(String symbol)
+    {
+        this.symbol.set(symbol);
+    }
+
+    public void setShares(int shares)
+    {
+        this.shares.set(shares);
+    }
+
+    public void setAvgPrice(String avgPrice)
+    {
+        this.avgPrice.set(avgPrice);
+    }
+
+    public void setCurrentPrice(String currentPrice)
+    {
+        this.currentPrice.set(currentPrice);
+    }
+
+    public void setValue(String value)
+    {
+        this.value.set(value);
+    }
+
+    public void setPl(String pl)
+    {
+        this.pl.set(pl);
+    }
 }

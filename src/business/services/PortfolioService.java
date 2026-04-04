@@ -3,11 +3,9 @@ package business.services;
 import business.dto.PageResult;
 import business.dto.PortfolioHistoryDTO;
 import entities.OwnedStock;
+import entities.Portfolio;
 import entities.Transaction;
-import persistence.interfaces.OwnedStockDao;
-import persistence.interfaces.PortfolioDao;
-import persistence.interfaces.StockDao;
-import persistence.interfaces.TransactionDao;
+import persistence.interfaces.*;
 import shared.configuration.AppConfig;
 
 import java.math.BigDecimal;
@@ -21,9 +19,11 @@ public class PortfolioService
     private final OwnedStockDao ownedStockDao;
     private final StockDao stockDao;
     private final TransactionDao transactionDao;
+    private final UnitOfWork uow;
 
-    public PortfolioService(PortfolioDao portfolioDao, OwnedStockDao ownedStockDao, StockDao stockDao, TransactionDao transactionDao)
+    public PortfolioService(UnitOfWork uow, PortfolioDao portfolioDao, OwnedStockDao ownedStockDao, StockDao stockDao, TransactionDao transactionDao)
     {
+        this.uow = uow;
         this.portfolioDao = portfolioDao;
         this.ownedStockDao = ownedStockDao;
         this.stockDao = stockDao;
@@ -40,6 +40,16 @@ public class PortfolioService
         return ownedStockDao.getByPortfolioIdAndStockSymbol(portfolioId, stockSymbol)
                 .orElseThrow(() -> new IllegalArgumentException("No owned stock=" + stockSymbol + " found in portfolio"))
                 .getNumberOfShares();
+    }
+
+    public String getPortfolioName(UUID portfolioId) {
+        return portfolioDao.getById(portfolioId)
+                .orElseThrow(() -> new IllegalArgumentException("No portfolio with id=" + portfolioId))
+                .getName();
+    }
+
+    public List<Portfolio> getAllPortfolios() {
+        return portfolioDao.getAll();
     }
 
     public BigDecimal getAvgStockBuyPrice(String stockSymbol, UUID portfolioId) {
@@ -116,7 +126,7 @@ public class PortfolioService
                 .sum();
     }
 
-    public BigDecimal getTotalPortfolioValue(UUID portfolioId)
+    public BigDecimal getPortfolioNetWorth(UUID portfolioId)
     {
         return getPortfolioBalance(portfolioId)
                 .add(getHoldingsValue(portfolioId))
@@ -178,7 +188,7 @@ public class PortfolioService
 
     public BigDecimal getTotalProfitLoss(UUID portfolioId)
     {
-        return getTotalPortfolioValue(portfolioId)
+        return getPortfolioNetWorth(portfolioId)
                 .subtract(AppConfig.getInstance().getStartingBalance())
                 .setScale(4, RoundingMode.HALF_UP);
     }
@@ -221,5 +231,16 @@ public class PortfolioService
         {
             throw new IllegalArgumentException("Invalid pagination values");
         }
+    }
+
+    public void createNewPortfolio(String name, BigDecimal startingBalance)
+    {
+
+        Portfolio portfolio = new Portfolio(name);
+        portfolio.setCurrentBalance(startingBalance);
+
+        uow.begin();
+        portfolioDao.create(portfolio);
+        uow.commit();
     }
 }

@@ -81,4 +81,26 @@ public class TransactionRowViewModel
     {
         return total;
     }
+
+    public void setTime(String time) {
+        this.time.set(time);
+    }
+
+    public void setType(String type) {
+        this.type.set(type);
+    }
+    public void setSymbol(String symbol) {
+        this.symbol.set(symbol);
+    }
+    public void setShares(Integer shares) {
+        this.shares.set(shares);
+    }
+    public void setPrice(String price) {
+        this.price.set(price);
+    }
+    public void setTotal(String total) {
+        this.total.set(total);
+    }
+
+
 }

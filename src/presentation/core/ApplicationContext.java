@@ -50,6 +50,7 @@ public class ApplicationContext
     private final MainMenuViewModel mainMenuViewModel;
     private final MainLeftMenuViewModel mainLeftMenuViewModel;
     private final DashboardViewModel dashboardViewModel;
+    private final PortfolioViewModel portfolioViewModel;
 
     private final StockListenerService stockListenerService;
     private final StockAlertService stockAlertService;
@@ -77,11 +78,21 @@ public class ApplicationContext
         gameService = createGameService();
         stockService = createStockService();
 
-        stockMarketViewModel = createStockMarketViewModel();
         dashboardViewModel = createDashboardViewModel();
+        stockMarketViewModel = createStockMarketViewModel();
+        portfolioViewModel = createPortfolioViewModel();
 
         mainMenuViewModel = createMainMenuViewModel();
         mainLeftMenuViewModel = createMainLeftMenuViewModel();
+    }
+
+    private PortfolioViewModel createPortfolioViewModel()
+    {
+        return new PortfolioViewModel(
+                this,
+                portfolioService,
+                stockListenerService
+        );
     }
 
     private StockBankruptService createStockBankruptService()
@@ -169,6 +180,7 @@ public class ApplicationContext
     private PortfolioService createPortfolioService()
     {
         return new PortfolioService(
+                uow,
                 portfolioDao,
                 ownedStockDao,
                 stockDao,
@@ -210,7 +222,7 @@ public class ApplicationContext
 
     public PortfolioViewModel getPortfolioViewModel()
     {
-        return new PortfolioViewModel();
+        return portfolioViewModel;
     }
 
     public DashboardViewModel getDashboardViewModel()

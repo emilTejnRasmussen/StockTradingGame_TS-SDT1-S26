@@ -57,7 +57,7 @@ public class GameService
 
         uow.begin();
 
-        Portfolio portfolio = new Portfolio();
+        Portfolio portfolio = new Portfolio("Main Portfolio");
         portfolioDao.create(portfolio);
 
         uow.commit();
