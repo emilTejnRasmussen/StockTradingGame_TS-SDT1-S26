@@ -1,0 +1,117 @@
+.transactions-root {
+    -fx-max-height: 820;
+}
+
+.transactions-title {
+    -fx-text-fill: #ff8a1f;
+    -fx-font-size: 22px;
+    -fx-font-weight: bold;
+}
+
+.transactions-subtitle {
+    -fx-text-fill: #a8a29e;
+    -fx-font-size: 12px;
+}
+
+.transactions-section-title {
+    -fx-text-fill: #ff8a1f;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+}
+
+.transactions-card {
+    -fx-min-height: 96px;
+}
+
+.transactions-table-pane {
+    -fx-min-height: 420px;
+}
+
+.transactions-card-label {
+    -fx-text-fill: #a8a29e;
+    -fx-font-size: 12px;
+}
+
+.transactions-card-value {
+    -fx-text-fill: white;
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+}
+
+.transactions-card-value-small {
+    -fx-text-fill: white;
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+}
+
+.transactions-muted-text {
+    -fx-text-fill: #a8a29e;
+    -fx-font-size: 11px;
+}
+
+.transactions-positive-text {
+    -fx-text-fill: #4ade80;
+}
+
+.transactions-negative-text {
+    -fx-text-fill: #f87171;
+}
+
+.transactions-primary-button,
+.transactions-secondary-button {
+    -fx-background-radius: 10px;
+    -fx-border-radius: 10px;
+    -fx-padding: 8px 14px;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+    -fx-border-width: 1px;
+}
+
+.transactions-primary-button {
+    -fx-background-color: linear-gradient(to bottom, #fb923c, #f97316);
+    -fx-text-fill: white;
+    -fx-border-color: #fdba74;
+}
+
+.transactions-primary-button:hover {
+    -fx-background-color: linear-gradient(to bottom, #fdba74, #fb923c);
+}
+
+.transactions-primary-button:pressed {
+    -fx-background-color: #ea580c;
+}
+
+.transactions-secondary-button {
+    -fx-background-color: rgba(255,255,255,0.08);
+    -fx-text-fill: #f5f5f4;
+    -fx-border-color: rgba(255,255,255,0.18);
+}
+
+.transactions-secondary-button:hover {
+    -fx-background-color: rgba(255,255,255,0.14);
+    -fx-border-color: rgba(255,255,255,0.28);
+}
+
+.transactions-secondary-button:pressed {
+    -fx-background-color: rgba(255,255,255,0.20);
+}
+
+.transactions-table .table-row-cell:selected,
+.transactions-table .table-row-cell:filled:selected,
+.transactions-table .table-row-cell:filled:selected:focused {
+    -fx-background-color: rgba(255,255,255,0.02);
+}
+
+.transactions-table .table-row-cell:selected .table-cell,
+.transactions-table .table-row-cell:filled:selected .table-cell,
+.transactions-table .table-row-cell:filled:selected:focused .table-cell {
+    -fx-background-color: transparent;
+    -fx-text-fill: #e7e5e4;
+}
+
+.transactions-table .table-row-cell:selected .text,
+.transactions-table .table-row-cell:filled:selected .text,
+.transactions-table .table-row-cell:filled:selected:focused .text {
+    -fx-fill: #e7e5e4;
+}

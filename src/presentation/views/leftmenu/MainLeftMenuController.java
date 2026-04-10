@@ -12,9 +12,11 @@ import presentation.core.notification.NotificationService;
 public class MainLeftMenuController
 {
     @FXML
-    private VBox notificationContainer;
+    private Button transactionBtn;
     @FXML
-    private Button exitBtn;
+    private Label transactionLbl;
+    @FXML
+    private VBox notificationContainer;
     @FXML
     private Label exitLabel;
     @FXML
@@ -32,7 +34,6 @@ public class MainLeftMenuController
 
     private final MainLeftMenuViewModel viewModel;
     private final StockAlertService stockAlertService;
-    private NotificationService notificationService;
 
     private Button[] buttons;
 
@@ -44,19 +45,20 @@ public class MainLeftMenuController
 
     public void initialize()
     {
-        Label[] labels = {portfolioLabel, stockMarketLabel, menuTitleLabel, exitLabel};
-        buttons = new Button[]{portfolioBtn, stockMarketBtn};
+        Label[] labels = {portfolioLabel, stockMarketLabel, transactionLbl, menuTitleLabel, exitLabel};
+        buttons = new Button[]{portfolioBtn, stockMarketBtn, transactionBtn};
         viewModel.setupMenu(menu, labels);
 
         viewModel.setButtonIcons(portfolioBtn, "/icons/portfolio.png", "/icons/portfolio-active.png");
         viewModel.setButtonIcons(stockMarketBtn, "/icons/stockmarket.png", "/icons/stockmarket-active.png");
+        viewModel.setButtonIcons(transactionBtn, "/icons/transaction.png", "/icons/transaction-active.png");
 
         setupNotifications();
     }
 
     private void setupNotifications()
     {
-        notificationService = new NotificationService(notificationContainer, stockAlertService);
+        NotificationService notificationService = new NotificationService(notificationContainer, stockAlertService);
 
         // TEST notifications
 
@@ -79,6 +81,12 @@ public class MainLeftMenuController
     {
         viewModel.stockMarketClicked();
         viewModel.setActiveBtn(buttons, stockMarketBtn);
+    }
+
+    public void handleTransactionClicked()
+    {
+        viewModel.transactionsClicked();
+        viewModel.setActiveBtn(buttons, transactionBtn);
     }
 
     public void handleLogoClicked()

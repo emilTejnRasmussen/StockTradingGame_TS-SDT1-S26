@@ -39,6 +39,26 @@
             </HBox>
             <Separator prefWidth="200.0" styleClass="separator-line" />
             <VBox alignment="CENTER" spacing="10.0">
+               <Button fx:id="stockMarketBtn" mnemonicParsing="false" onAction="#handleStockMarketClicked" styleClass="menu-btn" stylesheets="@../css/LeftMenu.css">
+                  <graphic>
+                     <HBox spacing="20.0" styleClass="menu-btn-hBox">
+                        <padding>
+                           <Insets left="6.0" right="6.0" />
+                        </padding>
+                        <ImageView fitHeight="32.0" fitWidth="32.0" pickOnBounds="true" preserveRatio="true">
+                           <Image url="@../icons/stockmarket.png" />
+                        </ImageView>
+                        <Label fx:id="stockMarketLabel" styleClass="btn-label" stylesheets="@../css/LeftMenu.css" text="Market">
+                           <font>
+                              <Font size="24.0" />
+                           </font>
+                        </Label>
+                     </HBox>
+                  </graphic>
+                  <cursor>
+                     <Cursor fx:constant="HAND" />
+                  </cursor>
+               </Button>
                <Button fx:id="portfolioBtn" mnemonicParsing="false" onAction="#handlePortfolioClicked" styleClass="menu-btn" stylesheets="@../css/LeftMenu.css">
                   <graphic>
                      <HBox spacing="20.0" styleClass="menu-btn-hBox">
@@ -59,16 +79,16 @@
                      <Cursor fx:constant="HAND" />
                   </cursor>
                </Button>
-               <Button fx:id="stockMarketBtn" mnemonicParsing="false" onAction="#handleStockMarketClicked" styleClass="menu-btn" stylesheets="@../css/LeftMenu.css">
+               <Button fx:id="transactionBtn" mnemonicParsing="false" onAction="#handleTransactionClicked" styleClass="menu-btn" stylesheets="@../css/LeftMenu.css">
                   <graphic>
                      <HBox spacing="20.0" styleClass="menu-btn-hBox">
                         <padding>
                            <Insets left="6.0" right="6.0" />
                         </padding>
                         <ImageView fitHeight="32.0" fitWidth="32.0" pickOnBounds="true" preserveRatio="true">
-                           <Image url="@../icons/stockmarket.png" />
+                           <Image url="@../icons/transaction.png" />
                         </ImageView>
-                        <Label fx:id="stockMarketLabel" styleClass="btn-label" stylesheets="@../css/LeftMenu.css" text="Stock Market">
+                        <Label fx:id="transactionLbl" styleClass="btn-label" stylesheets="@../css/LeftMenu.css" text="Transactions">
                            <font>
                               <Font size="24.0" />
                            </font>
@@ -82,7 +102,7 @@
             </VBox>
             <Pane prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS" />
             <Separator prefWidth="200.0" styleClass="separator-line" />
-            <Button fx:id="exitBtn" mnemonicParsing="false" onAction="#handleExitClicked" styleClass="close-btn" stylesheets="@../css/LeftMenu.css">
+            <Button mnemonicParsing="false" onAction="#handleExitClicked" styleClass="close-btn" stylesheets="@../css/LeftMenu.css">
                <graphic>
                   <HBox spacing="20.0" styleClass="menu-btn-hBox">
                      <padding>

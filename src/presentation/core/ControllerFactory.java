@@ -8,6 +8,7 @@ import presentation.views.leftmenu.MainLeftMenuController;
 import presentation.views.mainmenu.MainMenuController;
 import presentation.views.portfolio.PortfolioController;
 import presentation.views.stockmarket.StockMarketController;
+import presentation.views.transactions.TransactionsController;
 
 
 public class ControllerFactory implements Callback<Class<?>, Object>
@@ -36,6 +37,10 @@ public class ControllerFactory implements Callback<Class<?>, Object>
 
         if (controllerType == DashboardController.class) {
             return new DashboardController(appContext.getDashboardViewModel());
+        }
+
+        if (controllerType == TransactionsController.class){
+            return new TransactionsController(appContext.getTransactionsViewModel());
         }
 
         throw new RuntimeException("Controller of type '" + controllerType.getSimpleName() + "' is not supported!");

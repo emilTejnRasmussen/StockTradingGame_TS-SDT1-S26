@@ -25,20 +25,22 @@ public class MainLeftMenuViewModel
 
     public void logoClicked()
     {
-        System.out.println("Logo clicked");
         ViewManager.setCenter(Views.DASHBOARD);
     }
 
     public void portfolioClicked()
     {
-        System.out.println("Changed view to portfolio");
         ViewManager.setCenter(Views.PORTFOLIO);
     }
 
     public void stockMarketClicked()
     {
-        System.out.println("Changed view to stock market");
         ViewManager.setCenter(Views.STOCK_MARKET);
+    }
+
+    public void transactionsClicked()
+    {
+        ViewManager.setCenter(Views.TRANSACTION);
     }
 
     public void exitClicked()

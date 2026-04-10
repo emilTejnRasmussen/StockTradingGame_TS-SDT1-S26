@@ -7,7 +7,8 @@ public enum Views
 
     DASHBOARD("Dashboard"),
     PORTFOLIO("Portfolio"),
-    STOCK_MARKET("StockMarket");
+    STOCK_MARKET("StockMarket"),
+    TRANSACTION("Transactions");
 
 
     private final String view;

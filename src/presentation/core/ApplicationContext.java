@@ -24,6 +24,7 @@ import presentation.views.leftmenu.MainLeftMenuViewModel;
 import presentation.views.mainmenu.MainMenuViewModel;
 import presentation.views.portfolio.PortfolioViewModel;
 import presentation.views.stockmarket.StockMarketViewModel;
+import presentation.views.transactions.TransactionsViewModel;
 import shared.logging.Logger;
 
 import java.util.UUID;
@@ -51,6 +52,7 @@ public class ApplicationContext
     private final MainLeftMenuViewModel mainLeftMenuViewModel;
     private final DashboardViewModel dashboardViewModel;
     private final PortfolioViewModel portfolioViewModel;
+    private final TransactionsViewModel transactionsViewModel;
 
     private final StockListenerService stockListenerService;
     private final StockAlertService stockAlertService;
@@ -81,9 +83,19 @@ public class ApplicationContext
         dashboardViewModel = createDashboardViewModel();
         stockMarketViewModel = createStockMarketViewModel();
         portfolioViewModel = createPortfolioViewModel();
+        transactionsViewModel = createTransactionViewModel();
 
         mainMenuViewModel = createMainMenuViewModel();
         mainLeftMenuViewModel = createMainLeftMenuViewModel();
+    }
+
+    private TransactionsViewModel createTransactionViewModel()
+    {
+        return new TransactionsViewModel(
+                this,
+                portfolioService,
+                stockListenerService
+        );
     }
 
     private PortfolioViewModel createPortfolioViewModel()
@@ -248,5 +260,10 @@ public class ApplicationContext
     public StockAlertService getStockAlertService()
     {
         return stockAlertService;
+    }
+
+    public TransactionsViewModel getTransactionsViewModel()
+    {
+        return transactionsViewModel;
     }
 }
