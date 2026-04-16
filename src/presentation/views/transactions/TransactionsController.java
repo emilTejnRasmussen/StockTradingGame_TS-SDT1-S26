@@ -2,10 +2,9 @@ package presentation.views.transactions;
 
 
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
+import javafx.scene.control.*;
+import javafx.scene.control.cell.PropertyValueFactory;
+import presentation.views.portfolio.PortfolioRowViewModel;
 
 public class TransactionsController
 {
@@ -45,21 +44,16 @@ public class TransactionsController
     private final TransactionsViewModel transactionsViewModel;
 
 
-    public void initialize() {
-        bindViewModel();
+    public void initialize()
+    {
         setupTransactionsTable();
+        bindViewModel();
         transactionsViewModel.load();
     }
 
     public TransactionsController(TransactionsViewModel transactionsViewModel)
     {
         this.transactionsViewModel = transactionsViewModel;
-    }
-
-    @FXML
-    public void handleRefresh()
-    {
-        transactionsViewModel.refresh();
     }
 
     @FXML
@@ -76,9 +70,35 @@ public class TransactionsController
 
     private void bindViewModel()
     {
+        totalTransactionsLabel.textProperty().bind(transactionsViewModel.totalTransactionsProperty());
+        buyCountLabel.textProperty().bind(transactionsViewModel.buyCountProperty());
+        sellCountLabel.textProperty().bind(transactionsViewModel.sellCountProperty());
+        latestActivityLabel.textProperty().bind(transactionsViewModel.latestActivityProperty());
+        pageInfoLabel.textProperty().bind(transactionsViewModel.pageInfoProperty());
+        resultInfoLabel.textProperty().bind(transactionsViewModel.resultInfoProperty());
     }
 
     private void setupTransactionsTable()
     {
+        timeColumn.setCellValueFactory(new PropertyValueFactory<>("time"));
+        typeColumn.setCellValueFactory(new PropertyValueFactory<>("type"));
+        symbolColumn.setCellValueFactory(new PropertyValueFactory<>("symbol"));
+        sharesColumn.setCellValueFactory(new PropertyValueFactory<>("shares"));
+        priceColumn.setCellValueFactory(new PropertyValueFactory<>("price"));
+        totalColumn.setCellValueFactory(new PropertyValueFactory<>("total"));
+
+        transactionsTableView.getSelectionModel().setCellSelectionEnabled(false);
+        transactionsTableView.setItems(transactionsViewModel.getTransactions());
+
+        transactionsTableView.setRowFactory(_ -> {
+            TableRow<TransactionRowViewModel> row = new TableRow<>();
+            row.setOnMousePressed(_ -> {
+                if (!row.isEmpty()) {
+                    transactionsTableView.getSelectionModel().clearSelection();
+                    transactionsTableView.getFocusModel().focus(-1);
+                }
+            });
+            return row;
+        });
     }
 }

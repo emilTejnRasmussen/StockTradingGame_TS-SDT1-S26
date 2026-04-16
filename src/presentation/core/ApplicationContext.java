@@ -93,8 +93,7 @@ public class ApplicationContext
     {
         return new TransactionsViewModel(
                 this,
-                portfolioService,
-                stockListenerService
+                portfolioService
         );
     }
 

@@ -59,14 +59,6 @@ public class MainLeftMenuController
     private void setupNotifications()
     {
         NotificationService notificationService = new NotificationService(notificationContainer, stockAlertService);
-
-        // TEST notifications
-
-
-        notificationService.showNotification("bankrupt", "AMZN went bankrupt!", "bankrupt");
-        notificationService.showNotification("Goal reached","AAPL exceeded price 200!", "goal");
-        notificationService.showNotification("Stock reset", "MSFT reset and is tradable again!", "reset");
-
     }
 
     @FXML

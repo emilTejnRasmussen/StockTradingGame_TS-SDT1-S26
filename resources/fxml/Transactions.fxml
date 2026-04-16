@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import java.lang.String?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
@@ -9,6 +10,7 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
 
 <VBox spacing="12.0" styleClass="app-center-root transactions-root" stylesheets="@../css/styles.css,@../css/tableView.css,@../css/Transaction.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="presentation.views.transactions.TransactionsController">
@@ -23,7 +25,6 @@
             <Label styleClass="transactions-subtitle" text="Browse your full transaction history" />
         </VBox>
         <Region HBox.hgrow="ALWAYS" />
-        <Button fx:id="refreshButton" onAction="#handleRefresh" styleClass="transactions-secondary-button" text="Refresh" />
     </HBox>
 
     <GridPane hgap="12.0" vgap="12.0">
@@ -47,7 +48,11 @@
                 <Insets bottom="10.0" left="14.0" right="14.0" top="10.0" />
             </padding>
             <Label styleClass="transactions-card-label" text="Buy Orders" />
-            <Label fx:id="buyCountLabel" styleClass="transactions-card-value transactions-positive-text" text="0" />
+            <Label fx:id="buyCountLabel" text="0">
+            <styleClass>
+               <String fx:value="transactions-card-value" />
+               <String fx:value="transactions-positive-text" />
+            </styleClass></Label>
         </VBox>
 
         <VBox spacing="6.0" styleClass="app-pane transactions-card" GridPane.columnIndex="2">
@@ -55,7 +60,11 @@
                 <Insets bottom="10.0" left="14.0" right="14.0" top="10.0" />
             </padding>
             <Label styleClass="transactions-card-label" text="Sell Orders" />
-            <Label fx:id="sellCountLabel" styleClass="transactions-card-value transactions-negative-text" text="0" />
+            <Label fx:id="sellCountLabel" text="0">
+            <styleClass>
+               <String fx:value="transactions-card-value" />
+               <String fx:value="transactions-negative-text" />
+            </styleClass></Label>
         </VBox>
 
         <VBox spacing="6.0" styleClass="app-pane transactions-card" GridPane.columnIndex="3">
@@ -65,6 +74,9 @@
             <Label styleClass="transactions-card-label" text="Latest Activity" />
             <Label fx:id="latestActivityLabel" styleClass="transactions-card-value-small" text="No activity" />
         </VBox>
+      <rowConstraints>
+         <RowConstraints />
+      </rowConstraints>
     </GridPane>
 
     <VBox spacing="10.0" styleClass="app-pane transactions-table-pane" VBox.vgrow="ALWAYS">

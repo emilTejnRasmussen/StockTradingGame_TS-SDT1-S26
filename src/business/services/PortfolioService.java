@@ -157,9 +157,32 @@ public class PortfolioService
 
         List<Transaction> results = transactionDao.findTransactionsByPortfolioIdPaginated(portfolioId, page, pageSize);
 
-        int totalItems = transactionDao.countTransactionsByPortfolioId(portfolioId);
+        int totalItems = getTotalTransactions(portfolioId);
 
         return toPageResult(results, page, pageSize, totalItems);
+    }
+
+    public int getTotalTransactions(UUID portfolioId) {
+        return transactionDao.countTransactionsByPortfolioId(portfolioId);
+    }
+
+    public int getTransactionTotalBuyCount(UUID portfolioId) {
+        return transactionDao.findTransactionsByPortfolioId(portfolioId).stream()
+                .filter(t -> t.type() == Transaction.Type.BUY)
+                .toList().size();
+    }
+
+    public int getTransactionTotalSellCount(UUID portfolioId) {
+        return transactionDao.findTransactionsByPortfolioId(portfolioId).stream()
+                .filter(t -> t.type() == Transaction.Type.SELL)
+                .toList().size();
+    }
+
+    public Transaction.Type getLatestTransactionType(UUID portfolioId) {
+        return transactionDao.getAll().stream()
+                .max(Comparator.comparing(Transaction::timeStamp))
+                .orElseThrow(() -> new IllegalArgumentException("No transactions yet"))
+                .type();
     }
 
     public PageResult<PortfolioHistoryDTO> getPortfolioHistory(UUID portfolioId, int page, int pageSize)
