@@ -9,6 +9,10 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import presentation.core.ViewManager;
 import presentation.core.Views;
+import presentation.views.utility.SetupViewUtil;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class DashboardController
 {
@@ -106,52 +110,32 @@ public class DashboardController
 
     private void setupHoldingsTable()
     {
-        symbolColumn.setCellValueFactory(new PropertyValueFactory<>("symbol"));
-        sharesColumn.setCellValueFactory(new PropertyValueFactory<>("shares"));
-        avgPriceColumn.setCellValueFactory(new PropertyValueFactory<>("avgPrice"));
-        currentPriceColumn.setCellValueFactory(new PropertyValueFactory<>("currentPrice"));
-        valueColumn.setCellValueFactory(new PropertyValueFactory<>("value"));
-        plColumn.setCellValueFactory(new PropertyValueFactory<>("pl"));
+        Map<TableColumn<HoldingRowViewModel, ?>, String> columnMappings = new HashMap<>(Map.of(
+                symbolColumn, "symbol",
+                sharesColumn, "shares",
+                avgPriceColumn, "avgPrice",
+                currentPriceColumn, "currentPrice",
+                valueColumn, "value",
+                plColumn , "pl"
+        ));
 
-        holdingsTableView.getSelectionModel().setCellSelectionEnabled(false);
-
+        SetupViewUtil.setupTableView(holdingsTableView, columnMappings);
         holdingsTableView.setItems(dashboardViewModel.getHoldings());
-
-        holdingsTableView.setRowFactory(tv -> {
-            TableRow<HoldingRowViewModel> row = new TableRow<>();
-            row.setOnMousePressed(event -> {
-                if (!row.isEmpty()) {
-                    holdingsTableView.getSelectionModel().clearSelection();
-                    holdingsTableView.getFocusModel().focus(-1);
-                }
-            });
-            return row;
-        });
     }
 
     private void setupTransactionsTable()
     {
-        transactionTimeColumn.setCellValueFactory(new PropertyValueFactory<>("time"));
-        transactionTypeColumn.setCellValueFactory(new PropertyValueFactory<>("type"));
-        transactionSymbolColumn.setCellValueFactory(new PropertyValueFactory<>("symbol"));
-        transactionSharesColumn.setCellValueFactory(new PropertyValueFactory<>("shares"));
-        transactionPriceColumn.setCellValueFactory(new PropertyValueFactory<>("price"));
-        transactionTotalColumn.setCellValueFactory(new PropertyValueFactory<>("total"));
+        Map<TableColumn<TransactionRowViewModel, ?>, String> columnMappings = new HashMap<>(Map.of(
+                transactionTimeColumn, "time",
+                transactionTypeColumn, "type",
+                transactionSymbolColumn, "symbol",
+                transactionSharesColumn, "shares",
+                transactionPriceColumn, "price",
+                transactionTotalColumn, "total"
+        ));
 
-        transactionsTableView.getSelectionModel().setCellSelectionEnabled(false);
-
+        SetupViewUtil.setupTableView(transactionsTableView, columnMappings);
         transactionsTableView.setItems(dashboardViewModel.getTransactions());
-
-        transactionsTableView.setRowFactory(tv -> {
-            TableRow<TransactionRowViewModel> row = new TableRow<>();
-            row.setOnMousePressed(event -> {
-                if (!row.isEmpty()) {
-                    transactionsTableView.getSelectionModel().clearSelection();
-                    transactionsTableView.getFocusModel().focus(-1);
-                }
-            });
-            return row;
-        });
     }
 
     private void bindViewModel()

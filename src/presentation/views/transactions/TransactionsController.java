@@ -5,6 +5,10 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import presentation.views.portfolio.PortfolioRowViewModel;
+import presentation.views.utility.SetupViewUtil;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class TransactionsController
 {
@@ -80,25 +84,15 @@ public class TransactionsController
 
     private void setupTransactionsTable()
     {
-        timeColumn.setCellValueFactory(new PropertyValueFactory<>("time"));
-        typeColumn.setCellValueFactory(new PropertyValueFactory<>("type"));
-        symbolColumn.setCellValueFactory(new PropertyValueFactory<>("symbol"));
-        sharesColumn.setCellValueFactory(new PropertyValueFactory<>("shares"));
-        priceColumn.setCellValueFactory(new PropertyValueFactory<>("price"));
-        totalColumn.setCellValueFactory(new PropertyValueFactory<>("total"));
-
-        transactionsTableView.getSelectionModel().setCellSelectionEnabled(false);
+        Map<TableColumn<TransactionRowViewModel, ?>, String> columnMappings = new HashMap<>(Map.of(
+                timeColumn, "time",
+                typeColumn, "type",
+                symbolColumn, "symbol",
+                sharesColumn, "shares",
+                priceColumn, "price",
+                totalColumn, "total"
+        ));
+        SetupViewUtil.setupTableView(transactionsTableView, columnMappings);
         transactionsTableView.setItems(transactionsViewModel.getTransactions());
-
-        transactionsTableView.setRowFactory(_ -> {
-            TableRow<TransactionRowViewModel> row = new TableRow<>();
-            row.setOnMousePressed(_ -> {
-                if (!row.isEmpty()) {
-                    transactionsTableView.getSelectionModel().clearSelection();
-                    transactionsTableView.getFocusModel().focus(-1);
-                }
-            });
-            return row;
-        });
     }
 }

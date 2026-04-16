@@ -4,6 +4,11 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import presentation.views.transactions.TransactionRowViewModel;
+import presentation.views.utility.SetupViewUtil;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class PortfolioController
 {
@@ -71,26 +76,17 @@ public class PortfolioController
 
     private void setupPortfolioTable()
     {
-        nameColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
-        cashColumn.setCellValueFactory(new PropertyValueFactory<>("cash"));
-        netWorthColumn.setCellValueFactory(new PropertyValueFactory<>("netWorth"));
-        ownedStocksColumn.setCellValueFactory(new PropertyValueFactory<>("ownedStocks"));
-        totalSharesColumn.setCellValueFactory(new PropertyValueFactory<>("totalShares"));
-        activeColumn.setCellValueFactory(new PropertyValueFactory<>("active"));
+        Map<TableColumn<PortfolioRowViewModel, ?>, String> columnMappings = new HashMap<>(Map.of(
+                nameColumn, "name",
+                cashColumn, "cash",
+                netWorthColumn, "netWorth",
+                ownedStocksColumn, "ownedStocks",
+                totalSharesColumn, "totalShares",
+                activeColumn, "active"
+        ));
 
-        portfolioTableView.getSelectionModel().setCellSelectionEnabled(false);
+        SetupViewUtil.setupTableView(portfolioTableView, columnMappings);
         portfolioTableView.setItems(portfolioViewModel.getPortfolios());
-
-        portfolioTableView.setRowFactory(tv -> {
-            TableRow<PortfolioRowViewModel> row = new TableRow<>();
-            row.setOnMousePressed(event -> {
-                if (!row.isEmpty()) {
-                    portfolioTableView.getSelectionModel().clearSelection();
-                    portfolioTableView.getFocusModel().focus(-1);
-                }
-            });
-            return row;
-        });
     }
 
     private void setupInputValidation()
