@@ -85,7 +85,15 @@ public class TransactionsViewModel
         totalTransactions.set(portfolioService.getTotalTransactions(portfolioId) + "");
         buyCount.set(portfolioService.getTransactionTotalBuyCount(portfolioId) + "");
         sellCount.set(portfolioService.getTransactionTotalSellCount(portfolioId) + "");
-        latestActivity.set(portfolioService.getLatestTransactionType(portfolioId) + "");
+
+        try {
+            Transaction.Type type = portfolioService.getLatestTransactionType(portfolioId);
+            latestActivity.set(type.toString());
+        } catch (Exception e)
+        {
+            latestActivity.set("no transactions");
+        }
+
         pageInfo.set((pageNumber + 1) + "/"+ (maxPageNumber));
     }
 

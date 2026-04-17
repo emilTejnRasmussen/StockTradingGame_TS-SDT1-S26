@@ -24,7 +24,6 @@ public class SetupViewUtil
         }
 
         tableView.getSelectionModel().setCellSelectionEnabled(false);
-        tableView.getColumns().setAll(columnMappings.keySet());
 
         tableView.setRowFactory(_ -> {
             TableRow<T> row = new TableRow<>();
