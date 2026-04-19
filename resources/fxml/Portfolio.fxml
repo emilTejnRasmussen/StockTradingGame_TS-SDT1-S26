@@ -114,8 +114,8 @@
             <TableColumn fx:id="netWorthColumn" prefWidth="140.0" text="Net Worth" />
             <TableColumn fx:id="ownedStocksColumn" prefWidth="70.0" text="Stocks" />
             <TableColumn fx:id="totalSharesColumn" prefWidth="70.0" text="Shares" />
-            <TableColumn fx:id="activeColumn" prefWidth="111.0" text="Active" />
-            <TableColumn fx:id="actionsColumn" prefWidth="241.0" text="Actions" />
+            <TableColumn fx:id="activeColumn" prefWidth="80" text="Active" />
+            <TableColumn fx:id="actionsColumn" prefWidth="200" text="Actions" />
          </columns>
          <columnResizePolicy>
             <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
