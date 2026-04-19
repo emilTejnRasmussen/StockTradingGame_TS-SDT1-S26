@@ -1,7 +1,6 @@
 package business.services;
 
 import business.dto.StockDTO;
-import business.dto.StockResponseDTO;
 import entities.Stock;
 import persistence.interfaces.StockDao;
 
@@ -20,7 +19,7 @@ public class StockService
         this.stockDao = stockDao;
     }
 
-    public List<StockResponseDTO> getAllAvailableStocks() {
+    public List<StockDTO> getAllAvailableStocks() {
         List<Stock> stocks = stockDao.getAll().stream()
                 .filter(s -> s.getCurrentState() != Stock.State.BANKRUPT &&
                         s.getCurrentState() != Stock.State.RESET)
@@ -29,7 +28,7 @@ public class StockService
         return mapStockListToDTO(stocks);
     }
 
-    public List<StockResponseDTO> getAll() {
+    public List<StockDTO> getAll() {
         return mapStockListToDTO(stockDao.getAll());
     }
 
@@ -40,25 +39,24 @@ public class StockService
         return BigDecimal.ZERO;
     }
 
-    public StockResponseDTO getBySymbol (String stockSymbol){
+    public StockDTO getBySymbol (String stockSymbol){
         Stock stock = stockDao.getBySymbol(stockSymbol)
                 .orElseThrow(() -> new IllegalArgumentException("No stock wit symbol=" + stockSymbol + " found"));
 
         return mapStockToDTO(stock);
     }
 
-    public List<StockResponseDTO> mapStockListToDTO(List<Stock> stocks){
-        List<StockResponseDTO> response = new ArrayList<>();
+    public List<StockDTO> mapStockListToDTO(List<Stock> stocks){
+        List<StockDTO> response = new ArrayList<>();
         for (Stock stock : stocks) {
             response.add(mapStockToDTO(stock));
         }
         return response;
     }
 
-    public StockResponseDTO mapStockToDTO(Stock stock){
-        return new StockResponseDTO(
+    public StockDTO mapStockToDTO(Stock stock){
+        return new StockDTO(
                 stock.getSymbol(),
-                stock.getName(),
                 stock.getCurrentPrice(),
                 stock.getCurrentState()
         );

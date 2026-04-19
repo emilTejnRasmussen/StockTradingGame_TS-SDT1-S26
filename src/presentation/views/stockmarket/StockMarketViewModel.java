@@ -1,7 +1,6 @@
 package presentation.views.stockmarket;
 
 import business.dto.StockDTO;
-import business.dto.StockResponseDTO;
 import business.dto.transaction.BuyStockRequestDTO;
 import business.dto.transaction.SellStockRequestDTO;
 import business.services.PortfolioService;
@@ -167,9 +166,9 @@ public class StockMarketViewModel implements PropertyChangeListener
     {
         if (portfolioId == null) return;
 
-        List<StockResponseDTO> stockDTOs = stockService.getAll();
+        List<StockDTO> stockDTOs = stockService.getAll();
 
-        for (StockResponseDTO stockDTO : stockDTOs)
+        for (StockDTO stockDTO : stockDTOs)
         {
             stocks.add(new StockRowViewModel(
                     stockDTO.symbol(),
@@ -282,11 +281,6 @@ public class StockMarketViewModel implements PropertyChangeListener
     public StringProperty netWorthProperty()
     {
         return netWorth;
-    }
-
-    public IntegerProperty selectedQuantityProperty()
-    {
-        return selectedQuantity;
     }
 
     public void setSelectedQuantity(int quantity)
