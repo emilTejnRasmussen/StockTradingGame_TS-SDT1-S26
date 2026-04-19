@@ -1,13 +1,11 @@
 package presentation.views.leftmenu;
 
 import business.services.listener.StockAlertService;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
-import presentation.core.notification.NotificationService;
+import presentation.core.notification.NotificationImpl;
 
 public class MainLeftMenuController
 {
@@ -37,12 +35,7 @@ public class MainLeftMenuController
 
     private Button[] buttons;
 
-    public MainLeftMenuController(MainLeftMenuViewModel viewModel, StockAlertService stockAlertService)
-    {
-        this.viewModel = viewModel;
-        this.stockAlertService = stockAlertService;
-    }
-
+    @FXML
     public void initialize()
     {
         Label[] labels = {portfolioLabel, stockMarketLabel, transactionLbl, menuTitleLabel, exitLabel};
@@ -56,9 +49,15 @@ public class MainLeftMenuController
         setupNotifications();
     }
 
+    public MainLeftMenuController(MainLeftMenuViewModel viewModel, StockAlertService stockAlertService)
+    {
+        this.viewModel = viewModel;
+        this.stockAlertService = stockAlertService;
+    }
+
     private void setupNotifications()
     {
-        NotificationService notificationService = new NotificationService(notificationContainer, stockAlertService);
+        new NotificationImpl(notificationContainer, stockAlertService);
     }
 
     @FXML
@@ -75,18 +74,21 @@ public class MainLeftMenuController
         viewModel.setActiveBtn(buttons, stockMarketBtn);
     }
 
+    @FXML
     public void handleTransactionClicked()
     {
         viewModel.transactionsClicked();
         viewModel.setActiveBtn(buttons, transactionBtn);
     }
 
+    @FXML
     public void handleLogoClicked()
     {
         viewModel.logoClicked();
         viewModel.setActiveBtn(buttons, null);
     }
 
+    @FXML
     public void handleExitClicked()
     {
         viewModel.exitClicked();

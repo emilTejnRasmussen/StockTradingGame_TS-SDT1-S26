@@ -84,6 +84,26 @@ public class DashboardViewModel implements PropertyChangeListener
         holdingsUpdatedText.set("Updated " + TIME_FORMATTER.format(LocalDateTime.now()));
     }
 
+    public ObservableList<PieChart.Data> buildShareDistribution()
+    {
+        ObservableList<PieChart.Data> chartData = FXCollections.observableArrayList();
+
+        if (portfolioId == null) {
+            return chartData;
+        }
+
+        List<OwnedStock> ownedStocks = portfolioService.getOwnedStocks(portfolioId);
+
+        for (OwnedStock ownedStock : ownedStocks) {
+            int numberOfShares = ownedStock.getNumberOfShares();
+            if (numberOfShares > 0) {
+                chartData.add(new PieChart.Data(ownedStock.getStockSymbol(), numberOfShares));
+            }
+        }
+
+        return chartData;
+    }
+
     private void refreshValues()
     {
         if (portfolioId == null) return;
@@ -179,26 +199,6 @@ public class DashboardViewModel implements PropertyChangeListener
             ));
         }
         transactionsCountText.set("latest " + transactions.size() + " transactions");
-    }
-
-    public ObservableList<PieChart.Data> buildShareDistribution()
-    {
-        ObservableList<PieChart.Data> chartData = FXCollections.observableArrayList();
-
-        if (portfolioId == null) {
-            return chartData;
-        }
-
-        List<OwnedStock> ownedStocks = portfolioService.getOwnedStocks(portfolioId);
-
-        for (OwnedStock ownedStock : ownedStocks) {
-            int numberOfShares = ownedStock.getNumberOfShares();
-            if (numberOfShares > 0) {
-                chartData.add(new PieChart.Data(ownedStock.getStockSymbol(), numberOfShares));
-            }
-        }
-
-        return chartData;
     }
 
     private void recalculateSummary()

@@ -8,7 +8,6 @@ import java.util.UUID;
 
 public class TransactionRowViewModel
 {
-    private final SimpleObjectProperty<UUID> transactionId = new SimpleObjectProperty<>();
     private final SimpleStringProperty time = new SimpleStringProperty();
     private final SimpleStringProperty type = new SimpleStringProperty();
     private final SimpleStringProperty symbol = new SimpleStringProperty();
@@ -16,8 +15,7 @@ public class TransactionRowViewModel
     private final SimpleStringProperty price = new SimpleStringProperty();
     private final SimpleStringProperty total = new SimpleStringProperty();
 
-    public TransactionRowViewModel(UUID transactionId,
-                                   String time,
+    public TransactionRowViewModel(String time,
                                    String type,
                                    String symbol,
                                    int shares,
@@ -25,23 +23,12 @@ public class TransactionRowViewModel
                                    String total
     )
     {
-        this.transactionId.set(transactionId);
         setTime(time);
         setType(type);
         setSymbol(symbol);
         setShares(shares);
         setPrice(price);
         setTotal(total);
-    }
-
-    public UUID getTransactionId()
-    {
-        return transactionId.get();
-    }
-
-    public SimpleObjectProperty<UUID> transactionIdProperty()
-    {
-        return transactionId;
     }
 
     public String getTime()

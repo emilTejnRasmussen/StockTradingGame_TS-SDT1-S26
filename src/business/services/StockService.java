@@ -13,19 +13,9 @@ public class StockService
 {
     private final StockDao stockDao;
 
-
     public StockService(StockDao stockDao)
     {
         this.stockDao = stockDao;
-    }
-
-    public List<StockDTO> getAllAvailableStocks() {
-        List<Stock> stocks = stockDao.getAll().stream()
-                .filter(s -> s.getCurrentState() != Stock.State.BANKRUPT &&
-                        s.getCurrentState() != Stock.State.RESET)
-                .toList();
-
-        return mapStockListToDTO(stocks);
     }
 
     public List<StockDTO> getAll() {
@@ -37,13 +27,6 @@ public class StockService
 
         if (stockOptional.isPresent()) return stockOptional.get().getCurrentPrice();
         return BigDecimal.ZERO;
-    }
-
-    public StockDTO getBySymbol (String stockSymbol){
-        Stock stock = stockDao.getBySymbol(stockSymbol)
-                .orElseThrow(() -> new IllegalArgumentException("No stock wit symbol=" + stockSymbol + " found"));
-
-        return mapStockToDTO(stock);
     }
 
     public List<StockDTO> mapStockListToDTO(List<Stock> stocks){
@@ -61,6 +44,4 @@ public class StockService
                 stock.getCurrentState()
         );
     }
-
-
 }

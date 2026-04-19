@@ -13,6 +13,7 @@ public class MainMenuController
 
     private final MainMenuViewModel mainMenuViewModel;
 
+    @FXML
     public void initialize() {
         if (mainMenuViewModel.hasGameStored())
         {

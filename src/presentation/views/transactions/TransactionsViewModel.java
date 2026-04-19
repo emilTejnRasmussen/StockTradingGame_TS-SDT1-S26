@@ -2,15 +2,12 @@ package presentation.views.transactions;
 
 import business.dto.PageResult;
 import business.services.PortfolioService;
-import business.services.listener.StockListenerService;
 import entities.Transaction;
-import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import presentation.core.ApplicationContext;
-import presentation.views.portfolio.PortfolioRowViewModel;
 
 import java.math.BigDecimal;
 import java.time.format.DateTimeFormatter;
@@ -26,20 +23,18 @@ public class TransactionsViewModel
     private final ReadOnlyStringWrapper resultInfo = new ReadOnlyStringWrapper();
 
     private final ObservableList<TransactionRowViewModel> transactions = FXCollections.observableArrayList();
-
-    private final ApplicationContext appContext;
     private final PortfolioService portfolioService;
+
     private UUID portfolioId;
 
-    private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
-    private int PAGE_SIZE = 10;
+    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+    private final static int PAGE_SIZE = 10;
     private int pageNumber = 0;
     private int maxPageNumber = 0;
 
     public TransactionsViewModel(ApplicationContext appContext, PortfolioService portfolioService)
     {
         this.portfolioService = portfolioService;
-        this.appContext = appContext;
 
         ChangeListener<UUID> activePortfolioListener = (_, _, newId) -> this.portfolioId = newId;
         appContext.activePortfolioIdProperty().addListener(activePortfolioListener);
@@ -59,6 +54,7 @@ public class TransactionsViewModel
 
         PageResult<Transaction> transactionPageResult = portfolioService.getTransactionHistory(portfolioId, pageNumber, PAGE_SIZE);
         maxPageNumber = transactionPageResult.totalPages();
+        if (maxPageNumber == 0) maxPageNumber = 1;
 
         for (Transaction transaction : transactionPageResult.items()) {
             int quantity = transaction.quantity();
@@ -68,7 +64,6 @@ public class TransactionsViewModel
                     transaction.getTotalPriceFeeSubtracted();
 
             transactions.add(new TransactionRowViewModel(
-                    transaction.id(),
                     transaction.timeStamp().format(formatter),
                     type.toString(),
                     transaction.stockSymbol(),
@@ -80,7 +75,7 @@ public class TransactionsViewModel
 
     }
 
-    public void refreshValues()
+    private void refreshValues()
     {
         totalTransactions.set(portfolioService.getTotalTransactions(portfolioId) + "");
         buyCount.set(portfolioService.getTransactionTotalBuyCount(portfolioId) + "");

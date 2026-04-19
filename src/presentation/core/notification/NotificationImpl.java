@@ -15,18 +15,15 @@ import javafx.util.Duration;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
-public class NotificationService implements NotificationHandler, PropertyChangeListener
+public class NotificationImpl implements NotificationHandler, PropertyChangeListener
 {
     private static final int MAX_NOTIFICATIONS = 5;
 
     private final VBox notificationContainer;
-    private final StockAlertService stockAlertService;
 
-    public NotificationService(VBox notificationContainer, StockAlertService stockAlertService)
+    public NotificationImpl(VBox notificationContainer, StockAlertService stockAlertService)
     {
         this.notificationContainer = notificationContainer;
-        this.stockAlertService = stockAlertService;
-
         stockAlertService.addListener(this);
     }
 
@@ -59,10 +56,10 @@ public class NotificationService implements NotificationHandler, PropertyChangeL
 
             if (notificationContainer.getChildren().size() >= MAX_NOTIFICATIONS)
             {
-                notificationContainer.getChildren().remove(notificationContainer.getChildren().size() - 1);
+                notificationContainer.getChildren().removeLast();
             }
 
-            notificationContainer.getChildren().add(0, toast);
+            notificationContainer.getChildren().addFirst(toast);
 
             getTransition(toast, type).play();
         });
@@ -145,10 +142,8 @@ public class NotificationService implements NotificationHandler, PropertyChangeL
         return switch (type)
         {
             case "bankrupt" -> Duration.seconds(7);
-            case "warning" -> Duration.seconds(5);
-            case "milestone" -> Duration.seconds(5);
+            case "warning", "milestone" -> Duration.seconds(5);
             case "reset" -> Duration.seconds(4.5);
-            case "surge", "drop", "recovery" -> Duration.seconds(4);
             case "goal" -> Duration.seconds(3.5);
             default -> Duration.seconds(4);
         };
@@ -168,10 +163,5 @@ public class NotificationService implements NotificationHandler, PropertyChangeL
             case "recovery" -> "SIGNAL";
             default -> "UPDATE";
         };
-    }
-
-    public void dispose()
-    {
-        stockAlertService.removeListener(this);
     }
 }

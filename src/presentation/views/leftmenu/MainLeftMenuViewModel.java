@@ -56,14 +56,14 @@ public class MainLeftMenuViewModel
             label.setManaged(false);
         }
 
-        menu.setOnMouseEntered(e -> {
+        menu.setOnMouseEntered(_ -> {
             for (Label label : labels) {
                 label.setVisible(true);
                 label.setManaged(true);
             }
         });
 
-        menu.setOnMouseExited(e -> {
+        menu.setOnMouseExited(_ -> {
             for (Label label : labels) {
                 label.setVisible(false);
                 label.setManaged(false);

@@ -1,10 +1,7 @@
 package presentation.views.portfolio;
 
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
-import javafx.scene.control.cell.PropertyValueFactory;
-import presentation.views.transactions.TransactionRowViewModel;
 import presentation.views.utility.SetupViewUtil;
 
 import java.util.HashMap;
@@ -50,6 +47,7 @@ public class PortfolioController
 
     private final PortfolioViewModel portfolioViewModel;
 
+    @FXML
     public void initialize()
     {
         setupPortfolioTable();
@@ -114,7 +112,8 @@ public class PortfolioController
                 setActiveButton.setFocusTraversable(false);
 
                 setActiveButton.addEventFilter(javafx.scene.input.MouseEvent.MOUSE_PRESSED, event -> {
-                    if (getTableRow() != null) {
+                    if (getTableRow() != null)
+                    {
                         getTableRow().requestFocus();
                         getTableView().requestFocus();
                         getTableView().getSelectionModel().select(getIndex());
@@ -134,7 +133,8 @@ public class PortfolioController
             {
                 super.updateItem(item, empty);
 
-                if (empty || getIndex() >= getTableView().getItems().size()) {
+                if (empty || getIndex() >= getTableView().getItems().size())
+                {
                     setGraphic(null);
                     return;
                 }
@@ -147,12 +147,14 @@ public class PortfolioController
         });
     }
 
+    @FXML
     public void onCreatePortFolio()
     {
         portfolioViewModel.createNewPortfolio(portfolioNameField.getText(), startingBalanceField.getText());
         onClearInput();
     }
 
+    @FXML
     public void onClearInput()
     {
         portfolioNameField.setText("");

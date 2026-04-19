@@ -18,8 +18,6 @@ import persistence.interfaces.StockDao;
 import persistence.interfaces.StockPriceHistoryDao;
 import persistence.interfaces.TransactionDao;
 import presentation.views.dashboard.DashboardViewModel;
-import presentation.views.dashboard.HoldingRowViewModel;
-import presentation.views.dashboard.TransactionRowViewModel;
 import presentation.views.leftmenu.MainLeftMenuViewModel;
 import presentation.views.mainmenu.MainMenuViewModel;
 import presentation.views.portfolio.PortfolioViewModel;
@@ -164,8 +162,6 @@ public class ApplicationContext
                 uow,
                 portfolioDao,
                 stockDao,
-                stockPriceHistoryDao,
-                ownedStockDao,
                 stockListenerService,
                 stockBankruptService,
                 stockAlertService

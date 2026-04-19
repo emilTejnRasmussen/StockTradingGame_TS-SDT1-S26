@@ -32,14 +32,4 @@ public class StockHistoryService
                                 .toList()
                 ));
     }
-
-    public List<StockPriceHistory> getLatestStockUpdatesForStock(String stockSymbol, int amount)
-    {
-        return stockPriceHistoryDao.getAll().stream()
-                .filter(h -> h.stockSymbol().equals(stockSymbol))
-                .sorted(Comparator.comparing(StockPriceHistory::timeStamp).reversed())
-                .limit(amount)
-                .sorted(Comparator.comparing(StockPriceHistory::timeStamp))
-                .toList();
-    }
 }

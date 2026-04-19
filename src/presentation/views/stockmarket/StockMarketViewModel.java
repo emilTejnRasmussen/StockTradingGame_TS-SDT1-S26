@@ -45,9 +45,10 @@ public class StockMarketViewModel implements PropertyChangeListener
     private final ObservableList<StockRowViewModel> stocks = FXCollections.observableArrayList();
     private final ObservableList<XYChart.Series<Number, Number>> chartSeries = FXCollections.observableArrayList();
 
+    private final Map<String, XYChart.Series<Number, Number>> seriesBySymbol = new HashMap<>();
+
     private UUID portfolioId;
 
-    private final Map<String, XYChart.Series<Number, Number>> seriesBySymbol = new HashMap<>();
 
 
     public StockMarketViewModel(ApplicationContext appContext, StockListenerService stockListenerService, StockHistoryService stockHistoryService, StockService stockService, PortfolioService portfolioService, TradingService tradingService)
@@ -283,15 +284,15 @@ public class StockMarketViewModel implements PropertyChangeListener
         return netWorth;
     }
 
+    public BooleanProperty buyDisabledProperty()
+    {
+        return buyDisabled;
+    }
+
     public void setSelectedQuantity(int quantity)
     {
         selectedQuantity.set(quantity);
         updateButtonStates();
-    }
-
-    public BooleanProperty buyDisabledProperty()
-    {
-        return buyDisabled;
     }
 
     public BooleanProperty sellDisabledProperty()

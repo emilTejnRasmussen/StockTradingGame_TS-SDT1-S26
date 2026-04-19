@@ -1,20 +1,13 @@
 package presentation.views.stockmarket;
 
-import business.dto.StockDTO;
 import javafx.beans.binding.Bindings;
-import javafx.beans.property.ReadOnlyObjectWrapper;
-import javafx.beans.property.ReadOnlyStringWrapper;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.control.*;
 import javafx.util.StringConverter;
-import presentation.views.portfolio.PortfolioRowViewModel;
-import presentation.views.utility.Parser;
 import presentation.views.utility.SetupViewUtil;
 
-import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -56,11 +49,6 @@ public class StockMarketController
 
     private final StockMarketViewModel stockMarketViewModel;
 
-    public StockMarketController(StockMarketViewModel stockMarketViewModel)
-    {
-        this.stockMarketViewModel = stockMarketViewModel;
-    }
-
     @FXML
     public void initialize()
     {
@@ -70,6 +58,35 @@ public class StockMarketController
         setupSpinner();
         setupButtons();
         stockMarketViewModel.load();
+    }
+
+    public StockMarketController(StockMarketViewModel stockMarketViewModel)
+    {
+        this.stockMarketViewModel = stockMarketViewModel;
+    }
+
+    @FXML
+    public void handleBuyStocksPressed()
+    {
+        try
+        {
+            stockMarketViewModel.buy(quantitySpinner.getValue());
+        } catch (Exception e)
+        {
+            showError("Buy failed", e);
+        }
+    }
+
+    @FXML
+    public void handleSellStocksPressed()
+    {
+        try
+        {
+            stockMarketViewModel.sell(quantitySpinner.getValue());
+        } catch (Exception e)
+        {
+            showError("Sell failed", e);
+        }
     }
 
     private void bindViewModel()
@@ -98,7 +115,8 @@ public class StockMarketController
         quantitySpinner.setEditable(true);
 
         TextFormatter<Integer> textFormatter = new TextFormatter<>(
-                new StringConverter<>() {
+                new StringConverter<>()
+                {
                     @Override
                     public String toString(Integer value)
                     {
@@ -147,6 +165,19 @@ public class StockMarketController
         stockMarketChart.setData(stockMarketViewModel.getChartSeries());
     }
 
+    private void setupButtons()
+    {
+        quantitySpinner.valueProperty().addListener((obs, oldValue, newValue) -> {
+            if (newValue != null)
+            {
+                stockMarketViewModel.setSelectedQuantity(newValue);
+            }
+        });
+
+        buyBtn.disableProperty().bind(stockMarketViewModel.buyDisabledProperty());
+        sellBtn.disableProperty().bind(stockMarketViewModel.sellDisabledProperty());
+    }
+
     private void setupStockTable()
     {
         Map<TableColumn<StockRowViewModel, ?>, String> columnMappings = new HashMap<>(Map.of(
@@ -159,48 +190,14 @@ public class StockMarketController
         stockTableView.setItems(stockMarketViewModel.getStocks());
 
         stockTableView.getSelectionModel().selectedItemProperty().addListener((obs, oldValue, newValue) -> {
-            if (newValue == null) {
+            if (newValue == null)
+            {
                 stockMarketViewModel.setSelectedStockSymbol("");
-            } else {
+            } else
+            {
                 stockMarketViewModel.setSelectedStockSymbol(newValue.getSymbol());
             }
         });
-    }
-
-    private void setupButtons()
-    {
-        quantitySpinner.valueProperty().addListener((obs, oldValue, newValue) -> {
-            if (newValue != null) {
-                stockMarketViewModel.setSelectedQuantity(newValue);
-            }
-        });
-
-        buyBtn.disableProperty().bind(stockMarketViewModel.buyDisabledProperty());
-        sellBtn.disableProperty().bind(stockMarketViewModel.sellDisabledProperty());
-    }
-
-    public void handleBuyStocksPressed()
-    {
-        try
-        {
-            stockMarketViewModel.buy(quantitySpinner.getValue());
-        }
-        catch (Exception e)
-        {
-            showError("Buy failed", e);
-        }
-    }
-
-    public void handleSellStocksPressed()
-    {
-        try
-        {
-            stockMarketViewModel.sell(quantitySpinner.getValue());
-        }
-        catch (Exception e)
-        {
-            showError("Sell failed", e);
-        }
     }
 
     private void showError(String title, Exception exception)

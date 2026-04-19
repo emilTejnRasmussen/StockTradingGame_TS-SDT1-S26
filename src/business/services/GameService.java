@@ -15,7 +15,6 @@ import shared.logging.Logger;
 
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.Optional;
 import java.util.UUID;
 
 public class GameService
@@ -24,8 +23,6 @@ public class GameService
 
     private final PortfolioDao portfolioDao;
     private final StockDao stockDao;
-    private final StockPriceHistoryDao stockPriceHistoryDao;
-    private final OwnedStockDao ownedStockDao;
     private final MarketTicker marketTicker;
 
     private final StockListenerService stockListenerService;
@@ -35,15 +32,13 @@ public class GameService
     public GameService(UnitOfWork uow,
                        PortfolioDao portfolioDao,
                        StockDao stockDao,
-                       StockPriceHistoryDao stockPriceHistoryDao,
-                       OwnedStockDao ownedStockDao,
-                       StockListenerService stockListenerService, StockBankruptService stockBankruptService, StockAlertService stockAlertService)
+                       StockListenerService stockListenerService,
+                       StockBankruptService stockBankruptService,
+                       StockAlertService stockAlertService)
     {
         this.uow = uow;
         this.portfolioDao = portfolioDao;
         this.stockDao = stockDao;
-        this.stockPriceHistoryDao = stockPriceHistoryDao;
-        this.ownedStockDao = ownedStockDao;
         this.stockBankruptService = stockBankruptService;
         this.stockAlertService = stockAlertService;
         this.marketTicker = new MarketTicker();
@@ -126,12 +121,5 @@ public class GameService
         {
             Logger.getInstance().error("Could not clear json files: " + e.getMessage());
         }
-    }
-
-    public Optional<UUID> getCurrentPortfolioId()
-    {
-        return portfolioDao.getAll().stream()
-                .findFirst()
-                .map(Portfolio::getId);
     }
 }

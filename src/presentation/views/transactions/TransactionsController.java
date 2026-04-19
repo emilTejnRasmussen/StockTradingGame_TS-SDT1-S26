@@ -3,8 +3,6 @@ package presentation.views.transactions;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
-import javafx.scene.control.cell.PropertyValueFactory;
-import presentation.views.portfolio.PortfolioRowViewModel;
 import presentation.views.utility.SetupViewUtil;
 
 import java.util.HashMap;
@@ -12,8 +10,6 @@ import java.util.Map;
 
 public class TransactionsController
 {
-    @FXML
-    private Button refreshButton;
     @FXML
     private Label totalTransactionsLabel;
     @FXML
@@ -40,14 +36,10 @@ public class TransactionsController
     private TableColumn<TransactionRowViewModel, String> totalColumn;
     @FXML
     private Label resultInfoLabel;
-    @FXML
-    private Button previousButton;
-    @FXML
-    private Button nextButton;
 
     private final TransactionsViewModel transactionsViewModel;
 
-
+    @FXML
     public void initialize()
     {
         setupTransactionsTable();

@@ -56,6 +56,38 @@ public class PortfolioViewModel implements PropertyChangeListener
         loadPortfolioTable();
     }
 
+    public void createNewPortfolio(String name, String startingBalance)
+    {
+        if (name.isEmpty() || startingBalance.isEmpty())
+        {
+            showErrorAlert("Cannot create portfolio", "Please fill in all fields with valid values.");
+            return;
+        }
+
+        try
+        {
+            BigDecimal balance = new BigDecimal(startingBalance);
+
+            if (balance.compareTo(BigDecimal.valueOf(10000)) > 0) {
+                showErrorAlert("Cannot create portfolio", "Max starting balance is 10000");
+                return;
+            }
+
+            portfolioService.createNewPortfolio(name.trim(), balance);
+            load();
+        }
+        catch (NumberFormatException e)
+        {
+            showErrorAlert("Invalid balance", "Starting balance must be a valid number.");
+        }
+    }
+
+    public void setActivePortfolio(UUID portfolioId)
+    {
+        appContext.setActivePortfolioId(portfolioId);
+        load();
+    }
+
     private void refreshValues()
     {
         recalculatePortfolioInfo();
@@ -185,38 +217,6 @@ public class PortfolioViewModel implements PropertyChangeListener
     public ObservableList<PortfolioRowViewModel> getPortfolios()
     {
         return portfolios;
-    }
-
-    public void setActivePortfolio(UUID portfolioId)
-    {
-        appContext.setActivePortfolioId(portfolioId);
-        load();
-    }
-
-    public void createNewPortfolio(String name, String startingBalance)
-    {
-        if (name.isEmpty() || startingBalance.isEmpty())
-        {
-            showErrorAlert("Cannot create portfolio", "Please fill in all fields with valid values.");
-            return;
-        }
-
-        try
-        {
-            BigDecimal balance = new BigDecimal(startingBalance);
-
-            if (balance.compareTo(BigDecimal.valueOf(10000)) > 0) {
-                showErrorAlert("Cannot create portfolio", "Max starting balance is 10000");
-                return;
-            }
-
-            portfolioService.createNewPortfolio(name.trim(), balance);
-            load();
-        }
-        catch (NumberFormatException e)
-        {
-            showErrorAlert("Invalid balance", "Starting balance must be a valid number.");
-        }
     }
 
     private void showErrorAlert(String title, String message)
