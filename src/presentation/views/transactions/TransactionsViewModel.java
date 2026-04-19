@@ -59,7 +59,7 @@ public class TransactionsViewModel
         for (Transaction transaction : transactionPageResult.items()) {
             int quantity = transaction.quantity();
             Transaction.Type type = transaction.type();
-            BigDecimal price = type == Transaction.Type.BUY ?
+            BigDecimal total = type == Transaction.Type.BUY ?
                     transaction.getTotalPriceWithFee() :
                     transaction.getTotalPriceFeeSubtracted();
 
@@ -68,8 +68,8 @@ public class TransactionsViewModel
                     type.toString(),
                     transaction.stockSymbol(),
                     quantity,
-                    price.toString(),
-                    price.multiply(BigDecimal.valueOf(quantity)).toString()
+                    transaction.pricePerShare().toString(),
+                    total.toString()
             ));
         }
 
