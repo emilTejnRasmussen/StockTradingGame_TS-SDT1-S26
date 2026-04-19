@@ -178,6 +178,16 @@ public class PortfolioService
                 .toList().size();
     }
 
+    public void createNewPortfolio(String name, BigDecimal startingBalance)
+    {
+
+        Portfolio portfolio = new Portfolio(name, startingBalance);
+
+        uow.begin();
+        portfolioDao.create(portfolio);
+        uow.commit();
+    }
+
     public Transaction.Type getLatestTransactionType(UUID portfolioId) {
         return transactionDao.getAll().stream()
                 .filter(t -> t.portfolioId().equals(portfolioId))
@@ -212,8 +222,12 @@ public class PortfolioService
 
     public BigDecimal getTotalProfitLoss(UUID portfolioId)
     {
+        BigDecimal startingBalance = portfolioDao.getById(portfolioId)
+                .orElseThrow(() -> new IllegalArgumentException("No portfolio with id=" + portfolioId))
+                .getStartingBalance();
+
         return getPortfolioNetWorth(portfolioId)
-                .subtract(AppConfig.getInstance().getStartingBalance())
+                .subtract(startingBalance)
                 .setScale(4, RoundingMode.HALF_UP);
     }
 
@@ -255,16 +269,5 @@ public class PortfolioService
         {
             throw new IllegalArgumentException("Invalid pagination values");
         }
-    }
-
-    public void createNewPortfolio(String name, BigDecimal startingBalance)
-    {
-
-        Portfolio portfolio = new Portfolio(name);
-        portfolio.setCurrentBalance(startingBalance);
-
-        uow.begin();
-        portfolioDao.create(portfolio);
-        uow.commit();
     }
 }

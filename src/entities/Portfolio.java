@@ -10,19 +10,30 @@ public class Portfolio
     private final UUID id;
     private String name;
     private BigDecimal currentBalance;
+    private BigDecimal startingBalance;
 
     public Portfolio(String name)
     {
         this.id = UUID.randomUUID();
-        this.currentBalance = AppConfig.getInstance().getStartingBalance();
+        this.startingBalance = AppConfig.getInstance().getStartingBalance();
+        this.currentBalance = startingBalance;
         this.name = name;
     }
 
-    public Portfolio(UUID id, BigDecimal currentBalance, String name)
+    public Portfolio(String name, BigDecimal startingBalance)
+    {
+        this.id = UUID.randomUUID();
+        this.name = name;
+        this.startingBalance = startingBalance;
+        this.currentBalance = this.startingBalance;
+    }
+
+    public Portfolio(UUID id, String name, BigDecimal currentBalance, BigDecimal startingBalance)
     {
         this.id = id;
-        this.currentBalance = currentBalance;
         this.name = name;
+        this.currentBalance = currentBalance;
+        this.startingBalance = startingBalance;
     }
 
     public UUID getId()
@@ -56,5 +67,10 @@ public class Portfolio
     public void setName(String name)
     {
         this.name = name;
+    }
+
+    public BigDecimal getStartingBalance()
+    {
+        return startingBalance;
     }
 }
