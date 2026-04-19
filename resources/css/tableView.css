@@ -176,3 +176,7 @@
     -fx-opacity: 0.45;
     -fx-cursor: default;
 }
+
+.table-cell .text {
+    -fx-fill: #e7e5e4;
+}

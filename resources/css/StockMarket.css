@@ -1,0 +1,76 @@
+.stock-market-root {
+    -fx-fill-width: true;
+}
+
+.stock-chart-pane {
+    -fx-min-height: 540px;
+}
+
+.stock-table-pane {
+    -fx-min-height: 260px;
+    -fx-max-height: 260px;
+}
+
+.portfolio-pane,
+.trade-pane {
+    -fx-background-color: rgba(255,255,255,0.06);
+    -fx-background-radius: 18;
+    -fx-border-color: rgba(255,255,255,0.10);
+    -fx-border-radius: 18;
+}
+
+.section-title {
+    -fx-text-fill: #f97316;
+    -fx-font-weight: bold;
+}
+
+.section-subtitle {
+    -fx-text-fill: #a8a29e;
+    -fx-font-size: 13px;
+}
+
+.portfolio-row {
+    -fx-alignment: CENTER_LEFT;
+    -fx-padding: 8px 0;
+    -fx-border-color: transparent transparent rgba(255,255,255,0.06) transparent;
+    -fx-border-width: 0 0 1 0;
+}
+
+.portfolio-label {
+    -fx-text-fill: #d6d3d1;
+    -fx-font-size: 13px;
+}
+
+.portfolio-value {
+    -fx-text-fill: white;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+}
+
+.trade-pane .spinner {
+    -fx-background-color: rgba(255,255,255,0.06);
+    -fx-background-radius: 10;
+    -fx-border-color: rgba(255,255,255,0.12);
+    -fx-border-radius: 10;
+}
+
+.trade-pane .spinner .text-field {
+    -fx-background-color: transparent;
+    -fx-text-fill: white;
+    -fx-alignment: CENTER;
+}
+
+.trade-pane .spinner .increment-arrow-button,
+.trade-pane .spinner .decrement-arrow-button {
+    -fx-background-color: rgba(249,115,22,0.14);
+}
+
+.trade-pane .spinner .increment-arrow-button:hover,
+.trade-pane .spinner .decrement-arrow-button:hover {
+    -fx-background-color: rgba(249,115,22,0.22);
+}
+
+.trade-pane .spinner .increment-arrow,
+.trade-pane .spinner .decrement-arrow {
+    -fx-background-color: #f97316;
+}

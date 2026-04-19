@@ -152,6 +152,7 @@ public class ApplicationContext
                 this,
                 stockListenerService,
                 stockHistoryService,
+                stockService,
                 portfolioService,
                 tradingService
         );

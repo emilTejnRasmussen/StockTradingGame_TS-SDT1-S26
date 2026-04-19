@@ -1,23 +1,27 @@
 package presentation.views.stockmarket;
 
 import business.dto.StockDTO;
+import javafx.beans.binding.Bindings;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.ReadOnlyStringWrapper;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.control.*;
+import javafx.util.StringConverter;
+import presentation.views.portfolio.PortfolioRowViewModel;
+import presentation.views.utility.Parser;
+import presentation.views.utility.SetupViewUtil;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.Map;
 
 public class StockMarketController
 {
     @FXML
     private Label totalPLLbl;
-    @FXML
-    private Label ownedStocksLbl;
-    @FXML
-    private Label totalSharesLbl;
     @FXML
     private Label holdingsValueLbl;
     @FXML
@@ -25,173 +29,196 @@ public class StockMarketController
     @FXML
     private Label netWorthLbl;
     @FXML
-    private TableView<StockDTO> stockTableView;
+    private Label selectedStockLbl;
+
     @FXML
-    private TableColumn<StockDTO, String> symbolCol;
+    private TableView<StockRowViewModel> stockTableView;
     @FXML
-    private TableColumn<StockDTO, String> priceCol;
+    private TableColumn<StockRowViewModel, String> symbolCol;
     @FXML
-    private TableColumn<StockDTO, Integer> ownedCol;
+    private TableColumn<StockRowViewModel, String> priceCol;
     @FXML
-    private TableColumn<StockDTO, Void> buyCol;
+    private TableColumn<StockRowViewModel, String> ownedCol;
+
     @FXML
-    private TableColumn<StockDTO, Void> sellCol;
+    private Spinner<Integer> quantitySpinner;
+    @FXML
+    private Button buyBtn;
+    @FXML
+    private Button sellBtn;
 
     @FXML
     private LineChart<Number, Number> stockMarketChart;
-
     @FXML
     private NumberAxis xAxis;
-
     @FXML
     private NumberAxis yAxis;
 
-    private final StockMarketViewModel viewModel;
+    private final StockMarketViewModel stockMarketViewModel;
 
-    public StockMarketController(StockMarketViewModel viewModel)
+    public StockMarketController(StockMarketViewModel stockMarketViewModel)
     {
-        this.viewModel = viewModel;
+        this.stockMarketViewModel = stockMarketViewModel;
     }
 
     @FXML
     public void initialize()
     {
-        setupTable();
-        setupChart();
-        setupPortfolioInfoLabels();
-
-        stockTableView.setItems(viewModel.getStocks());
-        stockMarketChart.setData(viewModel.getChartSeries());
-
-        viewModel.loadInitialData();
+        bindViewModel();
+        setupStockTable();
+        setupLineChart();
+        setupSpinner();
+        setupButtons();
+        stockMarketViewModel.load();
     }
 
-    private void setupTable()
+    private void bindViewModel()
     {
-        symbolCol.setCellValueFactory(cellData ->
-                new ReadOnlyStringWrapper(cellData.getValue().symbol()));
+        totalPLLbl.textProperty().bind(stockMarketViewModel.totalPLProperty());
+        holdingsValueLbl.textProperty().bind(stockMarketViewModel.holdingsValueProperty());
+        cashBalanceLbl.textProperty().bind(stockMarketViewModel.cashBalanceProperty());
+        netWorthLbl.textProperty().bind(stockMarketViewModel.netWorthProperty());
+        selectedStockLbl.textProperty().bind(
+                Bindings.createStringBinding(
+                        () -> {
+                            String symbol = stockMarketViewModel.getSelectedStockSymbol();
+                            return symbol == null || symbol.isBlank() ? "No stock selected" : "Selected: " + symbol;
+                        },
+                        stockMarketViewModel.selectedStockSymbolProperty()
+                )
+        );
+    }
 
-        priceCol.setCellValueFactory(cellData ->
-                new ReadOnlyObjectWrapper<>(String.format("¤ %.2f", cellData.getValue().currentPrice())));
+    private void setupSpinner()
+    {
+        SpinnerValueFactory.IntegerSpinnerValueFactory valueFactory =
+                new SpinnerValueFactory.IntegerSpinnerValueFactory(1, Integer.MAX_VALUE, 1);
 
-        ownedCol.setCellValueFactory(cellData ->
-                viewModel.ownedQuantityProperty(cellData.getValue().symbol()).asObject());
+        quantitySpinner.setValueFactory(valueFactory);
+        quantitySpinner.setEditable(true);
 
-        buyCol.setCellValueFactory(cellData -> new ReadOnlyObjectWrapper<>(null));
-        sellCol.setCellValueFactory(cellData -> new ReadOnlyObjectWrapper<>(null));
+        TextFormatter<Integer> textFormatter = new TextFormatter<>(
+                new StringConverter<>() {
+                    @Override
+                    public String toString(Integer value)
+                    {
+                        return value == null ? "1" : value.toString();
+                    }
 
-        stockTableView.getSelectionModel().setCellSelectionEnabled(false);
+                    @Override
+                    public Integer fromString(String text)
+                    {
+                        if (text == null || text.isBlank()) return 1;
+                        return Integer.parseInt(text);
+                    }
+                },
+                1,
+                change -> {
+                    String newText = change.getControlNewText();
 
-        stockTableView.setRowFactory(tv -> {
-            TableRow<StockDTO> row = new TableRow<>();
-            row.setOnMousePressed(event -> {
-                if (!row.isEmpty()) {
-                    stockTableView.getSelectionModel().clearSelection();
-                    stockTableView.getFocusModel().focus(-1);
+                    if (newText.isEmpty()) return change;
+                    if (newText.matches("[1-9][0-9]*")) return change;
+
+                    return null;
                 }
-            });
-            return row;
-        });
+        );
 
-        setupBuyColumn();
-        setupSellColumn();
+        quantitySpinner.getEditor().setTextFormatter(textFormatter);
+
+        valueFactory.valueProperty().bindBidirectional(textFormatter.valueProperty());
     }
 
-    private void setupSellColumn()
+    private void setupLineChart()
     {
-        sellCol.setCellFactory(col -> new TableCell<>() {
-            private final Button sellButton = new Button("Sell");
-            private String currentSymbol;
-            {
-                sellButton.getStyleClass().add("sell-button");
-
-                sellButton.setOnAction(event -> {
-                    StockDTO stock = getTableRow().getItem();
-                    if (stock != null) {
-                        viewModel.sell(stock);
-                    }
-                });
-
-                tableRowProperty().addListener((obs, oldRow, newRow) -> {
-                    if (oldRow != null) {
-                        oldRow.itemProperty().removeListener((o, oldItem, newItem) -> {});
-                    }
-
-                    if (newRow != null) {
-                        newRow.itemProperty().addListener((o, oldItem, newItem) -> rebindButton(newItem));
-                        rebindButton(newRow.getItem());
-                    }
-                });
-            }
-
-            private void rebindButton(StockDTO stock) {
-                sellButton.disableProperty().unbind();
-
-                if (stock == null) {
-                    currentSymbol = null;
-                    sellButton.setDisable(true);
-                    return;
-                }
-
-                currentSymbol = stock.symbol();
-                sellButton.disableProperty().bind(
-                        viewModel.ownedQuantityProperty(currentSymbol).lessThanOrEqualTo(0)
-                );
-            }
-
-            @Override
-            protected void updateItem(Void item, boolean empty) {
-                super.updateItem(item, empty);
-                setGraphic(empty ? null : sellButton);
-            }
-        });
-    }
-
-    private void setupBuyColumn()
-    {
-        buyCol.setCellFactory(col -> new TableCell<>() {
-            private final Button buyButton = new Button("Buy");
-            {
-                buyButton.getStyleClass().add("buy-button");
-
-                buyButton.setOnAction(event -> {
-                    StockDTO stock = getTableRow().getItem();
-                    if (stock != null) {
-                        viewModel.buy(stock);
-                    }
-                });
-            }
-
-            @Override
-            protected void updateItem(Void item, boolean empty) {
-                super.updateItem(item, empty);
-                setGraphic(empty ? null : buyButton);
-            }
-        });
-    }
-
-    private void setupChart()
-    {
-        xAxis.setLabel("Last 30 updates");
-        xAxis.setAutoRanging(false);
-        xAxis.setLowerBound(1);
-        xAxis.setUpperBound(30);
-        xAxis.setTickUnit(1);
-
-        yAxis.setLabel("Price");
-        yAxis.setAutoRanging(true);
-
         stockMarketChart.setAnimated(false);
         stockMarketChart.setCreateSymbols(false);
         stockMarketChart.setLegendVisible(true);
+
+        xAxis.setAutoRanging(false);
+        xAxis.setLowerBound(0);
+        xAxis.setUpperBound(45);
+        xAxis.setTickUnit(5);
+        xAxis.setLabel("Last 30 updates");
+
+        yAxis.setAutoRanging(true);
+        yAxis.setForceZeroInRange(false);
+        yAxis.setLabel("Price");
+
+        stockMarketChart.setData(stockMarketViewModel.getChartSeries());
     }
-    private void setupPortfolioInfoLabels()
+
+    private void setupStockTable()
     {
-        totalPLLbl.textProperty().bind(viewModel.totalPLProperty());
-        ownedStocksLbl.textProperty().bind(viewModel.ownedStocksProperty());
-        totalSharesLbl.textProperty().bind(viewModel.totalSharesProperty());
-        holdingsValueLbl.textProperty().bind(viewModel.holdingsValueProperty());
-        cashBalanceLbl.textProperty().bind(viewModel.cashBalanceProperty());
-        netWorthLbl.textProperty().bind(viewModel.netWorthProperty());
+        Map<TableColumn<StockRowViewModel, ?>, String> columnMappings = new HashMap<>(Map.of(
+                symbolCol, "symbol",
+                priceCol, "price",
+                ownedCol, "owned"
+        ));
+
+        SetupViewUtil.setupTableView(stockTableView, columnMappings);
+        stockTableView.setItems(stockMarketViewModel.getStocks());
+
+        stockTableView.getSelectionModel().selectedItemProperty().addListener((obs, oldValue, newValue) -> {
+            if (newValue == null) {
+                stockMarketViewModel.setSelectedStockSymbol("");
+            } else {
+                stockMarketViewModel.setSelectedStockSymbol(newValue.getSymbol());
+            }
+        });
+    }
+
+    private void setupButtons()
+    {
+        quantitySpinner.valueProperty().addListener((obs, oldValue, newValue) -> {
+            if (newValue != null) {
+                stockMarketViewModel.setSelectedQuantity(newValue);
+            }
+        });
+
+        buyBtn.disableProperty().bind(stockMarketViewModel.buyDisabledProperty());
+        sellBtn.disableProperty().bind(stockMarketViewModel.sellDisabledProperty());
+    }
+
+    public void handleBuyStocksPressed()
+    {
+        try
+        {
+            stockMarketViewModel.buy(quantitySpinner.getValue());
+        }
+        catch (Exception e)
+        {
+            showError("Buy failed", e);
+        }
+    }
+
+    public void handleSellStocksPressed()
+    {
+        try
+        {
+            stockMarketViewModel.sell(quantitySpinner.getValue());
+        }
+        catch (Exception e)
+        {
+            showError("Sell failed", e);
+        }
+    }
+
+    private void showError(String title, Exception exception)
+    {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+
+        String message = exception.getMessage();
+        if (exception.getCause() != null && exception.getCause().getMessage() != null)
+        {
+            message = exception.getCause().getMessage();
+        }
+
+        alert.setContentText(message == null || message.isBlank()
+                ? "Something went wrong."
+                : message);
+
+        alert.showAndWait();
     }
 }

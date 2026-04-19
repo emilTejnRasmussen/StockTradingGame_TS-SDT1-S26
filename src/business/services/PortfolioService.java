@@ -180,6 +180,7 @@ public class PortfolioService
 
     public Transaction.Type getLatestTransactionType(UUID portfolioId) {
         return transactionDao.getAll().stream()
+                .filter(t -> t.portfolioId().equals(portfolioId))
                 .max(Comparator.comparing(Transaction::timeStamp))
                 .orElseThrow(() -> new IllegalArgumentException("No transactions yet"))
                 .type();

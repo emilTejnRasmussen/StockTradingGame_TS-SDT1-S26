@@ -29,6 +29,10 @@ public class StockService
         return mapStockListToDTO(stocks);
     }
 
+    public List<StockResponseDTO> getAll() {
+        return mapStockListToDTO(stockDao.getAll());
+    }
+
     public BigDecimal getCurrentPrice(String stockSymbol) {
         Optional<Stock> stockOptional = stockDao.getBySymbol(stockSymbol);
 

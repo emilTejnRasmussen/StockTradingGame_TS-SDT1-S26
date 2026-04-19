@@ -1,27 +1,27 @@
 package presentation.views.stockmarket;
 
 import business.dto.StockDTO;
+import business.dto.StockResponseDTO;
 import business.dto.transaction.BuyStockRequestDTO;
 import business.dto.transaction.SellStockRequestDTO;
 import business.services.PortfolioService;
 import business.services.StockHistoryService;
+import business.services.StockService;
 import business.services.TradingService;
 import business.services.listener.StockListenerService;
-import entities.OwnedStock;
 import entities.StockPriceHistory;
 import javafx.application.Platform;
-import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.SimpleIntegerProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
+import javafx.beans.property.*;
 import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.chart.XYChart;
 import presentation.core.ApplicationContext;
+import presentation.views.utility.Parser;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.math.BigDecimal;
 import java.util.*;
 
 public class StockMarketViewModel implements PropertyChangeListener
@@ -29,287 +29,244 @@ public class StockMarketViewModel implements PropertyChangeListener
     private static final int DEFAULT_HISTORY_SIZE = 30;
 
     private final StockHistoryService stockHistoryService;
+    private final StockService stockService;
     private final PortfolioService portfolioService;
     private final TradingService tradingService;
 
+
     private final StringProperty totalPL = new SimpleStringProperty("");
-    private final StringProperty ownedStocks = new SimpleStringProperty("");
-    private final StringProperty totalShares = new SimpleStringProperty("");
     private final StringProperty holdingsValue = new SimpleStringProperty("");
     private final StringProperty cashBalance = new SimpleStringProperty("");
     private final StringProperty netWorth = new SimpleStringProperty("");
+    private final StringProperty selectedStockSymbol = new SimpleStringProperty("");
+    private final IntegerProperty selectedQuantity = new SimpleIntegerProperty(1);
+    private final BooleanProperty buyDisabled = new SimpleBooleanProperty(true);
+    private final BooleanProperty sellDisabled = new SimpleBooleanProperty(true);
 
-    private final ObservableList<StockDTO> stocks = FXCollections.observableArrayList();
+    private final ObservableList<StockRowViewModel> stocks = FXCollections.observableArrayList();
     private final ObservableList<XYChart.Series<Number, Number>> chartSeries = FXCollections.observableArrayList();
 
     private UUID portfolioId;
 
     private final Map<String, XYChart.Series<Number, Number>> seriesBySymbol = new HashMap<>();
-    private final Map<String, IntegerProperty> ownedBySymbol = new HashMap<>();
 
 
-    public StockMarketViewModel(ApplicationContext appContext, StockListenerService stockListenerService,
-                                StockHistoryService stockHistoryService,
-                                PortfolioService portfolioService,
-                                TradingService tradingService)
+    public StockMarketViewModel(ApplicationContext appContext, StockListenerService stockListenerService, StockHistoryService stockHistoryService, StockService stockService, PortfolioService portfolioService, TradingService tradingService)
     {
         this.stockHistoryService = stockHistoryService;
+        this.stockService = stockService;
         this.portfolioService = portfolioService;
         this.tradingService = tradingService;
 
-        stockListenerService.addListener(this);
-
         ChangeListener<UUID> activePortfolioListener = (_, _, newId) -> this.portfolioId = newId;
         appContext.activePortfolioIdProperty().addListener(activePortfolioListener);
+        stockListenerService.addListener(this);
     }
 
     @Override
     public void propertyChange(PropertyChangeEvent evt)
     {
-        if (!"stockUpdated".equals(evt.getPropertyName()))
+        if (evt.getNewValue() != null)
         {
-            return;
+            Platform.runLater(() -> refreshValues((StockDTO) evt.getNewValue()));
+        }
+    }
+
+    public void load()
+    {
+        stocks.clear();
+        selectedStockSymbol.set(null);
+
+        loadLineChart();
+        loadTable();
+    }
+
+    public void buy(int amount) {
+        tradingService.buyStock(new BuyStockRequestDTO(
+                selectedStockSymbol.get(),
+                portfolioId,
+                amount
+        ));
+    }
+
+    public void sell(int amount) {
+        tradingService.sellStock(new SellStockRequestDTO(
+                selectedStockSymbol.get(),
+                portfolioId,
+                amount
+        ));
+    }
+
+    private void refreshValues(StockDTO stockDTO)
+    {
+
+        refreshTable(stockDTO);
+        refreshLineChart(stockDTO);
+        refreshPortfolioValues();
+    }
+
+    private void refreshPortfolioValues()
+    {
+        String totalPL = formatPrice(portfolioService.getTotalProfitLoss(portfolioId));
+        String holdingsValue = formatPrice(portfolioService.getHoldingsValue(portfolioId));
+        String cashBalance = formatPrice(portfolioService.getPortfolioBalance(portfolioId));
+        String netWorth = formatPrice(portfolioService.getPortfolioNetWorth(portfolioId));
+
+        this.totalPL.set(totalPL);
+        this.holdingsValue.set(holdingsValue);
+        this.cashBalance.set(cashBalance);
+        this.netWorth.set(netWorth);
+
+        updateButtonStates();
+    }
+
+    private void refreshTable(StockDTO stockDTO)
+    {
+        for (StockRowViewModel stockRowViewModel : stocks)
+        {
+            if (!stockRowViewModel.getSymbol().equals(stockDTO.symbol())) continue;
+
+            stockRowViewModel.setSymbol(stockDTO.symbol());
+            stockRowViewModel.setPrice(formatPrice(stockDTO.currentPrice()));
+            try
+            {
+                stockRowViewModel.setOwned(portfolioService.getNumberOfSharesOwned(portfolioId, stockDTO.symbol()) + "");
+            } catch (Exception e)
+            {
+                stockRowViewModel.setOwned("0");
+            }
         }
 
-        StockDTO updatedStock = (StockDTO) evt.getNewValue();
-
-        Platform.runLater(() -> {
-            updateStockInTable(updatedStock);
-            appendToSeries(updatedStock);
-            updatePortfolioInfo();
-        });
+        updateButtonStates();
     }
 
-    public ObservableList<StockDTO> getStocks()
+    private void refreshLineChart(StockDTO stockDTO)
     {
-        return stocks;
+        XYChart.Series<Number, Number> series = seriesBySymbol.get(stockDTO.symbol());
+        if (series == null) return;
+
+        ObservableList<XYChart.Data<Number, Number>> data = series.getData();
+
+        if (data.size() >= DEFAULT_HISTORY_SIZE)
+        {
+            data.removeFirst();
+        }
+
+        for (int i = 0; i < data.size(); i++)
+        {
+            data.get(i).setXValue(i);
+        }
+
+        data.add(new XYChart.Data<>(
+                data.size(),
+                stockDTO.currentPrice().doubleValue()
+        ));
     }
 
-    public ObservableList<XYChart.Series<Number, Number>> getChartSeries()
+    private void loadTable()
     {
-        return chartSeries;
+        if (portfolioId == null) return;
+
+        List<StockResponseDTO> stockDTOs = stockService.getAll();
+
+        for (StockResponseDTO stockDTO : stockDTOs)
+        {
+            stocks.add(new StockRowViewModel(
+                    stockDTO.symbol(),
+                    formatPrice(stockDTO.currentPrice()),
+                    "0"
+            ));
+        }
     }
 
-    public void loadInitialData()
+    private void loadLineChart()
     {
-        Map<String, List<StockPriceHistory>> latestHistory =
+        Map<String, List<StockPriceHistory>> stockHistory =
                 stockHistoryService.getLatestStockUpdatesForAll(DEFAULT_HISTORY_SIZE);
 
-        List<StockDTO> loadedStocks = new ArrayList<>();
-        List<XYChart.Series<Number, Number>> loadedSeries = new ArrayList<>();
+        chartSeries.clear();
+        seriesBySymbol.clear();
 
-        List<String> symbols = new ArrayList<>(latestHistory.keySet());
-        symbols.sort(String::compareTo);
-
-        for (String symbol : symbols)
+        for (Map.Entry<String, List<StockPriceHistory>> entry : stockHistory.entrySet())
         {
-            List<StockPriceHistory> history = latestHistory.get(symbol);
+            String symbol = entry.getKey();
+            List<StockPriceHistory> history = entry.getValue();
 
-            if (history == null || history.isEmpty())
-            {
-                continue;
-            }
-
-            StockPriceHistory latestPoint = history.getLast();
-            loadedStocks.add(new StockDTO(symbol, latestPoint.price(), null));
+            if (history == null || history.isEmpty()) continue;
 
             XYChart.Series<Number, Number> series = new XYChart.Series<>();
             series.setName(symbol);
 
-            for (int i = 0; i < history.size(); i++)
+            int startIndex = Math.max(0, history.size() - DEFAULT_HISTORY_SIZE);
+
+            for (int i = startIndex; i < history.size(); i++)
             {
                 StockPriceHistory point = history.get(i);
-                series.getData().add(new XYChart.Data<>(i + 1, point.price().doubleValue()));
+
+                series.getData().add(new XYChart.Data<>(
+                        i - startIndex,
+                        point.price().doubleValue()
+                ));
             }
 
-            loadedSeries.add(series);
+            chartSeries.add(series);
+            seriesBySymbol.put(symbol, series);
         }
+    }
 
-        Platform.runLater(() -> {
-            stocks.setAll(loadedStocks);
-            chartSeries.setAll(loadedSeries);
+    private void updateButtonStates()
+    {
+        String selectedSymbol = selectedStockSymbol.get();
+        int quantity = selectedQuantity.get();
 
-            seriesBySymbol.clear();
-            for (XYChart.Series<Number, Number> series : loadedSeries)
+        boolean disableBuy = true;
+        boolean disableSell = true;
+
+        if (selectedSymbol != null && !selectedSymbol.isBlank() && quantity > 0)
+        {
+            StockRowViewModel selectedStock = findSelectedStock();
+
+            if (selectedStock != null)
             {
-                seriesBySymbol.put(series.getName(), series);
+                BigDecimal cash = Parser.parseMoney(cashBalance.get());
+                BigDecimal price = Parser.parseMoney(selectedStock.getPrice());
+                int owned = Parser.parseOwned(selectedStock.getOwned());
+
+                BigDecimal totalCost = price.multiply(BigDecimal.valueOf(quantity));
+
+                disableBuy = cash.compareTo(totalCost) < 0;
+                disableSell = quantity > owned;
             }
-
-            refreshOwnedStocks();
-            updatePortfolioInfo();
-        });
-    }
-
-    private void updatePortfolioInfo()
-    {
-        if (portfolioId == null)
-        {
-            clearPortfolioInfo();
-            return;
         }
 
-        String newCashBalance = String.format("¤ %.2f", portfolioService.getPortfolioBalance(portfolioId));
-        String newNetWorth = String.format("¤ %.2f", portfolioService.getPortfolioNetWorth(portfolioId));
-        String newTotalPL = String.format("¤ %.2f", portfolioService.getTotalProfitLoss(portfolioId));
-        String newOwnedStocks = String.format("%d", portfolioService.getOwnedStocks(portfolioId).size());
-        String newTotalShares = String.format("%d", portfolioService.getTotalNumberOfShares(portfolioId));
-        String newHoldingsValue = String.format("¤ %.2f", portfolioService.getHoldingsValue(portfolioId));
-
-        cashBalance.set(newCashBalance);
-        netWorth.set(newNetWorth);
-        totalPL.set(newTotalPL);
-        ownedStocks.set(newOwnedStocks);
-        totalShares.set(newTotalShares);
-        holdingsValue.set(newHoldingsValue);
+        buyDisabled.set(disableBuy);
+        sellDisabled.set(disableSell);
     }
 
-    private void clearPortfolioInfo()
+    private StockRowViewModel findSelectedStock()
     {
-        cashBalance.set("¤ 0.00");
-        netWorth.set("¤ 0.00");
-        totalPL.set("¤ 0.00");
-        ownedStocks.set("0");
-        totalShares.set("0");
-        holdingsValue.set("¤ 0.00");
-    }
+        String selectedSymbol = selectedStockSymbol.get();
+        if (selectedSymbol == null || selectedSymbol.isBlank()) return null;
 
-    private void updateStockInTable(StockDTO updatedStock)
-    {
-        for (int i = 0; i < stocks.size(); i++)
+        for (StockRowViewModel stock : stocks)
         {
-            StockDTO existing = stocks.get(i);
-
-            if (existing.symbol().equals(updatedStock.symbol()))
+            if (selectedSymbol.equals(stock.getSymbol()))
             {
-                stocks.set(i, updatedStock);
-                return;
+                return stock;
             }
         }
 
-        stocks.add(updatedStock);
-        FXCollections.sort(stocks, Comparator.comparing(StockDTO::symbol));
+        return null;
     }
 
-    private void appendToSeries(StockDTO updatedStock)
+    private String formatPrice(BigDecimal bigDecimal)
     {
-        XYChart.Series<Number, Number> series = seriesBySymbol.get(updatedStock.symbol());
-
-        if (series == null)
-        {
-            XYChart.Series<Number, Number> newSeries = new XYChart.Series<>();
-            newSeries.setName(updatedStock.symbol());
-            newSeries.getData().add(new XYChart.Data<>(1, updatedStock.currentPrice().doubleValue()));
-
-            seriesBySymbol.put(updatedStock.symbol(), newSeries);
-            chartSeries.add(newSeries);
-            chartSeries.sort(Comparator.comparing(XYChart.Series::getName));
-            return;
-        }
-
-        int nextX = series.getData().size() + 1;
-        series.getData().add(new XYChart.Data<>(nextX, updatedStock.currentPrice().doubleValue()));
-
-        if (series.getData().size() > DEFAULT_HISTORY_SIZE)
-        {
-            series.getData().removeFirst();
-
-            for (int i = 0; i < series.getData().size(); i++)
-            {
-                XYChart.Data<Number, Number> dataPoint = series.getData().get(i);
-                dataPoint.setXValue(i + 1);
-            }
-        }
-    }
-
-    public IntegerProperty ownedQuantityProperty(String stockSymbol)
-    {
-        return ownedBySymbol.computeIfAbsent(stockSymbol, _ -> new SimpleIntegerProperty(0));
-    }
-
-    public void refreshOwnedStocks()
-    {
-        Map<String, Integer> latest = new HashMap<>();
-
-        if (portfolioId != null)
-        {
-            for (OwnedStock os : portfolioService.getOwnedStocks(portfolioId))
-            {
-                latest.put(os.getStockSymbol(), os.getNumberOfShares());
-            }
-        }
-
-        Runnable applyUpdate = () -> {
-            for (String symbol : latest.keySet())
-            {
-                ownedQuantityProperty(symbol).set(latest.get(symbol));
-            }
-
-            for (String symbol : ownedBySymbol.keySet())
-            {
-                if (!latest.containsKey(symbol))
-                {
-                    ownedBySymbol.get(symbol).set(0);
-                }
-            }
-        };
-
-        if (Platform.isFxApplicationThread())
-        {
-            applyUpdate.run();
-        } else
-        {
-            Platform.runLater(applyUpdate);
-        }
-    }
-
-    public void sell(StockDTO stock)
-    {
-        if (portfolioId == null) return;
-
-        SellStockRequestDTO request = new SellStockRequestDTO(stock.symbol(), portfolioId, 1);
-
-        try
-        {
-            tradingService.sellStock(request);
-            refreshOwnedStocks();
-            updatePortfolioInfo();
-        } catch (Exception ignored)
-        {
-            // TODO - show error popup
-        }
-    }
-
-
-    public void buy(StockDTO stock)
-    {
-        if (portfolioId == null) return;
-
-        BuyStockRequestDTO request = new BuyStockRequestDTO(stock.symbol(), portfolioId, 1);
-
-        try
-        {
-            tradingService.buyStock(request);
-            refreshOwnedStocks();
-            updatePortfolioInfo();
-        } catch (Exception ignored)
-        {
-            // TODO - show error popup
-        }
+        return String.format("¤ %.2f", bigDecimal);
     }
 
     public StringProperty totalPLProperty()
     {
         return totalPL;
-    }
-
-    public StringProperty ownedStocksProperty()
-    {
-        return ownedStocks;
-    }
-
-    public StringProperty totalSharesProperty()
-    {
-        return totalShares;
     }
 
     public StringProperty holdingsValueProperty()
@@ -325,5 +282,51 @@ public class StockMarketViewModel implements PropertyChangeListener
     public StringProperty netWorthProperty()
     {
         return netWorth;
+    }
+
+    public IntegerProperty selectedQuantityProperty()
+    {
+        return selectedQuantity;
+    }
+
+    public void setSelectedQuantity(int quantity)
+    {
+        selectedQuantity.set(quantity);
+        updateButtonStates();
+    }
+
+    public BooleanProperty buyDisabledProperty()
+    {
+        return buyDisabled;
+    }
+
+    public BooleanProperty sellDisabledProperty()
+    {
+        return sellDisabled;
+    }
+
+    public ObservableList<StockRowViewModel> getStocks()
+    {
+        return stocks;
+    }
+
+    public ObservableList<XYChart.Series<Number, Number>> getChartSeries()
+    {
+        return chartSeries;
+    }
+
+    public StringProperty selectedStockSymbolProperty()
+    {
+        return selectedStockSymbol;
+    }
+
+    public String getSelectedStockSymbol()
+    {
+        return selectedStockSymbol.get();
+    }
+
+    public void setSelectedStockSymbol(String symbol)
+    {
+        this.selectedStockSymbol.set(symbol);
     }
 }

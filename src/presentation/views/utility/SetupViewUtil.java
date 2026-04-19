@@ -24,17 +24,5 @@ public class SetupViewUtil
         }
 
         tableView.getSelectionModel().setCellSelectionEnabled(false);
-
-        tableView.setRowFactory(_ -> {
-            TableRow<T> row = new TableRow<>();
-            row.setOnMousePressed(_ -> {
-                if (!row.isEmpty())
-                {
-                    tableView.getSelectionModel().clearSelection();
-                    tableView.getFocusModel().focus(-1);
-                }
-            });
-            return row;
-        });
     }
 }
