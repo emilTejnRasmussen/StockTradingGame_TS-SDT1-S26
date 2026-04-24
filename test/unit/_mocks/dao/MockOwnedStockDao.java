@@ -1,4 +1,4 @@
-package _mocks.dao;
+package unit._mocks.dao;
 
 import entities.OwnedStock;
 import persistence.interfaces.OwnedStockDao;

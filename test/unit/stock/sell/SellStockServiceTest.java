@@ -1,10 +1,11 @@
-package stock.sell;
+package unit.stock.sell;
 
-import _mocks.*;
-import _mocks.dao.MockOwnedStockDao;
-import _mocks.dao.MockPortfolioDao;
-import _mocks.dao.MockStockDao;
-import _mocks.dao.MockTransactionDao;
+import unit._mocks.MockLogger;
+import unit._mocks.MockUnitOfWork;
+import unit._mocks.dao.MockOwnedStockDao;
+import unit._mocks.dao.MockPortfolioDao;
+import unit._mocks.dao.MockStockDao;
+import unit._mocks.dao.MockTransactionDao;
 import business.dto.transaction.SellStockRequestDTO;
 import business.services.TradingService;
 import entities.OwnedStock;
@@ -276,7 +277,7 @@ public class SellStockServiceTest
     {
         UUID portfolioId = UUID.randomUUID();
 
-        portfolio = new Portfolio(portfolioId, BigDecimal.valueOf(1000));
+        portfolio = new Portfolio("test-portfolio", BigDecimal.valueOf(1000));
         stock = new Stock("AAPL", "Apple", BigDecimal.valueOf(100));
 
         stockDao.create(stock);
@@ -301,7 +302,7 @@ public class SellStockServiceTest
     {
         UUID portfolioId = UUID.randomUUID();
 
-        portfolio = new Portfolio(portfolioId, BigDecimal.valueOf(1000));
+        portfolio = new Portfolio("test-portfolio", BigDecimal.valueOf(1000));
         portfolioDao.create(portfolio);
 
         SellStockRequestDTO request = new SellStockRequestDTO("AAPL", portfolioId, 1);
@@ -335,7 +336,7 @@ public class SellStockServiceTest
     {
         UUID portfolioId = UUID.randomUUID();
 
-        portfolio = new Portfolio(portfolioId, BigDecimal.valueOf(1000));
+        portfolio = new Portfolio("test-portfolio", BigDecimal.valueOf(1000));
         stock = new Stock("AAPL", "Apple", BigDecimal.valueOf(100));
         stock.setCurrentState(Stock.State.BANKRUPT);
 
@@ -357,7 +358,7 @@ public class SellStockServiceTest
     {
         UUID portfolioId = UUID.randomUUID();
 
-        portfolio = new Portfolio(portfolioId, BigDecimal.valueOf(1000));
+        portfolio = new Portfolio("test-portfolio", BigDecimal.valueOf(1000));
         stock = new Stock("AAPL", "Apple", BigDecimal.valueOf(100));
         stock.setCurrentState(Stock.State.RESET);
 
@@ -379,7 +380,7 @@ public class SellStockServiceTest
     {
         UUID portfolioId = UUID.randomUUID();
 
-        portfolio = new Portfolio(portfolioId, BigDecimal.valueOf(1000));
+        portfolio = new Portfolio("test-portfolio", BigDecimal.valueOf(1000));
         stock = new Stock("AAPL", "Apple", BigDecimal.ZERO);
 
         stockDao.create(stock);
@@ -400,7 +401,7 @@ public class SellStockServiceTest
     {
         UUID portfolioId = UUID.randomUUID();
 
-        portfolio = new Portfolio(portfolioId, BigDecimal.valueOf(portfolioBalance));
+        portfolio = new Portfolio("test-portfolio", BigDecimal.valueOf(portfolioBalance));
         stock = new Stock("AAPL", "Apple", BigDecimal.valueOf(stockPricePerShare));
 
         stockDao.create(stock);

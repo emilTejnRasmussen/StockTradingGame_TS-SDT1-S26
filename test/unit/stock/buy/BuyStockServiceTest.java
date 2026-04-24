@@ -1,13 +1,13 @@
-package stock.buy;
+package unit.stock.buy;
 
-import _mocks.*;
-import _mocks.dao.MockOwnedStockDao;
-import _mocks.dao.MockPortfolioDao;
-import _mocks.dao.MockStockDao;
-import _mocks.dao.MockTransactionDao;
+import unit._mocks.MockLogger;
+import unit._mocks.MockUnitOfWork;
+import unit._mocks.dao.MockOwnedStockDao;
+import unit._mocks.dao.MockPortfolioDao;
+import unit._mocks.dao.MockStockDao;
+import unit._mocks.dao.MockTransactionDao;
 import business.dto.transaction.BuyStockRequestDTO;
 import business.services.TradingService;
-import entities.OwnedStock;
 import entities.Portfolio;
 import entities.Stock;
 import org.junit.jupiter.api.BeforeEach;
@@ -191,7 +191,7 @@ public class BuyStockServiceTest
     {
         UUID portfolioId = UUID.randomUUID();
 
-        portfolio = new Portfolio(portfolioId, BigDecimal.valueOf(portfolioBalance));
+        portfolio = new Portfolio("test-portfolio", BigDecimal.valueOf(portfolioBalance));
         stock = new Stock("AAPL", "Apple", BigDecimal.valueOf(stockPricePerShare));
 
         stockDao.create(stock);

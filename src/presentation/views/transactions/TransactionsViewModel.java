@@ -3,6 +3,7 @@ package presentation.views.transactions;
 import business.dto.PageResult;
 import business.services.PortfolioService;
 import entities.Transaction;
+import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
@@ -32,12 +33,15 @@ public class TransactionsViewModel
     private int pageNumber = 0;
     private int maxPageNumber = 0;
 
-    public TransactionsViewModel(ApplicationContext appContext, PortfolioService portfolioService)
+    public TransactionsViewModel(PortfolioService portfolioService, ObjectProperty<UUID> activePortfolioId)
     {
         this.portfolioService = portfolioService;
 
-        ChangeListener<UUID> activePortfolioListener = (_, _, newId) -> this.portfolioId = newId;
-        appContext.activePortfolioIdProperty().addListener(activePortfolioListener);
+        activePortfolioId.addListener((observable, oldId, newId) -> {
+            this.portfolioId = newId;
+            pageNumber = 0;
+            load();
+        });
     }
 
     public void load()

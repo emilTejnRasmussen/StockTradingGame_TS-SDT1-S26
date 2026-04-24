@@ -4,6 +4,7 @@ import business.services.PortfolioService;
 import business.services.listener.StockListenerService;
 import entities.Portfolio;
 import javafx.application.Platform;
+import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
@@ -29,16 +30,20 @@ public class PortfolioViewModel implements PropertyChangeListener
     private final ObservableList<PortfolioRowViewModel> portfolios = FXCollections.observableArrayList();
 
     private final PortfolioService portfolioService;
-    private final ApplicationContext appContext;
+    private final ObjectProperty<UUID> activePortfolioId;
     private UUID portfolioId;
 
-    public PortfolioViewModel(ApplicationContext appContext, PortfolioService portfolioService, StockListenerService stockListenerService)
+    public PortfolioViewModel(PortfolioService portfolioService, StockListenerService stockListenerService, ObjectProperty<UUID> activePortfolioId)
     {
+        this.activePortfolioId = activePortfolioId;
         this.portfolioService = portfolioService;
-        this.appContext = appContext;
+        this.portfolioId = activePortfolioId.get();
 
-        ChangeListener<UUID> activePortfolioListener = (_, _, newId) -> this.portfolioId = newId;
-        appContext.activePortfolioIdProperty().addListener(activePortfolioListener);
+        activePortfolioId.addListener((_, _, newId) -> {
+            this.portfolioId = newId;
+            refreshValues();
+        });
+
         stockListenerService.addListener(this);
     }
 
@@ -84,7 +89,7 @@ public class PortfolioViewModel implements PropertyChangeListener
 
     public void setActivePortfolio(UUID portfolioId)
     {
-        appContext.setActivePortfolioId(portfolioId);
+        activePortfolioId.set(portfolioId);
         load();
     }
 

@@ -8,6 +8,7 @@ import entities.Transaction;
 import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.chart.PieChart;
@@ -56,13 +57,17 @@ public class DashboardViewModel implements PropertyChangeListener
 
     private UUID portfolioId;
 
-    public DashboardViewModel(ApplicationContext appContext, PortfolioService portfolioService, StockService stockService, StockListenerService stockListenerService)
+    public DashboardViewModel(PortfolioService portfolioService, StockService stockService, StockListenerService stockListenerService, ObservableValue<UUID> activePortfolioId)
     {
         this.portfolioService = portfolioService;
         this.stockService = stockService;
+        this.portfolioId = activePortfolioId.getValue();
 
-        ChangeListener<UUID> activePortfolioListener = (_, _, newId) -> this.portfolioId = newId;
-        appContext.activePortfolioIdProperty().addListener(activePortfolioListener);
+        activePortfolioId.addListener((observable, oldId, newId) -> {
+            this.portfolioId = newId;
+            load();
+        });
+
         stockListenerService.addListener(this);
     }
 

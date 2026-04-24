@@ -90,17 +90,17 @@ public class ApplicationContext
     private TransactionsViewModel createTransactionViewModel()
     {
         return new TransactionsViewModel(
-                this,
-                portfolioService
+                portfolioService,
+                activePortfolioId
         );
     }
 
     private PortfolioViewModel createPortfolioViewModel()
     {
         return new PortfolioViewModel(
-                this,
                 portfolioService,
-                stockListenerService
+                stockListenerService,
+                activePortfolioId
         );
     }
 
@@ -137,22 +137,22 @@ public class ApplicationContext
     private DashboardViewModel createDashboardViewModel()
     {
         return new DashboardViewModel(
-                this,
                 portfolioService,
                 stockService,
-                stockListenerService
+                stockListenerService,
+                activePortfolioId
         );
     }
 
     private StockMarketViewModel createStockMarketViewModel()
     {
         return new StockMarketViewModel(
-                this,
                 stockListenerService,
                 stockHistoryService,
                 stockService,
                 portfolioService,
-                tradingService
+                tradingService,
+                activePortfolioId
         );
     }
 
