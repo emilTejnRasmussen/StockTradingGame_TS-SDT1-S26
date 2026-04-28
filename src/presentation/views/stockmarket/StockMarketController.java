@@ -25,13 +25,13 @@ public class StockMarketController
     private Label selectedStockLbl;
 
     @FXML
-    private TableView<StockRowViewModel> stockTableView;
+    private TableView<StockTableRow> stockTableView;
     @FXML
-    private TableColumn<StockRowViewModel, String> symbolCol;
+    private TableColumn<StockTableRow, String> symbolCol;
     @FXML
-    private TableColumn<StockRowViewModel, String> priceCol;
+    private TableColumn<StockTableRow, String> priceCol;
     @FXML
-    private TableColumn<StockRowViewModel, String> ownedCol;
+    private TableColumn<StockTableRow, String> ownedCol;
 
     @FXML
     private Spinner<Integer> quantitySpinner;
@@ -168,7 +168,7 @@ public class StockMarketController
 
     private void setupStockTable()
     {
-        Map<TableColumn<StockRowViewModel, ?>, String> columnMappings = new HashMap<>(Map.of(
+        Map<TableColumn<StockTableRow, ?>, String> columnMappings = new HashMap<>(Map.of(
                 symbolCol, "symbol",
                 priceCol, "price",
                 ownedCol, "owned"

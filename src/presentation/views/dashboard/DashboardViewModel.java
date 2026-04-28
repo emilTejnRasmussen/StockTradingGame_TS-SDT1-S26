@@ -7,12 +7,10 @@ import entities.OwnedStock;
 import entities.Transaction;
 import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyStringWrapper;
-import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.chart.PieChart;
-import presentation.core.ApplicationContext;
 import shared.configuration.AppConfig;
 
 import java.beans.PropertyChangeEvent;
@@ -29,8 +27,8 @@ public class DashboardViewModel implements PropertyChangeListener
     private static final String CURRENCY_ZERO = "¤ 0.00";
     private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm");
 
-    private final ObservableList<HoldingRowViewModel> holdings = FXCollections.observableArrayList();
-    private final ObservableList<TransactionRowViewModel> transactions = FXCollections.observableArrayList();
+    private final ObservableList<HoldingTableRow> holdings = FXCollections.observableArrayList();
+    private final ObservableList<TransactionTableRow> transactions = FXCollections.observableArrayList();
     private final ObservableList<PieChart.Data> shareDistribution = FXCollections.observableArrayList();
 
     private final ReadOnlyStringWrapper netWorth = new ReadOnlyStringWrapper(CURRENCY_ZERO);
@@ -118,7 +116,7 @@ public class DashboardViewModel implements PropertyChangeListener
         for (OwnedStock ownedStock : ownedStocksList)
         {
             String stockSymbol = ownedStock.getStockSymbol();
-            HoldingRowViewModel row = findHoldingRow(stockSymbol);
+            HoldingTableRow row = findHoldingRow(stockSymbol);
 
             if (row == null) {
                 continue;
@@ -144,9 +142,9 @@ public class DashboardViewModel implements PropertyChangeListener
         holdingsUpdatedText.set("Updated " + TIME_FORMATTER.format(LocalDateTime.now()));
     }
 
-    private HoldingRowViewModel findHoldingRow(String symbol)
+    private HoldingTableRow findHoldingRow(String symbol)
     {
-        for (HoldingRowViewModel row : holdings)
+        for (HoldingTableRow row : holdings)
         {
             if (row.getSymbol().equals(symbol)) {
                 return row;
@@ -170,7 +168,7 @@ public class DashboardViewModel implements PropertyChangeListener
             BigDecimal avgPrice = portfolioService.getAvgStockBuyPrice(ownedStock.getStockSymbol(), portfolioId);
 
 
-            holdings.add(new HoldingRowViewModel(
+            holdings.add(new HoldingTableRow(
                     stockSymbol,
                     numberOfShares,
                     formatCurrency(avgPrice),
@@ -194,7 +192,7 @@ public class DashboardViewModel implements PropertyChangeListener
 
             BigDecimal total = price.multiply(BigDecimal.valueOf(numberOfShares));
 
-            transactions.add(new TransactionRowViewModel(
+            transactions.add(new TransactionTableRow(
                     time,
                     type.toString(),
                     transaction.stockSymbol(),
@@ -267,12 +265,12 @@ public class DashboardViewModel implements PropertyChangeListener
         return String.format("¤ %.2f", value);
     }
 
-    public ObservableList<HoldingRowViewModel> getHoldings()
+    public ObservableList<HoldingTableRow> getHoldings()
     {
         return holdings;
     }
 
-    public ObservableList<TransactionRowViewModel> getTransactions()
+    public ObservableList<TransactionTableRow> getTransactions()
     {
         return transactions;
     }

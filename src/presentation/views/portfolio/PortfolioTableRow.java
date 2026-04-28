@@ -5,7 +5,7 @@ import javafx.beans.property.SimpleStringProperty;
 
 import java.util.UUID;
 
-public class PortfolioRowViewModel
+public class PortfolioTableRow
 {
     private final SimpleObjectProperty<UUID> portfolioId = new SimpleObjectProperty<>();
     private final SimpleStringProperty name = new SimpleStringProperty();
@@ -15,7 +15,7 @@ public class PortfolioRowViewModel
     private final SimpleStringProperty totalShares = new SimpleStringProperty();
     private final SimpleStringProperty active = new SimpleStringProperty();
 
-    public PortfolioRowViewModel(UUID portfolioId, String name, String cash, String netWorth, String ownedStocks, String totalShares, boolean isActive)
+    public PortfolioTableRow(UUID portfolioId, String name, String cash, String netWorth, String ownedStocks, String totalShares, boolean isActive)
     {
         this.portfolioId.set(portfolioId);
         this.name.set(name);

@@ -29,21 +29,21 @@ public class PortfolioController
     private Label portfolioCountLabel;
 
     @FXML
-    private TableView<PortfolioRowViewModel> portfolioTableView;
+    private TableView<PortfolioTableRow> portfolioTableView;
     @FXML
-    private TableColumn<PortfolioRowViewModel, String> nameColumn;
+    private TableColumn<PortfolioTableRow, String> nameColumn;
     @FXML
-    private TableColumn<PortfolioRowViewModel, String> cashColumn;
+    private TableColumn<PortfolioTableRow, String> cashColumn;
     @FXML
-    private TableColumn<PortfolioRowViewModel, String> netWorthColumn;
+    private TableColumn<PortfolioTableRow, String> netWorthColumn;
     @FXML
-    private TableColumn<PortfolioRowViewModel, String> ownedStocksColumn;
+    private TableColumn<PortfolioTableRow, String> ownedStocksColumn;
     @FXML
-    private TableColumn<PortfolioRowViewModel, String> totalSharesColumn;
+    private TableColumn<PortfolioTableRow, String> totalSharesColumn;
     @FXML
-    private TableColumn<PortfolioRowViewModel, String> activeColumn;
+    private TableColumn<PortfolioTableRow, String> activeColumn;
     @FXML
-    private TableColumn<PortfolioRowViewModel, Void> actionsColumn;
+    private TableColumn<PortfolioTableRow, Void> actionsColumn;
 
     private final PortfolioViewModel portfolioViewModel;
 
@@ -74,7 +74,7 @@ public class PortfolioController
 
     private void setupPortfolioTable()
     {
-        Map<TableColumn<PortfolioRowViewModel, ?>, String> columnMappings = new HashMap<>(Map.of(
+        Map<TableColumn<PortfolioTableRow, ?>, String> columnMappings = new HashMap<>(Map.of(
                 nameColumn, "name",
                 cashColumn, "cash",
                 netWorthColumn, "netWorth",
@@ -121,7 +121,7 @@ public class PortfolioController
                 });
 
                 setActiveButton.setOnAction(event -> {
-                    PortfolioRowViewModel row = getTableView().getItems().get(getIndex());
+                    PortfolioTableRow row = getTableView().getItems().get(getIndex());
                     portfolioViewModel.setActivePortfolio(row.getPortfolioId());
                     getTableView().requestFocus();
                     getTableView().getSelectionModel().select(getIndex());
@@ -139,7 +139,7 @@ public class PortfolioController
                     return;
                 }
 
-                PortfolioRowViewModel row = getTableView().getItems().get(getIndex());
+                PortfolioTableRow row = getTableView().getItems().get(getIndex());
 
                 setActiveButton.setDisable("active".equals(row.getActive()));
                 setGraphic(setActiveButton);

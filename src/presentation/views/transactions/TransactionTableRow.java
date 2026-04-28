@@ -1,12 +1,9 @@
 package presentation.views.transactions;
 
 import javafx.beans.property.SimpleIntegerProperty;
-import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 
-import java.util.UUID;
-
-public class TransactionRowViewModel
+public class TransactionTableRow
 {
     private final SimpleStringProperty time = new SimpleStringProperty();
     private final SimpleStringProperty type = new SimpleStringProperty();
@@ -15,12 +12,12 @@ public class TransactionRowViewModel
     private final SimpleStringProperty price = new SimpleStringProperty();
     private final SimpleStringProperty total = new SimpleStringProperty();
 
-    public TransactionRowViewModel(String time,
-                                   String type,
-                                   String symbol,
-                                   int shares,
-                                   String price,
-                                   String total
+    public TransactionTableRow(String time,
+                               String type,
+                               String symbol,
+                               int shares,
+                               String price,
+                               String total
     )
     {
         setTime(time);
