@@ -63,29 +63,25 @@ public class MainLeftMenuController
     @FXML
     public void handlePortfolioClicked()
     {
-        viewModel.portfolioClicked();
-        viewModel.setActiveBtn(buttons, portfolioBtn);
+        viewModel.portfolioClicked(buttons, portfolioBtn);
     }
 
     @FXML
     public void handleStockMarketClicked()
     {
-        viewModel.stockMarketClicked();
-        viewModel.setActiveBtn(buttons, stockMarketBtn);
+        viewModel.stockMarketClicked(buttons, stockMarketBtn);
     }
 
     @FXML
     public void handleTransactionClicked()
     {
-        viewModel.transactionsClicked();
-        viewModel.setActiveBtn(buttons, transactionBtn);
+        viewModel.transactionsClicked(buttons, transactionBtn);
     }
 
     @FXML
     public void handleLogoClicked()
     {
-        viewModel.logoClicked();
-        viewModel.setActiveBtn(buttons, null);
+        viewModel.logoClicked(buttons);
     }
 
     @FXML

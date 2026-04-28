@@ -32,19 +32,19 @@ public class DashboardController
     private Label holdingsUpdatedLabel;
 
     @FXML
-    private TableView<HoldingRowViewModel> holdingsTableView;
+    private TableView<HoldingTableRow> holdingsTableView;
     @FXML
-    private TableColumn<HoldingRowViewModel, String> symbolColumn;
+    private TableColumn<HoldingTableRow, String> symbolColumn;
     @FXML
-    private TableColumn<HoldingRowViewModel, Integer> sharesColumn;
+    private TableColumn<HoldingTableRow, Integer> sharesColumn;
     @FXML
-    private TableColumn<HoldingRowViewModel, String> avgPriceColumn;
+    private TableColumn<HoldingTableRow, String> avgPriceColumn;
     @FXML
-    private TableColumn<HoldingRowViewModel, String> currentPriceColumn;
+    private TableColumn<HoldingTableRow, String> currentPriceColumn;
     @FXML
-    private TableColumn<HoldingRowViewModel, String> valueColumn;
+    private TableColumn<HoldingTableRow, String> valueColumn;
     @FXML
-    private TableColumn<HoldingRowViewModel, String> plColumn;
+    private TableColumn<HoldingTableRow, String> plColumn;
 
     @FXML
     private PieChart sharesPieChart;
@@ -52,19 +52,19 @@ public class DashboardController
     @FXML
     private Label transactionsCountLabel;
     @FXML
-    private TableView<TransactionRowViewModel> transactionsTableView;
+    private TableView<TransactionTableRow> transactionsTableView;
     @FXML
-    private TableColumn<TransactionRowViewModel, String> transactionTimeColumn;
+    private TableColumn<TransactionTableRow, String> transactionTimeColumn;
     @FXML
-    private TableColumn<TransactionRowViewModel, String> transactionTypeColumn;
+    private TableColumn<TransactionTableRow, String> transactionTypeColumn;
     @FXML
-    private TableColumn<TransactionRowViewModel, String> transactionSymbolColumn;
+    private TableColumn<TransactionTableRow, String> transactionSymbolColumn;
     @FXML
-    private TableColumn<TransactionRowViewModel, Integer> transactionSharesColumn;
+    private TableColumn<TransactionTableRow, Integer> transactionSharesColumn;
     @FXML
-    private TableColumn<TransactionRowViewModel, String> transactionPriceColumn;
+    private TableColumn<TransactionTableRow, String> transactionPriceColumn;
     @FXML
-    private TableColumn<TransactionRowViewModel, String> transactionTotalColumn;
+    private TableColumn<TransactionTableRow, String> transactionTotalColumn;
 
     @FXML
     private Label bestPerformerLabel;
@@ -108,7 +108,7 @@ public class DashboardController
 
     private void setupHoldingsTable()
     {
-        Map<TableColumn<HoldingRowViewModel, ?>, String> columnMappings = new HashMap<>(Map.of(
+        Map<TableColumn<HoldingTableRow, ?>, String> columnMappings = new HashMap<>(Map.of(
                 symbolColumn, "symbol",
                 sharesColumn, "shares",
                 avgPriceColumn, "avgPrice",
@@ -123,7 +123,7 @@ public class DashboardController
 
     private void setupTransactionsTable()
     {
-        Map<TableColumn<TransactionRowViewModel, ?>, String> columnMappings = new HashMap<>(Map.of(
+        Map<TableColumn<TransactionTableRow, ?>, String> columnMappings = new HashMap<>(Map.of(
                 transactionTimeColumn, "time",
                 transactionTypeColumn, "type",
                 transactionSymbolColumn, "symbol",
@@ -163,12 +163,12 @@ public class DashboardController
     @FXML
     public void handleOpenMarket()
     {
-        ViewManager.setCenter(Views.STOCK_MARKET);
+        ViewManager.showView(Views.STOCK_MARKET);
     }
 
     @FXML
     public void handleOpenPortfolio()
     {
-        ViewManager.setCenter(Views.PORTFOLIO);
+        ViewManager.showView(Views.PORTFOLIO);
     }
 }

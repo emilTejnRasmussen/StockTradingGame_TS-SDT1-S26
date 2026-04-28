@@ -21,19 +21,19 @@ public class TransactionsController
     @FXML
     private Label pageInfoLabel;
     @FXML
-    private TableView<TransactionRowViewModel> transactionsTableView;
+    private TableView<TransactionTableRow> transactionsTableView;
     @FXML
-    private TableColumn<TransactionRowViewModel, String> timeColumn;
+    private TableColumn<TransactionTableRow, String> timeColumn;
     @FXML
-    private TableColumn<TransactionRowViewModel, String> typeColumn;
+    private TableColumn<TransactionTableRow, String> typeColumn;
     @FXML
-    private TableColumn<TransactionRowViewModel, String> symbolColumn;
+    private TableColumn<TransactionTableRow, String> symbolColumn;
     @FXML
-    private TableColumn<TransactionRowViewModel, Integer> sharesColumn;
+    private TableColumn<TransactionTableRow, Integer> sharesColumn;
     @FXML
-    private TableColumn<TransactionRowViewModel, String> priceColumn;
+    private TableColumn<TransactionTableRow, String> priceColumn;
     @FXML
-    private TableColumn<TransactionRowViewModel, String> totalColumn;
+    private TableColumn<TransactionTableRow, String> totalColumn;
     @FXML
     private Label resultInfoLabel;
 
@@ -76,7 +76,7 @@ public class TransactionsController
 
     private void setupTransactionsTable()
     {
-        Map<TableColumn<TransactionRowViewModel, ?>, String> columnMappings = new HashMap<>(Map.of(
+        Map<TableColumn<TransactionTableRow, ?>, String> columnMappings = new HashMap<>(Map.of(
                 timeColumn, "time",
                 typeColumn, "type",
                 symbolColumn, "symbol",

@@ -15,7 +15,8 @@ import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.chart.XYChart;
-import presentation.views.utility.Parser;
+import javafx.scene.control.Alert;
+import presentation.views.utility.PortfolioInputParser;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -41,13 +42,12 @@ public class StockMarketViewModel implements PropertyChangeListener
     private final BooleanProperty buyDisabled = new SimpleBooleanProperty(true);
     private final BooleanProperty sellDisabled = new SimpleBooleanProperty(true);
 
-    private final ObservableList<StockRowViewModel> stocks = FXCollections.observableArrayList();
+    private final ObservableList<StockTableRow> stocks = FXCollections.observableArrayList();
     private final ObservableList<XYChart.Series<Number, Number>> chartSeries = FXCollections.observableArrayList();
 
     private final Map<String, XYChart.Series<Number, Number>> seriesBySymbol = new HashMap<>();
 
     private UUID portfolioId;
-
 
 
     public StockMarketViewModel(StockListenerService stockListenerService, StockHistoryService stockHistoryService, StockService stockService, PortfolioService portfolioService, TradingService tradingService, ObservableValue<UUID> activePortfolioId)
@@ -85,20 +85,35 @@ public class StockMarketViewModel implements PropertyChangeListener
         refreshPortfolioValues();
     }
 
-    public void buy(int amount) {
-        tradingService.buyStock(new BuyStockRequestDTO(
-                selectedStockSymbol.get(),
-                portfolioId,
-                amount
-        ));
+    public void buy(int amount)
+    {
+        try
+        {
+            tradingService.buyStock(new BuyStockRequestDTO(
+                    selectedStockSymbol.get(),
+                    portfolioId,
+                    amount
+            ));
+        } catch (Exception e)
+        {
+            showError("Buy failed", e);
+        }
     }
 
-    public void sell(int amount) {
-        tradingService.sellStock(new SellStockRequestDTO(
-                selectedStockSymbol.get(),
-                portfolioId,
-                amount
-        ));
+    public void sell(int amount)
+    {
+        try
+        {
+            tradingService.sellStock(new SellStockRequestDTO(
+                    selectedStockSymbol.get(),
+                    portfolioId,
+                    amount
+            ));
+        } catch (Exception e)
+        {
+            showError("Sell failed", e);
+        }
+
     }
 
     private void refreshValues(StockDTO stockDTO)
@@ -137,18 +152,18 @@ public class StockMarketViewModel implements PropertyChangeListener
 
     private void refreshTable(StockDTO stockDTO)
     {
-        for (StockRowViewModel stockRowViewModel : stocks)
+        for (StockTableRow stockTableRow : stocks)
         {
-            if (!stockRowViewModel.getSymbol().equals(stockDTO.symbol())) continue;
+            if (!stockTableRow.getSymbol().equals(stockDTO.symbol())) continue;
 
-            stockRowViewModel.setSymbol(stockDTO.symbol());
-            stockRowViewModel.setPrice(formatPrice(stockDTO.currentPrice()));
+            stockTableRow.setSymbol(stockDTO.symbol());
+            stockTableRow.setPrice(formatPrice(stockDTO.currentPrice()));
             try
             {
-                stockRowViewModel.setOwned(portfolioService.getNumberOfSharesOwned(portfolioId, stockDTO.symbol()) + "");
+                stockTableRow.setOwned(portfolioService.getNumberOfSharesOwned(portfolioId, stockDTO.symbol()) + "");
             } catch (Exception e)
             {
-                stockRowViewModel.setOwned("0");
+                stockTableRow.setOwned("0");
             }
         }
 
@@ -190,18 +205,20 @@ public class StockMarketViewModel implements PropertyChangeListener
 
             if (portfolioId != null)
             {
-                try {
+                try
+                {
                     owned = String.valueOf(
                             portfolioService.getNumberOfSharesOwned(
                                     portfolioId,
                                     stockDTO.symbol()
                             )
                     );
-                } catch (Exception ignored) {
+                } catch (Exception ignored)
+                {
                     owned = "0";
                 }
             }
-            stocks.add(new StockRowViewModel(
+            stocks.add(new StockTableRow(
                     stockDTO.symbol(),
                     formatPrice(stockDTO.currentPrice()),
                     owned
@@ -254,13 +271,13 @@ public class StockMarketViewModel implements PropertyChangeListener
 
         if (selectedSymbol != null && !selectedSymbol.isBlank() && quantity > 0)
         {
-            StockRowViewModel selectedStock = findSelectedStock();
+            StockTableRow selectedStock = findSelectedStock();
 
             if (selectedStock != null)
             {
-                BigDecimal cash = Parser.parseMoney(cashBalance.get());
-                BigDecimal price = Parser.parseMoney(selectedStock.getPrice());
-                int owned = Parser.parseOwned(selectedStock.getOwned());
+                BigDecimal cash = PortfolioInputParser.parseMoney(cashBalance.get());
+                BigDecimal price = PortfolioInputParser.parseMoney(selectedStock.getPrice());
+                int owned = PortfolioInputParser.parseOwned(selectedStock.getOwned());
 
                 BigDecimal totalCost = price.multiply(BigDecimal.valueOf(quantity));
 
@@ -273,12 +290,12 @@ public class StockMarketViewModel implements PropertyChangeListener
         sellDisabled.set(disableSell);
     }
 
-    private StockRowViewModel findSelectedStock()
+    private StockTableRow findSelectedStock()
     {
         String selectedSymbol = selectedStockSymbol.get();
         if (selectedSymbol == null || selectedSymbol.isBlank()) return null;
 
-        for (StockRowViewModel stock : stocks)
+        for (StockTableRow stock : stocks)
         {
             if (selectedSymbol.equals(stock.getSymbol()))
             {
@@ -287,6 +304,25 @@ public class StockMarketViewModel implements PropertyChangeListener
         }
 
         return null;
+    }
+
+    private void showError(String title, Exception exception)
+    {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+
+        String message = exception.getMessage();
+        if (exception.getCause() != null && exception.getCause().getMessage() != null)
+        {
+            message = exception.getCause().getMessage();
+        }
+
+        alert.setContentText(message == null || message.isBlank()
+                ? "Something went wrong."
+                : message);
+
+        alert.showAndWait();
     }
 
     private String formatPrice(BigDecimal bigDecimal)
@@ -330,7 +366,7 @@ public class StockMarketViewModel implements PropertyChangeListener
         return sellDisabled;
     }
 
-    public ObservableList<StockRowViewModel> getStocks()
+    public ObservableList<StockTableRow> getStocks()
     {
         return stocks;
     }

@@ -6,11 +6,9 @@ import entities.Portfolio;
 import javafx.application.Platform;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyStringWrapper;
-import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.Alert;
-import presentation.core.ApplicationContext;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -27,7 +25,7 @@ public class PortfolioViewModel implements PropertyChangeListener
     private final ReadOnlyStringWrapper activeTotalShares = new ReadOnlyStringWrapper();
     private final ReadOnlyStringWrapper portfolioCount = new ReadOnlyStringWrapper();
 
-    private final ObservableList<PortfolioRowViewModel> portfolios = FXCollections.observableArrayList();
+    private final ObservableList<PortfolioTableRow> portfolios = FXCollections.observableArrayList();
 
     private final PortfolioService portfolioService;
     private final ObjectProperty<UUID> activePortfolioId;
@@ -97,7 +95,7 @@ public class PortfolioViewModel implements PropertyChangeListener
     {
         recalculatePortfolioInfo();
 
-        for (PortfolioRowViewModel row : portfolios)
+        for (PortfolioTableRow row : portfolios)
         {
             UUID id = row.getPortfolioId();
 
@@ -142,7 +140,7 @@ public class PortfolioViewModel implements PropertyChangeListener
             String totalShares = "" + portfolioService.getTotalNumberOfShares(portfolio.getId());
             boolean isActive = portfolio.getId().equals(portfolioId);
 
-            portfolios.add(new PortfolioRowViewModel(
+            portfolios.add(new PortfolioTableRow(
                     portfolio.getId(),
                     name,
                     cashBalance,
@@ -219,7 +217,7 @@ public class PortfolioViewModel implements PropertyChangeListener
         return portfolioCount;
     }
 
-    public ObservableList<PortfolioRowViewModel> getPortfolios()
+    public ObservableList<PortfolioTableRow> getPortfolios()
     {
         return portfolios;
     }

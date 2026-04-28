@@ -2,12 +2,13 @@ package presentation.views.stockmarket;
 
 import javafx.beans.property.SimpleStringProperty;
 
-public class StockRowViewModel {
+public class StockTableRow
+{
     private final SimpleStringProperty symbol = new SimpleStringProperty();
     private final SimpleStringProperty price = new SimpleStringProperty();
     private final SimpleStringProperty owned = new SimpleStringProperty();
 
-    public StockRowViewModel(String symbol, String price, String owned)
+    public StockTableRow(String symbol, String price, String owned)
     {
         this.symbol.set(symbol);
         this.price.set(price);

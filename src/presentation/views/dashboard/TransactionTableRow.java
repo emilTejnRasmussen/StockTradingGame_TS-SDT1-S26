@@ -3,7 +3,7 @@ package presentation.views.dashboard;
 import javafx.beans.property.ReadOnlyIntegerWrapper;
 import javafx.beans.property.ReadOnlyStringWrapper;
 
-public class TransactionRowViewModel
+public class TransactionTableRow
 {
     private final ReadOnlyStringWrapper time = new ReadOnlyStringWrapper();
     private final ReadOnlyStringWrapper type = new ReadOnlyStringWrapper();
@@ -12,7 +12,7 @@ public class TransactionRowViewModel
     private final ReadOnlyStringWrapper price = new ReadOnlyStringWrapper();
     private final ReadOnlyStringWrapper total = new ReadOnlyStringWrapper();
 
-    public TransactionRowViewModel(String time, String type, String symbol, int shares, String price, String total)
+    public TransactionTableRow(String time, String type, String symbol, int shares, String price, String total)
     {
         this.time.set(time);
         this.type.set(type);

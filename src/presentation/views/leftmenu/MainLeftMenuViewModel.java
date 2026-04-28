@@ -23,24 +23,28 @@ public class MainLeftMenuViewModel
         this.gameService = gameService;
     }
 
-    public void logoClicked()
+    public void logoClicked(Button[] buttons)
     {
-        ViewManager.setCenter(Views.DASHBOARD);
+        ViewManager.showView(Views.DASHBOARD);
+        setActiveBtn(buttons, null);
     }
 
-    public void portfolioClicked()
+    public void portfolioClicked(Button[] buttons, Button portfolioBtn)
     {
-        ViewManager.setCenter(Views.PORTFOLIO);
+        ViewManager.showView(Views.PORTFOLIO);
+        setActiveBtn(buttons, portfolioBtn);
     }
 
-    public void stockMarketClicked()
+    public void stockMarketClicked(Button[] buttons, Button stockMarketBtn)
     {
-        ViewManager.setCenter(Views.STOCK_MARKET);
+        ViewManager.showView(Views.STOCK_MARKET);
+        setActiveBtn(buttons, stockMarketBtn);
     }
 
-    public void transactionsClicked()
+    public void transactionsClicked(Button[] buttons, Button transactionBtn)
     {
-        ViewManager.setCenter(Views.TRANSACTION);
+        ViewManager.showView(Views.TRANSACTION);
+        setActiveBtn(buttons, transactionBtn);
     }
 
     public void exitClicked()
@@ -76,30 +80,7 @@ public class MainLeftMenuViewModel
         button.setUserData(new ButtonIcons(normalIconPath, activeIconPath));
     }
 
-    public void setActiveBtn(Button[] buttons, Button activeBtn)
-    {
-        for (Button button : buttons) {
-            button.getStyleClass().remove("active");
 
-            ImageView icon = getButtonIcon(button);
-            if (icon == null) {
-                continue;
-            }
-
-            Object userData = button.getUserData();
-            if (!(userData instanceof ButtonIcons(String normalIconPath, String activeIconPath))) {
-                System.out.println("No icon paths set for button: " + button);
-                continue;
-            }
-
-            if (button == activeBtn) {
-                button.getStyleClass().add("active");
-                icon.setImage(loadImage(activeIconPath));
-            } else {
-                icon.setImage(loadImage(normalIconPath));
-            }
-        }
-    }
 
     private ImageView getButtonIcon(Button button)
     {
@@ -136,5 +117,30 @@ public class MainLeftMenuViewModel
                         "Could not find resource: " + path
                 )
         );
+    }
+
+    private void setActiveBtn(Button[] buttons, Button activeBtn)
+    {
+        for (Button button : buttons) {
+            button.getStyleClass().remove("active");
+
+            ImageView icon = getButtonIcon(button);
+            if (icon == null) {
+                continue;
+            }
+
+            Object userData = button.getUserData();
+            if (!(userData instanceof ButtonIcons(String normalIconPath, String activeIconPath))) {
+                System.out.println("No icon paths set for button: " + button);
+                continue;
+            }
+
+            if (button == activeBtn) {
+                button.getStyleClass().add("active");
+                icon.setImage(loadImage(activeIconPath));
+            } else {
+                icon.setImage(loadImage(normalIconPath));
+            }
+        }
     }
 }

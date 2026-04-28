@@ -14,7 +14,7 @@ import javafx.beans.property.SimpleObjectProperty;
 import org.junit.jupiter.api.*;
 import persistence.fileImplementation.*;
 import presentation.views.stockmarket.StockMarketViewModel;
-import presentation.views.stockmarket.StockRowViewModel;
+import presentation.views.stockmarket.StockTableRow;
 import shared.logging.Logger;
 
 import java.io.File;
@@ -248,7 +248,7 @@ public class SellStockUseCaseTest
             stockMarketViewModel.sell(quantity);
             stockMarketViewModel.load();
 
-            StockRowViewModel row = findStockRow();
+            StockTableRow row = findStockRow();
 
             assertEquals("1", row.getOwned());
         }
@@ -309,7 +309,7 @@ public class SellStockUseCaseTest
             stockMarketViewModel.sell(quantity);
             stockMarketViewModel.load();
 
-            StockRowViewModel row = findStockRow();
+            StockTableRow row = findStockRow();
 
             assertEquals("3", row.getOwned());
         }
@@ -372,7 +372,7 @@ public class SellStockUseCaseTest
             stockMarketViewModel.sell(quantity);
             stockMarketViewModel.load();
 
-            StockRowViewModel row = findStockRow();
+            StockTableRow row = findStockRow();
 
             assertEquals("0", row.getOwned());
         }
@@ -609,7 +609,7 @@ public class SellStockUseCaseTest
             stockMarketViewModel.sell(quantity);
             stockMarketViewModel.load();
 
-            StockRowViewModel row = findStockRow();
+            StockTableRow row = findStockRow();
 
             assertEquals("1", row.getOwned());
         }
@@ -647,7 +647,7 @@ public class SellStockUseCaseTest
         uow.commit();
     }
 
-    private StockRowViewModel findStockRow()
+    private StockTableRow findStockRow()
     {
         return stockMarketViewModel.getStocks()
                 .stream()

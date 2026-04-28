@@ -5,10 +5,8 @@ import business.services.PortfolioService;
 import entities.Transaction;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyStringWrapper;
-import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import presentation.core.ApplicationContext;
 
 import java.math.BigDecimal;
 import java.time.format.DateTimeFormatter;
@@ -23,7 +21,7 @@ public class TransactionsViewModel
     private final ReadOnlyStringWrapper pageInfo = new ReadOnlyStringWrapper();
     private final ReadOnlyStringWrapper resultInfo = new ReadOnlyStringWrapper();
 
-    private final ObservableList<TransactionRowViewModel> transactions = FXCollections.observableArrayList();
+    private final ObservableList<TransactionTableRow> transactions = FXCollections.observableArrayList();
     private final PortfolioService portfolioService;
 
     private UUID portfolioId;
@@ -67,7 +65,7 @@ public class TransactionsViewModel
                     transaction.getTotalPriceWithFee() :
                     transaction.getTotalPriceFeeSubtracted();
 
-            transactions.add(new TransactionRowViewModel(
+            transactions.add(new TransactionTableRow(
                     transaction.timeStamp().format(formatter),
                     type.toString(),
                     transaction.stockSymbol(),
@@ -140,7 +138,7 @@ public class TransactionsViewModel
         return resultInfo;
     }
 
-    public ObservableList<TransactionRowViewModel> getTransactions()
+    public ObservableList<TransactionTableRow> getTransactions()
     {
         return transactions;
     }
