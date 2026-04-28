@@ -68,25 +68,13 @@ public class StockMarketController
     @FXML
     public void handleBuyStocksPressed()
     {
-        try
-        {
-            stockMarketViewModel.buy(quantitySpinner.getValue());
-        } catch (Exception e)
-        {
-            showError("Buy failed", e);
-        }
+        stockMarketViewModel.buy(quantitySpinner.getValue());
     }
 
     @FXML
     public void handleSellStocksPressed()
     {
-        try
-        {
-            stockMarketViewModel.sell(quantitySpinner.getValue());
-        } catch (Exception e)
-        {
-            showError("Sell failed", e);
-        }
+        stockMarketViewModel.sell(quantitySpinner.getValue());
     }
 
     private void bindViewModel()
@@ -200,22 +188,5 @@ public class StockMarketController
         });
     }
 
-    private void showError(String title, Exception exception)
-    {
-        Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
 
-        String message = exception.getMessage();
-        if (exception.getCause() != null && exception.getCause().getMessage() != null)
-        {
-            message = exception.getCause().getMessage();
-        }
-
-        alert.setContentText(message == null || message.isBlank()
-                ? "Something went wrong."
-                : message);
-
-        alert.showAndWait();
-    }
 }
