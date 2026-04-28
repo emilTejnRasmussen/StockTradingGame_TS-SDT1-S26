@@ -64,7 +64,7 @@ public class ViewManager
         }
     }
 
-    public static void setCenter(Views view)
+    public static void showView(Views view)
     {
         verifyMainLayoutIsNotNull();
 

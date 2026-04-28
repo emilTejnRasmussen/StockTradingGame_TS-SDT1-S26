@@ -3,11 +3,8 @@ package presentation.views.mainmenu;
 import business.services.GameService;
 import business.services.PortfolioService;
 import javafx.application.Platform;
-import presentation.core.ApplicationContext;
 import presentation.core.ViewManager;
 import presentation.core.Views;
-
-import java.util.UUID;
 
 public class MainMenuViewModel
 {
@@ -23,13 +20,13 @@ public class MainMenuViewModel
     public void startGame() {
         gameService.startGame();
         ViewManager.showMainApplication();
-        ViewManager.setCenter(Views.DASHBOARD);
+        ViewManager.showView(Views.DASHBOARD);
     }
 
     public void continueGame() {
         gameService.loadGame();
         ViewManager.showMainApplication();
-        ViewManager.setCenter(Views.DASHBOARD);
+        ViewManager.showView(Views.DASHBOARD);
     }
 
     public void exitGame() {

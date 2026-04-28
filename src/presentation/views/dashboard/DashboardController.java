@@ -163,12 +163,12 @@ public class DashboardController
     @FXML
     public void handleOpenMarket()
     {
-        ViewManager.setCenter(Views.STOCK_MARKET);
+        ViewManager.showView(Views.STOCK_MARKET);
     }
 
     @FXML
     public void handleOpenPortfolio()
     {
-        ViewManager.setCenter(Views.PORTFOLIO);
+        ViewManager.showView(Views.PORTFOLIO);
     }
 }

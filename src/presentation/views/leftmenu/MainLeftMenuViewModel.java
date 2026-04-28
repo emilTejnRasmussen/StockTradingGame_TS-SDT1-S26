@@ -25,22 +25,22 @@ public class MainLeftMenuViewModel
 
     public void logoClicked()
     {
-        ViewManager.setCenter(Views.DASHBOARD);
+        ViewManager.showView(Views.DASHBOARD);
     }
 
     public void portfolioClicked()
     {
-        ViewManager.setCenter(Views.PORTFOLIO);
+        ViewManager.showView(Views.PORTFOLIO);
     }
 
     public void stockMarketClicked()
     {
-        ViewManager.setCenter(Views.STOCK_MARKET);
+        ViewManager.showView(Views.STOCK_MARKET);
     }
 
     public void transactionsClicked()
     {
-        ViewManager.setCenter(Views.TRANSACTION);
+        ViewManager.showView(Views.TRANSACTION);
     }
 
     public void exitClicked()
