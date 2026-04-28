@@ -2,7 +2,7 @@ package presentation.views.utility;
 
 import java.math.BigDecimal;
 
-public class Parser
+public class PortfolioInputParser
 {
     public static BigDecimal parseMoney(String text)
     {

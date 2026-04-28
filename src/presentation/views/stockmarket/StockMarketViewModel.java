@@ -16,7 +16,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.Alert;
-import presentation.views.utility.Parser;
+import presentation.views.utility.PortfolioInputParser;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -275,9 +275,9 @@ public class StockMarketViewModel implements PropertyChangeListener
 
             if (selectedStock != null)
             {
-                BigDecimal cash = Parser.parseMoney(cashBalance.get());
-                BigDecimal price = Parser.parseMoney(selectedStock.getPrice());
-                int owned = Parser.parseOwned(selectedStock.getOwned());
+                BigDecimal cash = PortfolioInputParser.parseMoney(cashBalance.get());
+                BigDecimal price = PortfolioInputParser.parseMoney(selectedStock.getPrice());
+                int owned = PortfolioInputParser.parseOwned(selectedStock.getOwned());
 
                 BigDecimal totalCost = price.multiply(BigDecimal.valueOf(quantity));
 
