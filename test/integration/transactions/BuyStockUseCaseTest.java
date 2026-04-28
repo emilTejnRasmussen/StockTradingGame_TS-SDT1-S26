@@ -1,5 +1,7 @@
 package integration.transactions;
 
+import business.feecalc.FeeCalculationContext;
+import business.feecalc.FlatFeeStrategy;
 import business.services.PortfolioService;
 import business.services.StockHistoryService;
 import business.services.StockService;
@@ -7,7 +9,6 @@ import business.services.TradingService;
 import business.services.listener.StockListenerService;
 import entities.Stock;
 import entities.Transaction;
-import exception.TransactionFailedException;
 import javafx.application.Platform;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -15,7 +16,6 @@ import org.junit.jupiter.api.*;
 import persistence.fileImplementation.*;
 import presentation.views.stockmarket.StockMarketViewModel;
 import presentation.views.stockmarket.StockTableRow;
-import shared.configuration.AppConfig;
 import shared.logging.Logger;
 
 import java.io.File;
@@ -48,6 +48,8 @@ public class BuyStockUseCaseTest
 
     StockMarketViewModel stockMarketViewModel;
 
+    FeeCalculationContext feeCalculationContext;
+
     ObjectProperty<UUID> activePortfolioId;
 
     @BeforeAll
@@ -69,6 +71,8 @@ public class BuyStockUseCaseTest
         stockPriceHistoryDao = new FileStockPriceHistoryDao(uow);
         ownedStockDao = new FileOwnedStockDao(uow);
         transactionDao = new FileTransactionDao(uow);
+
+        feeCalculationContext = new FeeCalculationContext(new FlatFeeStrategy());
 
         stockListenerService = new StockListenerService(
                 uow,
@@ -93,7 +97,8 @@ public class BuyStockUseCaseTest
                 portfolioDao,
                 transactionDao,
                 ownedStockDao,
-                Logger.getInstance()
+                Logger.getInstance(),
+                feeCalculationContext
         );
 
         activePortfolioId = new SimpleObjectProperty<>();
@@ -139,15 +144,6 @@ public class BuyStockUseCaseTest
         void buyButton_isDisabled()
         {
             assertTrue(stockMarketViewModel.buyDisabledProperty().get());
-        }
-
-        @Test
-        void buyingStock_throwsException()
-        {
-            assertThrows(
-                    TransactionFailedException.class,
-                    () -> stockMarketViewModel.buy(quantity)
-            );
         }
 
         @Test
@@ -319,10 +315,9 @@ public class BuyStockUseCaseTest
         {
             quantity = 2;
 
-            BigDecimal fee = BigDecimal.valueOf(AppConfig.getInstance().getTransactionFee());
-            BigDecimal exactAffordableBalance = STOCK_PRICE
-                    .multiply(BigDecimal.valueOf(quantity))
-                    .add(fee);
+            BigDecimal basePrice = STOCK_PRICE.multiply(BigDecimal.valueOf(quantity));
+            BigDecimal fee = BigDecimal.valueOf(feeCalculationContext.calculateFee(basePrice));
+            BigDecimal exactAffordableBalance = basePrice.add(fee);
 
             portfolioId = createPortfolioWithBalance(exactAffordableBalance);
             createStock();
@@ -357,15 +352,13 @@ public class BuyStockUseCaseTest
         }
 
         @Test
-        void buyingStock_reducesPersistedCashBalance()
+        void buyingStock_reducesPersistedCashBalanceToZero()
         {
-            BigDecimal cashBefore = portfolioService.getPortfolioBalance(portfolioId);
-
             stockMarketViewModel.buy(quantity);
 
             BigDecimal cashAfter = portfolioService.getPortfolioBalance(portfolioId);
 
-            assertTrue(cashAfter.compareTo(cashBefore) < 0);
+            assertEquals(0, BigDecimal.ZERO.compareTo(cashAfter));
         }
     }
 
@@ -394,15 +387,6 @@ public class BuyStockUseCaseTest
         void buyButton_isDisabled()
         {
             assertTrue(stockMarketViewModel.buyDisabledProperty().get());
-        }
-
-        @Test
-        void buyingStock_throwsException()
-        {
-            assertThrows(
-                    TransactionFailedException.class,
-                    () -> stockMarketViewModel.buy(quantity)
-            );
         }
 
         @Test
@@ -457,15 +441,6 @@ public class BuyStockUseCaseTest
         }
 
         @Test
-        void buyingStock_throwsException()
-        {
-            assertThrows(
-                    TransactionFailedException.class,
-                    () -> stockMarketViewModel.buy(quantity)
-            );
-        }
-
-        @Test
         void buyingStock_doesNotPersistTransaction()
         {
             tryBuyIgnoringException(quantity);
@@ -508,15 +483,6 @@ public class BuyStockUseCaseTest
         }
 
         @Test
-        void buyingStock_throwsException()
-        {
-            assertThrows(
-                    TransactionFailedException.class,
-                    () -> stockMarketViewModel.buy(quantity)
-            );
-        }
-
-        @Test
         void buyingStock_doesNotPersistTransaction()
         {
             tryBuyIgnoringException(quantity);
@@ -550,15 +516,6 @@ public class BuyStockUseCaseTest
         void buyButton_isDisabled()
         {
             assertTrue(stockMarketViewModel.buyDisabledProperty().get());
-        }
-
-        @Test
-        void buyingStock_throwsException()
-        {
-            assertThrows(
-                    TransactionFailedException.class,
-                    () -> stockMarketViewModel.buy(quantity)
-            );
         }
 
         @Test

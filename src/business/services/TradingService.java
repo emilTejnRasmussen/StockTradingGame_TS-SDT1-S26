@@ -1,6 +1,7 @@
 package business.services;
 
 import business.dto.transaction.StockTransactionRequest;
+import business.feecalc.FeeCalculationContext;
 import entities.OwnedStock;
 import entities.Portfolio;
 import entities.Stock;
@@ -25,7 +26,9 @@ public class TradingService
     private final TransactionDao transactionDao;
     private final OwnedStockDao ownedStockDao;
 
-    public TradingService(UnitOfWork uow, StockDao stockDao, PortfolioDao portfolioDao, TransactionDao transactionDao, OwnedStockDao ownedStockDao, Logger logger)
+    private final FeeCalculationContext feeCalculationContext;
+
+    public TradingService(UnitOfWork uow, StockDao stockDao, PortfolioDao portfolioDao, TransactionDao transactionDao, OwnedStockDao ownedStockDao, Logger logger, FeeCalculationContext feeCalculationContext)
     {
         this.uow = uow;
         this.stockDao = stockDao;
@@ -33,6 +36,7 @@ public class TradingService
         this.transactionDao = transactionDao;
         this.ownedStockDao = ownedStockDao;
         this.logger = logger;
+        this.feeCalculationContext = feeCalculationContext;
     }
 
     public void buyStock(StockTransactionRequest request)
@@ -50,8 +54,9 @@ public class TradingService
             ensureStockIsNotInBankruptOrResetState(stock);
             ensureTradeShareCountLargerThanZero(request);
 
-            BigDecimal fee = BigDecimal.valueOf(AppConfig.getInstance().getTransactionFee());
-            BigDecimal totalPrice = stock.getCurrentPrice().multiply(BigDecimal.valueOf(quantity)).add(fee);
+            BigDecimal basePrice = stock.getCurrentPrice().multiply(BigDecimal.valueOf(quantity));
+            BigDecimal fee = BigDecimal.valueOf(feeCalculationContext.calculateFee(basePrice));
+            BigDecimal totalPrice = basePrice.add(fee);
 
             ensureBalanceLargerThanTotalPrice(portfolio, totalPrice);
 
@@ -89,8 +94,9 @@ public class TradingService
 
             removeSharesFromOwnedStock(portfolio.getId(), stock, quantity);
 
-            BigDecimal fee = BigDecimal.valueOf(AppConfig.getInstance().getTransactionFee());
-            BigDecimal proceeds = stock.getCurrentPrice().multiply(BigDecimal.valueOf(quantity)).subtract(fee);
+            BigDecimal basePrice = stock.getCurrentPrice().multiply(BigDecimal.valueOf(quantity));
+            BigDecimal fee = BigDecimal.valueOf(feeCalculationContext.calculateFee(basePrice));
+            BigDecimal proceeds = basePrice.subtract(fee);
 
             ensureProceedsIsPositive(proceeds);
 
@@ -153,7 +159,8 @@ public class TradingService
 
     private void createTransaction(UUID portfolioId, Stock stock, int quantity, Transaction.Type type)
     {
-        Transaction transaction = Transaction.create(portfolioId, stock.getSymbol(), type, quantity, stock.getCurrentPrice(), AppConfig.getInstance().getTransactionFee());
+        BigDecimal basePrice = stock.getCurrentPrice().multiply(BigDecimal.valueOf(quantity));
+        Transaction transaction = Transaction.create(portfolioId, stock.getSymbol(), type, quantity, stock.getCurrentPrice(), feeCalculationContext.calculateFee(basePrice));
 
         transactionDao.create(transaction);
     }
