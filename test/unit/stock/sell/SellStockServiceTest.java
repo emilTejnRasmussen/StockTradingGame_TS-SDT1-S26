@@ -1,12 +1,8 @@
 package unit.stock.sell;
 
-import unit._mocks.MockLogger;
-import unit._mocks.MockUnitOfWork;
-import unit._mocks.dao.MockOwnedStockDao;
-import unit._mocks.dao.MockPortfolioDao;
-import unit._mocks.dao.MockStockDao;
-import unit._mocks.dao.MockTransactionDao;
 import business.dto.transaction.SellStockRequestDTO;
+import business.feecalc.FeeCalculationContext;
+import business.feecalc.FlatFeeStrategy;
 import business.services.TradingService;
 import entities.OwnedStock;
 import entities.Portfolio;
@@ -14,7 +10,12 @@ import entities.Stock;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import persistence.interfaces.*;
-import shared.configuration.AppConfig;
+import unit._mocks.MockLogger;
+import unit._mocks.MockUnitOfWork;
+import unit._mocks.dao.MockOwnedStockDao;
+import unit._mocks.dao.MockPortfolioDao;
+import unit._mocks.dao.MockStockDao;
+import unit._mocks.dao.MockTransactionDao;
 
 import java.math.BigDecimal;
 import java.util.UUID;
@@ -34,6 +35,8 @@ public class SellStockServiceTest
 
     private TradingService tradingService;
 
+    private FeeCalculationContext feeCalculationContext;
+
     @BeforeEach
     void setup()
     {
@@ -42,14 +45,24 @@ public class SellStockServiceTest
         portfolioDao = new MockPortfolioDao();
         transactionDao = new MockTransactionDao();
         ownedStockDao = new MockOwnedStockDao();
+        feeCalculationContext = new FeeCalculationContext(new FlatFeeStrategy());
 
-        tradingService = new TradingService(uow, stockDao, portfolioDao, transactionDao, ownedStockDao, new MockLogger());
+        tradingService = new TradingService(
+                uow,
+                stockDao,
+                portfolioDao,
+                transactionDao,
+                ownedStockDao,
+                new MockLogger(),
+                feeCalculationContext
+        );
     }
 
     @Test
     void sellStock_validOwnedStock_beginCalledOnce()
     {
         setupSellStock_WithValidOwnedStock();
+
         assertEquals(1, uow.getBeginCalledAmount());
     }
 
@@ -57,6 +70,7 @@ public class SellStockServiceTest
     void sellStock_validOwnedStock_commitCalledOnce()
     {
         setupSellStock_WithValidOwnedStock();
+
         assertEquals(1, uow.getCommitCalledAmount());
     }
 
@@ -64,6 +78,7 @@ public class SellStockServiceTest
     void sellStock_validOwnedStock_rollbackNotCalled()
     {
         setupSellStock_WithValidOwnedStock();
+
         assertEquals(0, uow.getRollbackCalledAmount());
     }
 
@@ -71,6 +86,7 @@ public class SellStockServiceTest
     void sellStock_validOwnedStock_transactionCreated()
     {
         setupSellStock_WithValidOwnedStock();
+
         assertEquals(1, transactionDao.getAll().size());
     }
 
@@ -79,11 +95,12 @@ public class SellStockServiceTest
     {
         setupSellStock_WithValidOwnedStock();
 
-        BigDecimal fee = BigDecimal.valueOf(AppConfig.getInstance().getTransactionFee());
-        BigDecimal proceeds = stock.getCurrentPrice().subtract(fee);
-        BigDecimal result = BigDecimal.valueOf(1000).add(proceeds);
+        BigDecimal basePrice = stock.getCurrentPrice();
+        BigDecimal fee = BigDecimal.valueOf(feeCalculationContext.calculateFee(basePrice));
+        BigDecimal proceeds = basePrice.subtract(fee);
+        BigDecimal expectedBalance = BigDecimal.valueOf(1000).add(proceeds);
 
-        assertEquals(result, portfolio.getCurrentBalance());
+        assertEquals(0, expectedBalance.compareTo(portfolio.getCurrentBalance()));
     }
 
     @Test
@@ -100,6 +117,7 @@ public class SellStockServiceTest
     void sellStock_allOwnedShares_ownedStockDeleted()
     {
         setupSellStock_WithAllSharesSold();
+
         assertEquals(0, ownedStockDao.getAll().size());
     }
 
@@ -107,6 +125,7 @@ public class SellStockServiceTest
     void sellStock_partialOwnedShares_ownedStockStillExists()
     {
         setupSellStock_WithValidOwnedStock();
+
         assertEquals(1, ownedStockDao.getAll().size());
     }
 
@@ -115,17 +134,19 @@ public class SellStockServiceTest
     {
         setupSellStock_WithMultipleShares();
 
-        BigDecimal fee = BigDecimal.valueOf(AppConfig.getInstance().getTransactionFee());
-        BigDecimal proceeds = stock.getCurrentPrice().multiply(BigDecimal.valueOf(2)).subtract(fee);
-        BigDecimal result = BigDecimal.valueOf(1000).add(proceeds);
+        BigDecimal basePrice = stock.getCurrentPrice().multiply(BigDecimal.valueOf(2));
+        BigDecimal fee = BigDecimal.valueOf(feeCalculationContext.calculateFee(basePrice));
+        BigDecimal proceeds = basePrice.subtract(fee);
+        BigDecimal expectedBalance = BigDecimal.valueOf(1000).add(proceeds);
 
-        assertEquals(result, portfolio.getCurrentBalance());
+        assertEquals(0, expectedBalance.compareTo(portfolio.getCurrentBalance()));
     }
 
     @Test
     void sellStock_zeroQuantity_rollbackCalled()
     {
         setupSellStock_WithZeroQuantity();
+
         assertEquals(1, uow.getRollbackCalledAmount());
     }
 
@@ -133,6 +154,7 @@ public class SellStockServiceTest
     void sellStock_zeroQuantity_noTransactionCreated()
     {
         setupSellStock_WithZeroQuantity();
+
         assertEquals(0, transactionDao.getAll().size());
     }
 
@@ -140,6 +162,7 @@ public class SellStockServiceTest
     void sellStock_negativeQuantity_rollbackCalled()
     {
         setupSellStock_WithNegativeQuantity();
+
         assertEquals(1, uow.getRollbackCalledAmount());
     }
 
@@ -147,6 +170,7 @@ public class SellStockServiceTest
     void sellStock_negativeQuantity_noTransactionCreated()
     {
         setupSellStock_WithNegativeQuantity();
+
         assertEquals(0, transactionDao.getAll().size());
     }
 
@@ -154,6 +178,7 @@ public class SellStockServiceTest
     void sellStock_unknownStock_rollbackCalled()
     {
         setupSellStock_WithUnknownStock();
+
         assertEquals(1, uow.getRollbackCalledAmount());
     }
 
@@ -161,6 +186,7 @@ public class SellStockServiceTest
     void sellStock_unknownStock_noTransactionCreated()
     {
         setupSellStock_WithUnknownStock();
+
         assertEquals(0, transactionDao.getAll().size());
     }
 
@@ -168,6 +194,7 @@ public class SellStockServiceTest
     void sellStock_invalidPortfolio_rollbackCalled()
     {
         setupSellStock_WithInvalidPortfolio();
+
         assertEquals(1, uow.getRollbackCalledAmount());
     }
 
@@ -175,6 +202,7 @@ public class SellStockServiceTest
     void sellStock_invalidPortfolio_noTransactionCreated()
     {
         setupSellStock_WithInvalidPortfolio();
+
         assertEquals(0, transactionDao.getAll().size());
     }
 
@@ -182,6 +210,7 @@ public class SellStockServiceTest
     void sellStock_noOwnedShares_rollbackCalled()
     {
         setupSellStock_WithNoOwnedShares();
+
         assertEquals(1, uow.getRollbackCalledAmount());
     }
 
@@ -189,6 +218,7 @@ public class SellStockServiceTest
     void sellStock_noOwnedShares_noTransactionCreated()
     {
         setupSellStock_WithNoOwnedShares();
+
         assertEquals(0, transactionDao.getAll().size());
     }
 
@@ -196,6 +226,7 @@ public class SellStockServiceTest
     void sellStock_insufficientOwnedShares_rollbackCalled()
     {
         setupSellStock_WithInsufficientOwnedShares();
+
         assertEquals(1, uow.getRollbackCalledAmount());
     }
 
@@ -203,6 +234,7 @@ public class SellStockServiceTest
     void sellStock_insufficientOwnedShares_noTransactionCreated()
     {
         setupSellStock_WithInsufficientOwnedShares();
+
         assertEquals(0, transactionDao.getAll().size());
     }
 
@@ -210,6 +242,7 @@ public class SellStockServiceTest
     void sellStock_bankruptStock_rollbackCalled()
     {
         setupSellStock_WithBankruptStock();
+
         assertEquals(1, uow.getRollbackCalledAmount());
     }
 
@@ -217,6 +250,7 @@ public class SellStockServiceTest
     void sellStock_bankruptStock_noTransactionCreated()
     {
         setupSellStock_WithBankruptStock();
+
         assertEquals(0, transactionDao.getAll().size());
     }
 
@@ -224,6 +258,7 @@ public class SellStockServiceTest
     void sellStock_resetStock_rollbackCalled()
     {
         setupSellStock_WithResetStock();
+
         assertEquals(1, uow.getRollbackCalledAmount());
     }
 
@@ -231,6 +266,7 @@ public class SellStockServiceTest
     void sellStock_resetStock_noTransactionCreated()
     {
         setupSellStock_WithResetStock();
+
         assertEquals(0, transactionDao.getAll().size());
     }
 
@@ -238,6 +274,7 @@ public class SellStockServiceTest
     void sellStock_negativeProceeds_rollbackCalled()
     {
         setupSellStock_WithNegativeProceeds();
+
         assertEquals(1, uow.getRollbackCalledAmount());
     }
 
@@ -245,45 +282,49 @@ public class SellStockServiceTest
     void sellStock_negativeProceeds_noTransactionCreated()
     {
         setupSellStock_WithNegativeProceeds();
+
         assertEquals(0, transactionDao.getAll().size());
     }
 
     private void setupSellStock_WithValidOwnedStock()
     {
-        setupSellStock(1000, 100, 3, 1);
+        setupSuccessfulSellStock(1000, 100, 3, 1);
     }
 
     private void setupSellStock_WithAllSharesSold()
     {
-        setupSellStock(1000, 100, 1, 1);
+        setupSuccessfulSellStock(1000, 100, 1, 1);
     }
 
     private void setupSellStock_WithMultipleShares()
     {
-        setupSellStock(1000, 100, 5, 2);
+        setupSuccessfulSellStock(1000, 100, 5, 2);
     }
 
     private void setupSellStock_WithZeroQuantity()
     {
-        setupSellStock(1000, 100, 3, 0);
+        setupFailedSellStock(1000, 100, 3, 0);
     }
 
     private void setupSellStock_WithNegativeQuantity()
     {
-        setupSellStock(1000, 100, 3, -1);
+        setupFailedSellStock(1000, 100, 3, -1);
+    }
+
+    private void setupSellStock_WithInsufficientOwnedShares()
+    {
+        setupFailedSellStock(1000, 100, 1, 2);
     }
 
     private void setupSellStock_WithNoOwnedShares()
     {
-        UUID portfolioId = UUID.randomUUID();
-
         portfolio = new Portfolio("test-portfolio", BigDecimal.valueOf(1000));
         stock = new Stock("AAPL", "Apple", BigDecimal.valueOf(100));
 
         stockDao.create(stock);
         portfolioDao.create(portfolio);
 
-        SellStockRequestDTO request = new SellStockRequestDTO("AAPL", portfolioId, 1);
+        SellStockRequestDTO request = new SellStockRequestDTO("AAPL", portfolio.getId(), 1);
 
         try
         {
@@ -293,19 +334,13 @@ public class SellStockServiceTest
         }
     }
 
-    private void setupSellStock_WithInsufficientOwnedShares()
-    {
-        setupSellStock(1000, 100, 1, 2);
-    }
-
     private void setupSellStock_WithUnknownStock()
     {
-        UUID portfolioId = UUID.randomUUID();
-
         portfolio = new Portfolio("test-portfolio", BigDecimal.valueOf(1000));
+
         portfolioDao.create(portfolio);
 
-        SellStockRequestDTO request = new SellStockRequestDTO("AAPL", portfolioId, 1);
+        SellStockRequestDTO request = new SellStockRequestDTO("AAPL", portfolio.getId(), 1);
 
         try
         {
@@ -317,12 +352,14 @@ public class SellStockServiceTest
 
     private void setupSellStock_WithInvalidPortfolio()
     {
-        UUID portfolioId = UUID.randomUUID();
+        UUID invalidPortfolioId = UUID.randomUUID();
 
         stock = new Stock("AAPL", "Apple", BigDecimal.valueOf(100));
-        stockDao.create(stock);
 
-        SellStockRequestDTO request = new SellStockRequestDTO("AAPL", portfolioId, 1);
+        stockDao.create(stock);
+        ownedStockDao.create(new OwnedStock(invalidPortfolioId, "AAPL", 3));
+
+        SellStockRequestDTO request = new SellStockRequestDTO("AAPL", invalidPortfolioId, 1);
 
         try
         {
@@ -334,17 +371,15 @@ public class SellStockServiceTest
 
     private void setupSellStock_WithBankruptStock()
     {
-        UUID portfolioId = UUID.randomUUID();
-
         portfolio = new Portfolio("test-portfolio", BigDecimal.valueOf(1000));
         stock = new Stock("AAPL", "Apple", BigDecimal.valueOf(100));
         stock.setCurrentState(Stock.State.BANKRUPT);
 
         stockDao.create(stock);
         portfolioDao.create(portfolio);
-        ownedStockDao.create(new OwnedStock(portfolioId, "AAPL", 3));
+        ownedStockDao.create(new OwnedStock(portfolio.getId(), "AAPL", 3));
 
-        SellStockRequestDTO request = new SellStockRequestDTO("AAPL", portfolioId, 1);
+        SellStockRequestDTO request = new SellStockRequestDTO("AAPL", portfolio.getId(), 1);
 
         try
         {
@@ -356,17 +391,15 @@ public class SellStockServiceTest
 
     private void setupSellStock_WithResetStock()
     {
-        UUID portfolioId = UUID.randomUUID();
-
         portfolio = new Portfolio("test-portfolio", BigDecimal.valueOf(1000));
         stock = new Stock("AAPL", "Apple", BigDecimal.valueOf(100));
         stock.setCurrentState(Stock.State.RESET);
 
         stockDao.create(stock);
         portfolioDao.create(portfolio);
-        ownedStockDao.create(new OwnedStock(portfolioId, "AAPL", 3));
+        ownedStockDao.create(new OwnedStock(portfolio.getId(), "AAPL", 3));
 
-        SellStockRequestDTO request = new SellStockRequestDTO("AAPL", portfolioId, 1);
+        SellStockRequestDTO request = new SellStockRequestDTO("AAPL", portfolio.getId(), 1);
 
         try
         {
@@ -378,16 +411,14 @@ public class SellStockServiceTest
 
     private void setupSellStock_WithNegativeProceeds()
     {
-        UUID portfolioId = UUID.randomUUID();
-
         portfolio = new Portfolio("test-portfolio", BigDecimal.valueOf(1000));
         stock = new Stock("AAPL", "Apple", BigDecimal.ZERO);
 
         stockDao.create(stock);
         portfolioDao.create(portfolio);
-        ownedStockDao.create(new OwnedStock(portfolioId, "AAPL", 3));
+        ownedStockDao.create(new OwnedStock(portfolio.getId(), "AAPL", 3));
 
-        SellStockRequestDTO request = new SellStockRequestDTO("AAPL", portfolioId, 1);
+        SellStockRequestDTO request = new SellStockRequestDTO("AAPL", portfolio.getId(), 1);
 
         try
         {
@@ -397,18 +428,20 @@ public class SellStockServiceTest
         }
     }
 
-    private void setupSellStock(int portfolioBalance, int stockPricePerShare, int ownedShares, int quantityToSell)
+    private void setupSuccessfulSellStock(int portfolioBalance, int stockPricePerShare, int ownedShares, int quantityToSell)
     {
-        UUID portfolioId = UUID.randomUUID();
+        setupStockPortfolioAndOwnedStock(portfolioBalance, stockPricePerShare, ownedShares);
 
-        portfolio = new Portfolio("test-portfolio", BigDecimal.valueOf(portfolioBalance));
-        stock = new Stock("AAPL", "Apple", BigDecimal.valueOf(stockPricePerShare));
+        SellStockRequestDTO request = new SellStockRequestDTO("AAPL", portfolio.getId(), quantityToSell);
 
-        stockDao.create(stock);
-        portfolioDao.create(portfolio);
-        ownedStockDao.create(new OwnedStock(portfolioId, "AAPL", ownedShares));
+        tradingService.sellStock(request);
+    }
 
-        SellStockRequestDTO request = new SellStockRequestDTO("AAPL", portfolioId, quantityToSell);
+    private void setupFailedSellStock(int portfolioBalance, int stockPricePerShare, int ownedShares, int quantityToSell)
+    {
+        setupStockPortfolioAndOwnedStock(portfolioBalance, stockPricePerShare, ownedShares);
+
+        SellStockRequestDTO request = new SellStockRequestDTO("AAPL", portfolio.getId(), quantityToSell);
 
         try
         {
@@ -416,5 +449,15 @@ public class SellStockServiceTest
         } catch (Exception ignored)
         {
         }
+    }
+
+    private void setupStockPortfolioAndOwnedStock(int portfolioBalance, int stockPricePerShare, int ownedShares)
+    {
+        portfolio = new Portfolio("test-portfolio", BigDecimal.valueOf(portfolioBalance));
+        stock = new Stock("AAPL", "Apple", BigDecimal.valueOf(stockPricePerShare));
+
+        stockDao.create(stock);
+        portfolioDao.create(portfolio);
+        ownedStockDao.create(new OwnedStock(portfolio.getId(), "AAPL", ownedShares));
     }
 }

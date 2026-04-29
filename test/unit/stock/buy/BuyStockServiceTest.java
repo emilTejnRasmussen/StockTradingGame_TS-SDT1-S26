@@ -1,22 +1,22 @@
 package unit.stock.buy;
 
-import unit._mocks.MockLogger;
-import unit._mocks.MockUnitOfWork;
-import unit._mocks.dao.MockOwnedStockDao;
-import unit._mocks.dao.MockPortfolioDao;
-import unit._mocks.dao.MockStockDao;
-import unit._mocks.dao.MockTransactionDao;
 import business.dto.transaction.BuyStockRequestDTO;
+import business.feecalc.FeeCalculationContext;
+import business.feecalc.FlatFeeStrategy;
 import business.services.TradingService;
 import entities.Portfolio;
 import entities.Stock;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import persistence.interfaces.*;
-import shared.configuration.AppConfig;
+import unit._mocks.MockLogger;
+import unit._mocks.MockUnitOfWork;
+import unit._mocks.dao.MockOwnedStockDao;
+import unit._mocks.dao.MockPortfolioDao;
+import unit._mocks.dao.MockStockDao;
+import unit._mocks.dao.MockTransactionDao;
 
 import java.math.BigDecimal;
-import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -33,6 +33,8 @@ public class BuyStockServiceTest
 
     private TradingService tradingService;
 
+    private FeeCalculationContext feeCalculationContext;
+
     @BeforeEach
     void setup()
     {
@@ -41,15 +43,24 @@ public class BuyStockServiceTest
         portfolioDao = new MockPortfolioDao();
         transactionDao = new MockTransactionDao();
         ownedStockDao = new MockOwnedStockDao();
+        feeCalculationContext = new FeeCalculationContext(new FlatFeeStrategy());
 
-
-        tradingService = new TradingService(uow, stockDao, portfolioDao, transactionDao, ownedStockDao, new MockLogger());
+        tradingService = new TradingService(
+                uow,
+                stockDao,
+                portfolioDao,
+                transactionDao,
+                ownedStockDao,
+                new MockLogger(),
+                feeCalculationContext
+        );
     }
 
     @Test
     void buyOneStock_WithValidAffordableStock_BeginCalledOnce()
     {
         setupBuyStock_WithValidAffordableStock();
+
         assertEquals(1, uow.getBeginCalledAmount());
     }
 
@@ -57,6 +68,7 @@ public class BuyStockServiceTest
     void buyOneStock_WithValidAffordableStock_CommitCalledOnce()
     {
         setupBuyStock_WithValidAffordableStock();
+
         assertEquals(1, uow.getCommitCalledAmount());
     }
 
@@ -64,6 +76,7 @@ public class BuyStockServiceTest
     void buyOneStock_WithValidAffordableStock_RollbackNotCalled()
     {
         setupBuyStock_WithValidAffordableStock();
+
         assertEquals(0, uow.getRollbackCalledAmount());
     }
 
@@ -71,6 +84,7 @@ public class BuyStockServiceTest
     void buyOneStock_WithValidAffordableStock_TransactionCreated()
     {
         setupBuyStock_WithValidAffordableStock();
+
         assertEquals(1, transactionDao.getAll().size());
     }
 
@@ -78,38 +92,43 @@ public class BuyStockServiceTest
     void buyOneStock_WithValidAffordableStock_OwnedStockCreated()
     {
         setupBuyStock_WithValidAffordableStock();
+
         assertEquals(1, ownedStockDao.getAll().size());
     }
 
     @Test
-    void buyOneStock_WithValidAffordableStock_PortfolioBalanceReducedByStockPrice()
+    void buyOneStock_WithValidAffordableStock_PortfolioBalanceReducedByStockPriceAndFee()
     {
         setupBuyStock_WithValidAffordableStock();
 
-        BigDecimal fee = BigDecimal.valueOf(AppConfig.getInstance().getTransactionFee());
-        BigDecimal totalAmount = stock.getCurrentPrice().add(fee);
+        BigDecimal basePrice = stock.getCurrentPrice();
+        BigDecimal fee = BigDecimal.valueOf(feeCalculationContext.calculateFee(basePrice));
+        BigDecimal totalAmount = basePrice.add(fee);
 
-        BigDecimal result = BigDecimal.valueOf(1000.0).subtract(totalAmount);
+        BigDecimal expectedBalance = BigDecimal.valueOf(1000).subtract(totalAmount);
 
-        assertEquals(result, portfolio.getCurrentBalance());
+        assertEquals(0, expectedBalance.compareTo(portfolio.getCurrentBalance()));
     }
 
     @Test
     void buyMultipleStocks_WithValidAffordableStock_TotalCostCalculatedCorrectly()
     {
         setupBuyMultipleStocks_WithValidAffordableStock();
-        BigDecimal fee = BigDecimal.valueOf(AppConfig.getInstance().getTransactionFee());
-        BigDecimal totalAmount = stock.getCurrentPrice().multiply(BigDecimal.valueOf(3)).add(fee);
 
-        BigDecimal result = BigDecimal.valueOf(1000.0).subtract(totalAmount);
+        BigDecimal basePrice = stock.getCurrentPrice().multiply(BigDecimal.valueOf(3));
+        BigDecimal fee = BigDecimal.valueOf(feeCalculationContext.calculateFee(basePrice));
+        BigDecimal totalAmount = basePrice.add(fee);
 
-        assertEquals(result, portfolio.getCurrentBalance());
+        BigDecimal expectedBalance = BigDecimal.valueOf(1000).subtract(totalAmount);
+
+        assertEquals(0, expectedBalance.compareTo(portfolio.getCurrentBalance()));
     }
 
     @Test
     void buyStock_WhenAlreadyOwned_QuantityIncreases()
     {
         setupBuyStock_WithValidAffordableStock();
+
         BuyStockRequestDTO secondRequest = new BuyStockRequestDTO("AAPL", portfolio.getId(), 1);
         tradingService.buyStock(secondRequest);
 
@@ -122,6 +141,7 @@ public class BuyStockServiceTest
     void buyStock_WithInsufficientFunds_RollbackCalledOnce()
     {
         setupBuyStock_WithValidUnaffordableStock();
+
         assertEquals(1, uow.getRollbackCalledAmount());
     }
 
@@ -129,6 +149,7 @@ public class BuyStockServiceTest
     void buyStock_WithInsufficientFunds_BeginCalledOnce()
     {
         setupBuyStock_WithValidUnaffordableStock();
+
         assertEquals(1, uow.getBeginCalledAmount());
     }
 
@@ -136,6 +157,7 @@ public class BuyStockServiceTest
     void buyStock_WithInsufficientFunds_CommitNotCalled()
     {
         setupBuyStock_WithValidUnaffordableStock();
+
         assertEquals(0, uow.getCommitCalledAmount());
     }
 
@@ -143,6 +165,7 @@ public class BuyStockServiceTest
     void buyStock_WithInsufficientFunds_NoTransactionCreated()
     {
         setupBuyStock_WithValidUnaffordableStock();
+
         assertEquals(0, transactionDao.getAll().size());
     }
 
@@ -150,13 +173,15 @@ public class BuyStockServiceTest
     void buyStock_WithInsufficientFunds_PortfolioBalanceUnchanged()
     {
         setupBuyStock_WithValidUnaffordableStock();
-        assertEquals(BigDecimal.valueOf(50), portfolio.getCurrentBalance());
+
+        assertEquals(0, BigDecimal.valueOf(50).compareTo(portfolio.getCurrentBalance()));
     }
 
     @Test
     void buyStock_WithQuantityZero_RollbackCalled()
     {
         setupBuyStock_WithQuantityZero();
+
         assertEquals(1, uow.getRollbackCalledAmount());
     }
 
@@ -164,40 +189,44 @@ public class BuyStockServiceTest
     void buyStock_WithQuantityZero_NoTransactionCreated()
     {
         setupBuyStock_WithQuantityZero();
+
         assertEquals(0, transactionDao.getAll().size());
     }
 
-
-    private void setupBuyStock_WithQuantityZero() {
-        setupBuyStock(1000, 200, 0);
+    private void setupBuyStock_WithQuantityZero()
+    {
+        setupFailedBuyStock(1000, 200, 0);
     }
 
     private void setupBuyStock_WithValidUnaffordableStock()
     {
-        setupBuyStock(50, 100, 1);
+        setupFailedBuyStock(50, 100, 1);
     }
 
     private void setupBuyStock_WithValidAffordableStock()
     {
-        setupBuyStock(1000, 100, 1);
+        setupSuccessfulBuyStock(1000, 100, 1);
     }
 
     private void setupBuyMultipleStocks_WithValidAffordableStock()
     {
-        setupBuyStock(1000, 100, 3);
+        setupSuccessfulBuyStock(1000, 100, 3);
     }
 
-    private void setupBuyStock(int portfolioBalance, int stockPricePerShare, int quantityToBuy)
+    private void setupSuccessfulBuyStock(int portfolioBalance, int stockPricePerShare, int quantityToBuy)
     {
-        UUID portfolioId = UUID.randomUUID();
+        setupStockAndPortfolio(portfolioBalance, stockPricePerShare);
 
-        portfolio = new Portfolio("test-portfolio", BigDecimal.valueOf(portfolioBalance));
-        stock = new Stock("AAPL", "Apple", BigDecimal.valueOf(stockPricePerShare));
+        BuyStockRequestDTO request = new BuyStockRequestDTO("AAPL", portfolio.getId(), quantityToBuy);
 
-        stockDao.create(stock);
-        portfolioDao.create(portfolio);
+        tradingService.buyStock(request);
+    }
 
-        BuyStockRequestDTO request = new BuyStockRequestDTO("AAPL", portfolioId, quantityToBuy);
+    private void setupFailedBuyStock(int portfolioBalance, int stockPricePerShare, int quantityToBuy)
+    {
+        setupStockAndPortfolio(portfolioBalance, stockPricePerShare);
+
+        BuyStockRequestDTO request = new BuyStockRequestDTO("AAPL", portfolio.getId(), quantityToBuy);
 
         try
         {
@@ -205,5 +234,14 @@ public class BuyStockServiceTest
         } catch (Exception ignored)
         {
         }
+    }
+
+    private void setupStockAndPortfolio(int portfolioBalance, int stockPricePerShare)
+    {
+        portfolio = new Portfolio("test-portfolio", BigDecimal.valueOf(portfolioBalance));
+        stock = new Stock("AAPL", "Apple", BigDecimal.valueOf(stockPricePerShare));
+
+        stockDao.create(stock);
+        portfolioDao.create(portfolio);
     }
 }

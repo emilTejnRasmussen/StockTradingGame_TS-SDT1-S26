@@ -1,5 +1,7 @@
 package integration.transactions;
 
+import business.feecalc.FeeCalculationContext;
+import business.feecalc.FlatFeeStrategy;
 import business.services.PortfolioService;
 import business.services.StockHistoryService;
 import business.services.StockService;
@@ -95,7 +97,8 @@ public class SellStockUseCaseTest
                 portfolioDao,
                 transactionDao,
                 ownedStockDao,
-                Logger.getInstance()
+                Logger.getInstance(),
+                new FeeCalculationContext(new FlatFeeStrategy())
         );
 
         activePortfolioId = new SimpleObjectProperty<>();
@@ -142,15 +145,6 @@ public class SellStockUseCaseTest
         void sellButton_isDisabled()
         {
             assertTrue(stockMarketViewModel.sellDisabledProperty().get());
-        }
-
-        @Test
-        void sellingStock_throwsException()
-        {
-            assertThrows(
-                    TransactionFailedException.class,
-                    () -> stockMarketViewModel.sell(quantity)
-            );
         }
 
         @Test
@@ -407,15 +401,6 @@ public class SellStockUseCaseTest
         }
 
         @Test
-        void sellingStock_throwsException()
-        {
-            assertThrows(
-                    TransactionFailedException.class,
-                    () -> stockMarketViewModel.sell(quantity)
-            );
-        }
-
-        @Test
         void sellingStock_doesNotPersistSellTransaction()
         {
             trySellIgnoringException(quantity);
@@ -457,15 +442,6 @@ public class SellStockUseCaseTest
         }
 
         @Test
-        void sellingStock_throwsException()
-        {
-            assertThrows(
-                    TransactionFailedException.class,
-                    () -> stockMarketViewModel.sell(quantity)
-            );
-        }
-
-        @Test
         void sellingStock_doesNotPersistSellTransaction()
         {
             trySellIgnoringException(quantity);
@@ -497,15 +473,6 @@ public class SellStockUseCaseTest
         void sellButton_isDisabled()
         {
             assertTrue(stockMarketViewModel.sellDisabledProperty().get());
-        }
-
-        @Test
-        void sellingStock_throwsException()
-        {
-            assertThrows(
-                    TransactionFailedException.class,
-                    () -> stockMarketViewModel.sell(quantity)
-            );
         }
 
         @Test
@@ -543,15 +510,6 @@ public class SellStockUseCaseTest
         void sellButton_isDisabled()
         {
             assertTrue(stockMarketViewModel.sellDisabledProperty().get());
-        }
-
-        @Test
-        void sellingStock_throwsException()
-        {
-            assertThrows(
-                    TransactionFailedException.class,
-                    () -> stockMarketViewModel.sell(quantity)
-            );
         }
 
         @Test

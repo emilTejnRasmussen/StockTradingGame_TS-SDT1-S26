@@ -1,12 +1,15 @@
 package shared.logging;
 
+import provided.FileLogOutputter;
+
 public class Logger
 {
     private static volatile Logger instance;
     private volatile LogOutput output;
 
     protected Logger() {
-        this.output = new ConsoleLogOutput();
+        FileLogOutputter fileLogOutputter = new FileLogOutputter("logs/", "INFO");
+        this.output = new FileLogOutputAdapter(fileLogOutputter);
     }
 
     public static Logger getInstance() {

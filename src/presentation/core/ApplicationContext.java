@@ -1,5 +1,8 @@
 package presentation.core;
 
+import business.feecalc.FeeCalculationContext;
+import business.feecalc.FeeCalculationStrategy;
+import business.feecalc.FlatFeeStrategy;
 import business.services.*;
 import business.services.listener.StockAlertService;
 import business.services.listener.StockBankruptService;
@@ -17,12 +20,16 @@ import persistence.interfaces.PortfolioDao;
 import persistence.interfaces.StockDao;
 import persistence.interfaces.StockPriceHistoryDao;
 import persistence.interfaces.TransactionDao;
+import presentation.core.notification.CustomAlertBoxAdapter;
+import presentation.core.notification.NotificationHandler;
+import presentation.core.notification.NotificationImpl;
 import presentation.views.dashboard.DashboardViewModel;
 import presentation.views.leftmenu.MainLeftMenuViewModel;
 import presentation.views.mainmenu.MainMenuViewModel;
 import presentation.views.portfolio.PortfolioViewModel;
 import presentation.views.stockmarket.StockMarketViewModel;
 import presentation.views.transactions.TransactionsViewModel;
+import provided.CustomAlertBox;
 import shared.logging.Logger;
 
 import java.util.UUID;
@@ -56,10 +63,16 @@ public class ApplicationContext
     private final StockAlertService stockAlertService;
     private final StockBankruptService stockBankruptService;
 
+    private final FeeCalculationContext feeCalculationContext;
+    private final NotificationHandler notificationHandler;
+
     private final ObjectProperty<UUID> activePortfolioId = new SimpleObjectProperty<>();
 
     private ApplicationContext()
     {
+        FeeCalculationStrategy strategy = new FlatFeeStrategy();
+        feeCalculationContext = new FeeCalculationContext(strategy);
+
         uow = new FileUnitOfWork("data/");
 
         portfolioDao = new FilePortfolioDao(uow);
@@ -85,6 +98,14 @@ public class ApplicationContext
 
         mainMenuViewModel = createMainMenuViewModel();
         mainLeftMenuViewModel = createMainLeftMenuViewModel();
+
+        notificationHandler = createNotificationHandler();
+    }
+
+    private NotificationHandler createNotificationHandler()
+    {
+        return new NotificationImpl(stockAlertService);
+        //return new CustomAlertBoxAdapter(stockAlertService, new CustomAlertBox());
     }
 
     private TransactionsViewModel createTransactionViewModel()
@@ -181,7 +202,8 @@ public class ApplicationContext
                 portfolioDao,
                 transactionDao,
                 ownedStockDao,
-                Logger.getInstance()
+                Logger.getInstance(),
+                feeCalculationContext
         );
     }
 
@@ -261,5 +283,10 @@ public class ApplicationContext
     public TransactionsViewModel getTransactionsViewModel()
     {
         return transactionsViewModel;
+    }
+
+    public NotificationHandler getNotificationHandler()
+    {
+        return notificationHandler;
     }
 }
