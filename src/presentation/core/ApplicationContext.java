@@ -20,12 +20,16 @@ import persistence.interfaces.PortfolioDao;
 import persistence.interfaces.StockDao;
 import persistence.interfaces.StockPriceHistoryDao;
 import persistence.interfaces.TransactionDao;
+import presentation.core.notification.CustomAlertBoxAdapter;
+import presentation.core.notification.NotificationHandler;
+import presentation.core.notification.NotificationImpl;
 import presentation.views.dashboard.DashboardViewModel;
 import presentation.views.leftmenu.MainLeftMenuViewModel;
 import presentation.views.mainmenu.MainMenuViewModel;
 import presentation.views.portfolio.PortfolioViewModel;
 import presentation.views.stockmarket.StockMarketViewModel;
 import presentation.views.transactions.TransactionsViewModel;
+import provided.CustomAlertBox;
 import shared.logging.Logger;
 
 import java.util.UUID;
@@ -60,6 +64,7 @@ public class ApplicationContext
     private final StockBankruptService stockBankruptService;
 
     private final FeeCalculationContext feeCalculationContext;
+    private final NotificationHandler notificationHandler;
 
     private final ObjectProperty<UUID> activePortfolioId = new SimpleObjectProperty<>();
 
@@ -93,6 +98,14 @@ public class ApplicationContext
 
         mainMenuViewModel = createMainMenuViewModel();
         mainLeftMenuViewModel = createMainLeftMenuViewModel();
+
+        notificationHandler = createNotificationHandler();
+    }
+
+    private NotificationHandler createNotificationHandler()
+    {
+        return new NotificationImpl(stockAlertService);
+        //return new CustomAlertBoxAdapter(stockAlertService, new CustomAlertBox());
     }
 
     private TransactionsViewModel createTransactionViewModel()
@@ -270,5 +283,10 @@ public class ApplicationContext
     public TransactionsViewModel getTransactionsViewModel()
     {
         return transactionsViewModel;
+    }
+
+    public NotificationHandler getNotificationHandler()
+    {
+        return notificationHandler;
     }
 }

@@ -1,8 +1,11 @@
 package presentation.core;
 
+import business.services.listener.StockAlertService;
 import javafx.util.Callback;
 import persistence.fileImplementation.*;
 import persistence.interfaces.*;
+import presentation.core.notification.CustomAlertBoxAdapter;
+import presentation.core.notification.NotificationHandler;
 import presentation.views.dashboard.DashboardController;
 import presentation.views.leftmenu.MainLeftMenuController;
 import presentation.views.mainmenu.MainMenuController;
@@ -23,7 +26,10 @@ public class ControllerFactory implements Callback<Class<?>, Object>
         }
 
         if (controllerType == MainLeftMenuController.class) {
-            return new MainLeftMenuController(appContext.getMainLeftMenuViewModel(), appContext.getStockAlertService());
+            return new MainLeftMenuController(
+                    appContext.getMainLeftMenuViewModel(),
+                    appContext.getNotificationHandler()
+            );
         }
 
         if (controllerType == PortfolioController.class) {

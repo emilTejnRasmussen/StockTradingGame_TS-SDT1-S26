@@ -5,6 +5,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
+import presentation.core.notification.NotificationHandler;
 import presentation.core.notification.NotificationImpl;
 
 public class MainLeftMenuController
@@ -31,7 +32,7 @@ public class MainLeftMenuController
     private VBox menu;
 
     private final MainLeftMenuViewModel viewModel;
-    private final StockAlertService stockAlertService;
+    private final NotificationHandler notificationHandler;
 
     private Button[] buttons;
 
@@ -46,18 +47,15 @@ public class MainLeftMenuController
         viewModel.setButtonIcons(stockMarketBtn, "/icons/stockmarket.png", "/icons/stockmarket-active.png");
         viewModel.setButtonIcons(transactionBtn, "/icons/transaction.png", "/icons/transaction-active.png");
 
-        setupNotifications();
+        if (notificationHandler instanceof NotificationImpl impl) {
+            impl.setNotificationContainer(notificationContainer);
+        }
     }
 
-    public MainLeftMenuController(MainLeftMenuViewModel viewModel, StockAlertService stockAlertService)
+    public MainLeftMenuController(MainLeftMenuViewModel viewModel, NotificationHandler notificationHandler)
     {
         this.viewModel = viewModel;
-        this.stockAlertService = stockAlertService;
-    }
-
-    private void setupNotifications()
-    {
-        new NotificationImpl(notificationContainer, stockAlertService);
+        this.notificationHandler = notificationHandler;
     }
 
     @FXML

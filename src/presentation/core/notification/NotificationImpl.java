@@ -19,11 +19,10 @@ public class NotificationImpl implements NotificationHandler, PropertyChangeList
 {
     private static final int MAX_NOTIFICATIONS = 5;
 
-    private final VBox notificationContainer;
+    private VBox notificationContainer;
 
-    public NotificationImpl(VBox notificationContainer, StockAlertService stockAlertService)
+    public NotificationImpl(StockAlertService stockAlertService)
     {
-        this.notificationContainer = notificationContainer;
         stockAlertService.addListener(this);
     }
 
@@ -163,5 +162,10 @@ public class NotificationImpl implements NotificationHandler, PropertyChangeList
             case "recovery" -> "SIGNAL";
             default -> "UPDATE";
         };
+    }
+
+    public void setNotificationContainer(VBox notificationContainer)
+    {
+        this.notificationContainer = notificationContainer;
     }
 }
