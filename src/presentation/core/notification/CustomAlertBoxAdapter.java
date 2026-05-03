@@ -1,7 +1,6 @@
 package presentation.core.notification;
 
 import business.services.listener.StockAlertService;
-import javafx.scene.layout.VBox;
 import provided.CustomAlertBox;
 
 import java.beans.PropertyChangeEvent;
