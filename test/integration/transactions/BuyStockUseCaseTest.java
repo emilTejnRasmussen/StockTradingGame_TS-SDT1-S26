@@ -1,6 +1,6 @@
 package integration.transactions;
 
-import business.feecalc.FeeCalculationContext;
+import business.feecalc.FeeCalculationStrategy;
 import business.feecalc.FlatFeeStrategy;
 import business.services.PortfolioService;
 import business.services.StockHistoryService;
@@ -48,7 +48,7 @@ public class BuyStockUseCaseTest
 
     StockMarketViewModel stockMarketViewModel;
 
-    FeeCalculationContext feeCalculationContext;
+    FeeCalculationStrategy feeCalculationStrategy;
 
     ObjectProperty<UUID> activePortfolioId;
 
@@ -72,7 +72,7 @@ public class BuyStockUseCaseTest
         ownedStockDao = new FileOwnedStockDao(uow);
         transactionDao = new FileTransactionDao(uow);
 
-        feeCalculationContext = new FeeCalculationContext(new FlatFeeStrategy());
+        feeCalculationStrategy = new FlatFeeStrategy();
 
         stockListenerService = new StockListenerService(
                 uow,
@@ -98,7 +98,7 @@ public class BuyStockUseCaseTest
                 transactionDao,
                 ownedStockDao,
                 Logger.getInstance(),
-                feeCalculationContext
+                feeCalculationStrategy
         );
 
         activePortfolioId = new SimpleObjectProperty<>();
@@ -316,7 +316,7 @@ public class BuyStockUseCaseTest
             quantity = 2;
 
             BigDecimal basePrice = STOCK_PRICE.multiply(BigDecimal.valueOf(quantity));
-            BigDecimal fee = BigDecimal.valueOf(feeCalculationContext.calculateFee(basePrice));
+            BigDecimal fee = BigDecimal.valueOf(feeCalculationStrategy.calculateFee(basePrice));
             BigDecimal exactAffordableBalance = basePrice.add(fee);
 
             portfolioId = createPortfolioWithBalance(exactAffordableBalance);

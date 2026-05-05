@@ -1,7 +1,7 @@
 package business.services;
 
 import business.dto.transaction.StockTransactionRequest;
-import business.feecalc.FeeCalculationContext;
+import business.feecalc.FeeCalculationStrategy;
 import entities.OwnedStock;
 import entities.Portfolio;
 import entities.Stock;
@@ -9,7 +9,6 @@ import entities.Transaction;
 import exception.BusinessRuleException;
 import exception.TransactionFailedException;
 import persistence.interfaces.*;
-import shared.configuration.AppConfig;
 import shared.logging.Logger;
 
 import java.math.BigDecimal;
@@ -26,9 +25,9 @@ public class TradingService
     private final TransactionDao transactionDao;
     private final OwnedStockDao ownedStockDao;
 
-    private final FeeCalculationContext feeCalculationContext;
+    private FeeCalculationStrategy strategy;
 
-    public TradingService(UnitOfWork uow, StockDao stockDao, PortfolioDao portfolioDao, TransactionDao transactionDao, OwnedStockDao ownedStockDao, Logger logger, FeeCalculationContext feeCalculationContext)
+    public TradingService(UnitOfWork uow, StockDao stockDao, PortfolioDao portfolioDao, TransactionDao transactionDao, OwnedStockDao ownedStockDao, Logger logger, FeeCalculationStrategy strategy)
     {
         this.uow = uow;
         this.stockDao = stockDao;
@@ -36,7 +35,7 @@ public class TradingService
         this.transactionDao = transactionDao;
         this.ownedStockDao = ownedStockDao;
         this.logger = logger;
-        this.feeCalculationContext = feeCalculationContext;
+        this.strategy = strategy;
     }
 
     public void buyStock(StockTransactionRequest request)
@@ -55,7 +54,7 @@ public class TradingService
             ensureTradeShareCountLargerThanZero(request);
 
             BigDecimal basePrice = stock.getCurrentPrice().multiply(BigDecimal.valueOf(quantity));
-            BigDecimal fee = BigDecimal.valueOf(feeCalculationContext.calculateFee(basePrice));
+            BigDecimal fee = BigDecimal.valueOf(calculateFee(basePrice));
             BigDecimal totalPrice = basePrice.add(fee);
 
             ensureBalanceLargerThanTotalPrice(portfolio, totalPrice);
@@ -95,7 +94,7 @@ public class TradingService
             removeSharesFromOwnedStock(portfolio.getId(), stock, quantity);
 
             BigDecimal basePrice = stock.getCurrentPrice().multiply(BigDecimal.valueOf(quantity));
-            BigDecimal fee = BigDecimal.valueOf(feeCalculationContext.calculateFee(basePrice));
+            BigDecimal fee = BigDecimal.valueOf(calculateFee(basePrice));
             BigDecimal proceeds = basePrice.subtract(fee);
 
             ensureProceedsIsPositive(proceeds);
@@ -160,7 +159,7 @@ public class TradingService
     private void createTransaction(UUID portfolioId, Stock stock, int quantity, Transaction.Type type)
     {
         BigDecimal basePrice = stock.getCurrentPrice().multiply(BigDecimal.valueOf(quantity));
-        Transaction transaction = Transaction.create(portfolioId, stock.getSymbol(), type, quantity, stock.getCurrentPrice(), feeCalculationContext.calculateFee(basePrice));
+        Transaction transaction = Transaction.create(portfolioId, stock.getSymbol(), type, quantity, stock.getCurrentPrice(), calculateFee(basePrice));
 
         transactionDao.create(transaction);
     }
@@ -213,5 +212,13 @@ public class TradingService
     private Portfolio getPortfolio(UUID portfolioId)
     {
         return portfolioDao.getById(portfolioId).orElseThrow(() -> new IllegalArgumentException("No portfolio with id=" + portfolioId + " found"));
+    }
+
+    public void setStrategy(FeeCalculationStrategy strategy) {
+        this.strategy = strategy;
+    }
+
+    public double calculateFee(BigDecimal amount){
+        return strategy.calculateFee(amount);
     }
 }

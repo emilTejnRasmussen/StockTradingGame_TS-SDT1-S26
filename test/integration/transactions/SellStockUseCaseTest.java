@@ -1,6 +1,5 @@
 package integration.transactions;
 
-import business.feecalc.FeeCalculationContext;
 import business.feecalc.FlatFeeStrategy;
 import business.services.PortfolioService;
 import business.services.StockHistoryService;
@@ -98,7 +97,7 @@ public class SellStockUseCaseTest
                 transactionDao,
                 ownedStockDao,
                 Logger.getInstance(),
-                new FeeCalculationContext(new FlatFeeStrategy())
+                new FlatFeeStrategy()
         );
 
         activePortfolioId = new SimpleObjectProperty<>();

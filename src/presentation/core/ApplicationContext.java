@@ -1,6 +1,5 @@
 package presentation.core;
 
-import business.feecalc.FeeCalculationContext;
 import business.feecalc.FeeCalculationStrategy;
 import business.feecalc.FlatFeeStrategy;
 import business.services.*;
@@ -63,15 +62,14 @@ public class ApplicationContext
     private final StockAlertService stockAlertService;
     private final StockBankruptService stockBankruptService;
 
-    private final FeeCalculationContext feeCalculationContext;
+    private final FeeCalculationStrategy feeCalculationStrategy;
     private final NotificationHandler notificationHandler;
 
     private final ObjectProperty<UUID> activePortfolioId = new SimpleObjectProperty<>();
 
     private ApplicationContext()
     {
-        FeeCalculationStrategy strategy = new FlatFeeStrategy();
-        feeCalculationContext = new FeeCalculationContext(strategy);
+        feeCalculationStrategy = new FlatFeeStrategy();
 
         uow = new FileUnitOfWork("data/");
 
@@ -203,7 +201,7 @@ public class ApplicationContext
                 transactionDao,
                 ownedStockDao,
                 Logger.getInstance(),
-                feeCalculationContext
+                feeCalculationStrategy
         );
     }
 

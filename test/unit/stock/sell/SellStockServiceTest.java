@@ -1,7 +1,7 @@
 package unit.stock.sell;
 
 import business.dto.transaction.SellStockRequestDTO;
-import business.feecalc.FeeCalculationContext;
+import business.feecalc.FeeCalculationStrategy;
 import business.feecalc.FlatFeeStrategy;
 import business.services.TradingService;
 import entities.OwnedStock;
@@ -35,7 +35,7 @@ public class SellStockServiceTest
 
     private TradingService tradingService;
 
-    private FeeCalculationContext feeCalculationContext;
+    private FeeCalculationStrategy feeCalculationStrategy;
 
     @BeforeEach
     void setup()
@@ -45,7 +45,7 @@ public class SellStockServiceTest
         portfolioDao = new MockPortfolioDao();
         transactionDao = new MockTransactionDao();
         ownedStockDao = new MockOwnedStockDao();
-        feeCalculationContext = new FeeCalculationContext(new FlatFeeStrategy());
+        feeCalculationStrategy = new FlatFeeStrategy();
 
         tradingService = new TradingService(
                 uow,
@@ -54,7 +54,7 @@ public class SellStockServiceTest
                 transactionDao,
                 ownedStockDao,
                 new MockLogger(),
-                feeCalculationContext
+                feeCalculationStrategy
         );
     }
 
@@ -96,7 +96,7 @@ public class SellStockServiceTest
         setupSellStock_WithValidOwnedStock();
 
         BigDecimal basePrice = stock.getCurrentPrice();
-        BigDecimal fee = BigDecimal.valueOf(feeCalculationContext.calculateFee(basePrice));
+        BigDecimal fee = BigDecimal.valueOf(feeCalculationStrategy.calculateFee(basePrice));
         BigDecimal proceeds = basePrice.subtract(fee);
         BigDecimal expectedBalance = BigDecimal.valueOf(1000).add(proceeds);
 
@@ -135,7 +135,7 @@ public class SellStockServiceTest
         setupSellStock_WithMultipleShares();
 
         BigDecimal basePrice = stock.getCurrentPrice().multiply(BigDecimal.valueOf(2));
-        BigDecimal fee = BigDecimal.valueOf(feeCalculationContext.calculateFee(basePrice));
+        BigDecimal fee = BigDecimal.valueOf(feeCalculationStrategy.calculateFee(basePrice));
         BigDecimal proceeds = basePrice.subtract(fee);
         BigDecimal expectedBalance = BigDecimal.valueOf(1000).add(proceeds);
 
